@@ -1,6 +1,6 @@
 # Knowledge Product Manager MCP
 
-The server exposes read-only application capabilities through Streamable HTTP and stdio. Both use the same catalog permissions and evidence retrieval as the web app.
+The standalone FastMCP 4 server exposes governed application capabilities through Streamable HTTP and stdio. Both use the same catalog permissions and evidence retrieval as the web app.
 
 ## HTTP
 
@@ -25,6 +25,8 @@ PYTHONPATH=backend uv run --project backend python -m app.mcp.stdio
 ```
 
 Configure the client command as the absolute `backend/.venv/bin/python`, arguments `-m app.mcp.stdio`, and environment `PYTHONPATH` as the absolute backend directory. `MCP_STDIO_PERSONA` defaults to `analyst`; `legal` demonstrates restricted scope. Identity is selected by server configuration, never tool arguments. The backend must be configured with the same PostgreSQL, MinIO, Fuseki and OpenSearch endpoints.
+
+The server uses MCP SDK 2 and the FastMCP HTTP app lifespan. Data-reading tools declare read-only annotations; agentic_search persists a bounded search run and is annotated accordingly.
 
 The MCP server cannot execute arbitrary SQL or SPARQL, mutate catalog data, or expose denied source excerpts. A missing provider API key returns a clear configuration-required search state; no silent LLM substitute is used.
 

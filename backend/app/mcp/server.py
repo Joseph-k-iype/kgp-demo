@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from app.auth import resolve_scope
 from app.contracts import SearchRequest
 from app.catalog import service as catalog
@@ -8,25 +8,21 @@ from app.retrieval.service import get_evidence as evidence
 from app.agent.service import start_search, get_search
 
 identity = ContextVar("mcp_identity", default="analyst")
-mcp = FastMCP(
-    "Knowledge Product Manager",
-    stateless_http=True,
-    json_response=True,
-    streamable_http_path="/mcp",
-)
+mcp = FastMCP("Knowledge Product Manager", mask_error_details=True)
+mcp_http_app = mcp.http_app(path="/mcp", stateless_http=True, json_response=True)
 
 
 def scope():
     return resolve_scope(identity.get())
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def list_domains() -> dict:
     """List domains, stewards, delegates, and knowledge coverage within your access scope."""
     return {"domains": catalog.list_domains(scope())}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def search_catalog(
     query: str = "",
     domain_id: str | None = None,
@@ -47,19 +43,19 @@ def search_catalog(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def get_knowledge_product(product_id: str) -> dict:
     """Inspect a product with its accessible assets, projects and gaps."""
     return catalog.get_product(scope(), product_id)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def get_asset(asset_id: str) -> dict:
     """Inspect asset provenance, storage location, ontology concepts and quality findings."""
     return catalog.get_asset(scope(), asset_id)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def explore_ontology(
     concept_id: str = "Counterparty", depth: int = 1, limit: int = 30
 ) -> dict:
@@ -67,13 +63,13 @@ def explore_ontology(
     return graph(scope(), concept_id, depth, limit)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
 def get_evidence(evidence_id: str) -> dict:
     """Read an authorized evidence excerpt and its original source pointer."""
     return evidence(scope(), evidence_id)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False})
 def agentic_search(
     query: str | None = None, run_id: str | None = None, mode: str = "llm"
 ) -> dict:
@@ -91,7 +87,7 @@ def agentic_search(
 def domains_resource() -> str:
     import json
 
-    return json.dumps(list_domains())
+    return json.dumps({"domains": catalog.list_domains(scope())})
 
 
 @mcp.resource("knowledge://products/{id}")

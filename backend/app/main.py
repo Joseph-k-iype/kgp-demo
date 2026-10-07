@@ -24,7 +24,7 @@ from app.ontology.service import (
 )
 from app.retrieval.service import get_evidence
 from app.agent.service import start_search, get_search, cancel_search, resume_search
-from app.mcp.server import mcp, identity
+from app.mcp.server import mcp_http_app, identity
 from app.config import settings
 
 
@@ -34,7 +34,7 @@ async def lifespan(app):
 
     # Load the pinned local model before accepting time-bounded searches.
     await asyncio.to_thread(embed, ["Knowledge Product Manager readiness"])
-    async with mcp.session_manager.run():
+    async with mcp_http_app.lifespan(app):
         yield
 
 
@@ -245,4 +245,4 @@ def job(id: str, scope=Depends(scope_dependency)):
     return get_job(scope, id)
 
 
-app.mount("/", mcp.streamable_http_app())
+app.mount("/", mcp_http_app)
