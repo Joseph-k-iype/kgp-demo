@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Shell from "@/components/Shell";
 import "./globals.css";
 import "./theme.css";
+import "./discovery.css";
 export const metadata: Metadata = {
   title: "Knowledge Product Manager",
   description:

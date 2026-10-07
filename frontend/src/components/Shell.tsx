@@ -1,77 +1,98 @@
 "use client";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-const ShaderSurface = dynamic(() => import("./ShaderSurface"), { ssr: false });
-import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
-  Box,
-  LayoutDashboard,
   BookOpen,
+  ChevronDown,
   Layers,
   Database,
   Network,
-  Sparkles,
   FolderKanban,
   Users,
-  Search,
-  ChevronDown,
-  Menu,
-  X,
   ArrowUpRight,
-  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { api, useData } from "@/api/client";
+const ShaderSurface = dynamic(() => import("./ShaderSurface"), { ssr: false });
 const Context = createContext({
   token: "atlas-session-admin",
   persona: "admin",
   role: "Administrator",
 });
 export const useSession = () => useContext(Context);
-const nav = [
-  ["/", "Overview", LayoutDashboard],
-  ["/catalog", "Catalog", BookOpen],
-  ["/domains", "Domains", Layers],
-  ["/sources", "Sources", Database],
-  ["/ontology", "Ontology explorer", Network],
-  ["/search", "Agentic search", Sparkles],
-  ["/projects", "Projects & gaps", FolderKanban],
-  ["/roles", "Roles & access", Users],
-] as const;
 const people = {
   admin: ["Elena Vasquez", "Administrator"],
   analyst: ["James Morgan", "Analyst"],
   risk: ["Priya Shah", "Domain steward"],
   legal: ["Marcus Chen", "Delegate"],
 } as const;
+const workspace = [
+  ["/domains", "Domains", Layers],
+  ["/sources", "Sources", Database],
+  ["/ontology", "Ontology explorer", Network],
+  ["/projects", "Projects & gaps", FolderKanban],
+  ["/roles", "Roles & access", Users],
+] as const;
+export function DotMark() {
+  return (
+    <span className="discovery-mark" aria-hidden="true">
+      {Array.from({ length: 9 }, (_, i) => (
+        <i key={i} />
+      ))}
+    </span>
+  );
+}
 export default function Shell({ children }: { children: React.ReactNode }) {
-  const path = usePathname(),
-    router = useRouter();
+  const path = usePathname();
   const [persona, setPersona] = useState<keyof typeof people>("admin"),
     [menu, setMenu] = useState(false),
-    [q, setQ] = useState("");
+    [sessionError, setSessionError] = useState("");
+  const navRef = useRef<HTMLDivElement>(null),
+    trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const p = localStorage.getItem("atlas-persona");
     if (p && p in people) setPersona(p as keyof typeof people);
   }, []);
+  useEffect(() => setMenu(false), [path]);
+  useEffect(() => {
+    if (!menu) return;
+    function outside(e: PointerEvent) {
+      if (!navRef.current?.contains(e.target as Node)) setMenu(false);
+    }
+    function key(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setMenu(false);
+        trigger.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", key);
+    };
+  }, [menu]);
   const token = "atlas-session-" + persona;
   const liveScope = useData<{ role: string }>("/session/scope", token);
-  const health = useData<{
-    services: Record<string, { status: string }>;
-    llm: { configured: boolean; model: string };
-  }>("/health", token);
+  const health = useData<{ services: Record<string, { status: string }> }>(
+    menu ? "/health" : null,
+    token,
+  );
   async function switchPersona(p: keyof typeof people) {
-    await api("/session", "", {
-      method: "POST",
-      body: JSON.stringify({ persona: p }),
-    });
-    localStorage.setItem("atlas-persona", p);
-    setPersona(p);
+    try {
+      await api("/session", "", {
+        method: "POST",
+        body: JSON.stringify({ persona: p }),
+      });
+      localStorage.setItem("atlas-persona", p);
+      setPersona(p);
+      setSessionError("");
+    } catch (e) {
+      setSessionError((e as Error).message);
+    }
   }
-  const current = nav.find((n) => n[0] === path)?.[1] || "Catalog";
-  const healthy =
-    health.data &&
-    Object.values(health.data.services).every((s) => s.status === "ready");
   return (
     <Context.Provider
       value={{
@@ -80,128 +101,105 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         role: liveScope.data?.role || people[persona][1],
       }}
     >
-      <div className="app-shell">
-        <ShaderSurface />
-        <aside className={"sidebar " + (menu ? "open" : "")}>
-          <Link href="/" className="brand">
-            <span className="brand-symbol">
-              <span className="dot-mark">
-                {Array.from({ length: 9 }, (_, i) => (
-                  <i key={i} />
-                ))}
-              </span>
-            </span>
-            <span className="brand-name">
-              Knowledge
-              <br />
-              Product Manager
-            </span>
+      <div className="discovery-shell">
+        {path === "/" && (
+          <div className="home-texture">
+            <ShaderSurface />
+          </div>
+        )}
+        <header className="discovery-nav">
+          <Link href="/" className="discovery-brand">
+            <DotMark />
+            <span>Knowledge Product Manager</span>
           </Link>
-          <button
-            className="mobile-close icon-button"
-            onClick={() => setMenu(false)}
-            aria-label="Close navigation"
-          >
-            <X />
-          </button>
-          <div className="workspace">
-            <span className="workspace-icon">E</span>
-            <div>
-              Enterprise workspace<small>Knowledge intelligence</small>
-            </div>
-            <ChevronDown size={14} />
-          </div>
-          <div className="nav-label">WORKSPACE</div>
-          <nav>
-            {nav.map(([url, label, Icon]) => (
-              <Link
-                key={url}
-                href={url}
-                className={path === url ? "nav-link active" : "nav-link"}
-                onClick={() => setMenu(false)}
+          <nav className="discovery-nav-actions" aria-label="Main navigation">
+            <Link
+              href="/catalog"
+              className={
+                "nav-catalog " + (path === "/catalog" ? "current" : "")
+              }
+            >
+              <BookOpen size={17} />
+              <span>Catalog</span>
+            </Link>
+            <div className="workspace-popover" ref={navRef}>
+              <button
+                ref={trigger}
+                className="workspace-trigger"
+                aria-expanded={menu}
+                aria-controls="workspace-links"
+                onClick={() => setMenu(!menu)}
               >
-                <Icon size={19} />
-                <span>{label}</span>
-                {url === "/search" && <span className="nav-pill">AI</span>}
-              </Link>
-            ))}
-          </nav>
-          <div className="sidebar-bottom">
-            <div className="system-state">
-              <span className={"dot " + (healthy ? "green" : "amber")} />
-              {healthy ? "All services connected" : "Checking services"}
+                Workspace <ChevronDown size={14} />
+              </button>
+              {menu && (
+                <div id="workspace-links" className="workspace-links">
+                  <small>MANAGE KNOWLEDGE</small>
+                  {workspace.map(([url, label, Icon]) => (
+                    <Link key={url} href={url} onClick={() => setMenu(false)}>
+                      <Icon size={17} />
+                      {label}
+                    </Link>
+                  ))}
+                  <div className="workspace-connection">
+                    <CheckCircle2 size={14} />
+                    {health.data &&
+                    Object.values(health.data.services).every(
+                      (s) => s.status === "ready",
+                    )
+                      ? "All services connected"
+                      : "Service readiness"}
+                    <small>PostgreSQL · MinIO · RDF · OpenSearch</small>
+                  </div>
+                  <a
+                    href="http://127.0.0.1:58123/docs"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API & MCP connection <ArrowUpRight size={14} />
+                  </a>
+                </div>
+              )}
             </div>
-            <small>PostgreSQL · MinIO · RDF · OpenSearch</small>
-            <a
-              href="http://127.0.0.1:58123/docs"
-              target="_blank"
-              rel="noreferrer"
-              className="api-link"
-            >
-              API & MCP documentation <ArrowUpRight size={14} />
-            </a>
-            <div className="demo-note">Synthetic data · Local demo</div>
-          </div>
-        </aside>
-        <div className="workspace-body">
-          <header className="topbar">
-            <button
-              className="mobile-menu icon-button"
-              onClick={() => setMenu(true)}
-              aria-label="Open navigation"
-            >
-              <Menu />
-            </button>
-            <div className="breadcrumb">
-              Enterprise <span>/</span>
-              <strong>{current}</strong>
-            </div>
-            <form
-              className="global-search"
-              onSubmit={(e) => {
-                e.preventDefault();
-                router.push("/catalog?text=" + encodeURIComponent(q));
-              }}
-            >
-              <Search size={16} />
-              <input
-                aria-label="Global catalog search"
-                placeholder="Search products, assets, or knowledge…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-              <kbd>↵</kbd>
-            </form>
-            <span className="governed-label">
-              <ShieldCheck size={15} /> Governed workspace
-            </span>
-            <div className="profile">
-              <span className="avatar">
+            <div className="discovery-persona">
+              <span className="persona-circle" aria-hidden="true">
                 {people[persona][0]
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
               </span>
-              <div>
-                <select
-                  aria-label="Demo persona"
-                  value={persona}
-                  onChange={(e) =>
-                    switchPersona(e.target.value as keyof typeof people)
-                  }
-                >
-                  {Object.entries(people).map(([id, [name]]) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-                <small>{people[persona][1]} · Demo persona</small>
-              </div>
+              <select
+                aria-label="Demo persona"
+                value={persona}
+                onChange={(e) =>
+                  switchPersona(e.target.value as keyof typeof people)
+                }
+              >
+                {Object.entries(people).map(([id, p]) => (
+                  <option key={id} value={id}>
+                    {p[0]}
+                  </option>
+                ))}
+              </select>
             </div>
-          </header>
-          <main key={persona}>{children}</main>
-        </div>
+          </nav>
+        </header>
+        {sessionError && (
+          <p role="alert" className="session-error">
+            {sessionError}
+          </p>
+        )}
+        <main
+          className={
+            path === "/" ? "discovery-home-main" : "content discovery-main"
+          }
+        >
+          {children}
+        </main>
+        <footer className="discovery-footer">
+          <span>Knowledge Product Manager</span>
+          <span>Governed knowledge · Synthetic demo</span>
+        </footer>
       </div>
     </Context.Provider>
   );

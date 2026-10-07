@@ -17,3 +17,6 @@ design/red/conversion/
 
 # Local design conversion metadata
 *.12ui-conversion.json
+
+# Design generator intermediate workspaces
+design/search-first/branch/
