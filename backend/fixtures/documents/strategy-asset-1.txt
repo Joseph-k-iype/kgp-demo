@@ -1,0 +1,18 @@
+# Strategic Objectives · evidence brief
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Domain: strategy
+Steward: Gabriel Santos
+Concepts: Project, Policy
+
+Purpose
+Strategic Objectives · evidence brief supports change delivery decisions with project context and accountable provenance.
+
+Control requirements
+Change portfolios require initiative sponsors, budgets, benefit estimates and delivery evidence. Initiative CHG-100 Cloud modernization has a synthetic budget of USD 750,000 and benefit estimate of USD 1,500,000. Benefits require sponsor review.
+All entities, measurements and amounts in this source are fictional.
+
+Evidence and governance
+The steward reviews records monthly. PostgreSQL stores structured records; MinIO retains the original source document. RDF concepts connect the business meaning, source and knowledge product. Two required supporting evidence sources remain uncovered. Unresolved data quality issues must be considered before use.
+
+Domain-specific context
+Strategic Objectives · evidence brief applies this evidence framework to Change Delivery. Supporting assets are discoverable through the catalog and ontology explorer. Policy applicability must be confirmed by the assigned steward.

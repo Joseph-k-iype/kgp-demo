@@ -174,3 +174,16 @@ Excluded: production SSO, live external enterprise connectors, production deploy
 ## Review status
 
 The user approved the specification and requested OpenAI API integration, LangGraph agentic search, and MCP exposure. These additions are incorporated above and carried into the implementation plan.
+
+
+## Approved implementation amendments
+
+The user's latest instructions rename the app **Knowledge Product Manager**, set **OpenRouter with DeepSeek models** as the current LLM provider, and replace the blue enterprise style with **red primary accents, Nothing-inspired patterns, Swiss typography, Apple-inspired liquid glass, and actual Paper Design shaders**. These supersede conflicting default-provider and visual choices above. Keep all catalog workflows and data permissions intact.
+
+Use the official OpenAI SDK against OpenRouter's OpenAI-compatible Chat Completions endpoint, with strict structured output and runtime schema validation. Default model: deepseek/deepseek-v3.2. OpenAI Responses remains an optional provider configuration. The user's key is stored only in the git-ignored server .env file; never commit or expose it through the frontend or API responses. LangGraph and MCP continue sharing scoped application services.
+
+Use shader pixel budgets, reduced-motion handling, and a static fallback. Keep sufficient contrast over glass and preserve clear table/list hierarchy. Original identifiers, storage names, and RDF IRIs may remain stable for provenance; the visible product name is Knowledge Product Manager.
+
+Official references: https://openrouter.ai/docs/guides/features/structured-outputs ; https://openrouter.ai/docs/quickstart ; https://openrouter.ai/deepseek/deepseek-v3.2 ; https://github.com/paper-design/shaders
+
+Final visual steering: **light theme only**, restrained glass with a subtle rose tint, no dark panels. This supersedes any dark details in retained design reference images. Prioritize readable contrast and a disciplined enterprise layout.

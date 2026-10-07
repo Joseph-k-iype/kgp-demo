@@ -1,0 +1,18 @@
+# Counterparty Master · evidence brief
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Domain: customer
+Steward: Emma Wilson
+Concepts: Counterparty, Policy
+
+Purpose
+Counterparty Master · evidence brief supports counterparty management decisions with counterparty context and accountable provenance.
+
+Control requirements
+Counterparty master identifiers connect customer relationships, exposure and onboarding evidence. Aster Capital has identifier CP-1000. Relationship managers must confirm consent, ownership and current due diligence before using the record.
+All entities, measurements and amounts in this source are fictional.
+
+Evidence and governance
+The steward reviews records monthly. PostgreSQL stores structured records; MinIO retains the original source document. RDF concepts connect the business meaning, source and knowledge product. Two required supporting evidence sources remain uncovered. Unresolved data quality issues must be considered before use.
+
+Domain-specific context
+Counterparty Master · evidence brief applies this evidence framework to Counterparty Management. Supporting assets are discoverable through the catalog and ontology explorer. Policy applicability must be confirmed by the assigned steward.

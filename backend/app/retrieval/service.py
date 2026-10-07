@@ -1,79 +1,198 @@
-import json,hashlib
+import json, hashlib
 from urllib.parse import quote
 from collections import defaultdict
 from fastapi import HTTPException
 from app.config import settings
 from app.db import query
 from app.auth import resolve_scope
-from app.catalog.service import all_records,get_record
+from app.catalog.service import all_records, get_record
 from app.retrieval.extract import extract_evidence
 from app.retrieval.embed import embed
-from app.retrieval.index import request,ensure_index
+from app.retrieval.index import request, ensure_index
 
 
 def index_assets(asset_ids):
-    ensure_index();c=settings();scope=resolve_scope('admin');assets=all_records(scope,'asset');docs=[];selected=[]
+    ensure_index()
+    c = settings()
+    scope = resolve_scope("admin")
+    assets = all_records(scope, "asset")
+    docs = []
+    selected = []
     for a in assets:
-        if asset_ids and a['id'] not in asset_ids:continue
-        selected.append(a['id'])
-        query("UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",{'id':a['id']})
-        docs.extend(extract_evidence(scope,a))
+        if asset_ids and a["id"] not in asset_ids:
+            continue
+        selected.append(a["id"])
+        query(
+            "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
+            {"id": a["id"]},
+        )
+        docs.extend(extract_evidence(scope, a))
     try:
-        vectors=embed([d['text'] for d in docs])
+        vectors = embed([d["text"] for d in docs])
         import httpx
-        body=''
-        for d,v in zip(docs,vectors):
-            d['vector']=v;d['content_hash']=hashlib.sha256(d['text'].encode()).hexdigest();d['model']=c.embedding_model
-            body+=json.dumps({'index':{'_index':c.index_name,'_id':d['id']}})+'\n'+json.dumps(d)+'\n'
-        for a in selected:request('POST','/'+c.index_name+'/_delete_by_query',{'query':{'term':{'asset_id':a}}})
-        r=httpx.post(c.opensearch_url+'/_bulk',content=body,headers={'Content-Type':'application/x-ndjson'},timeout=90);r.raise_for_status()
-        if r.json().get('errors'):raise RuntimeError('Bulk indexing failed')
-        request('POST','/'+c.index_name+'/_refresh')
-        for a in selected:query("UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",{'id':a})
+
+        body = ""
+        for d, v in zip(docs, vectors):
+            d["vector"] = v
+            d["content_hash"] = hashlib.sha256(d["text"].encode()).hexdigest()
+            d["model"] = c.embedding_model
+            body += (
+                json.dumps({"index": {"_index": c.index_name, "_id": d["id"]}})
+                + "\n"
+                + json.dumps(d)
+                + "\n"
+            )
+        for a in selected:
+            request(
+                "POST",
+                "/" + c.index_name + "/_delete_by_query",
+                {"query": {"term": {"asset_id": a}}},
+            )
+        r = httpx.post(
+            c.opensearch_url + "/_bulk",
+            content=body,
+            headers={"Content-Type": "application/x-ndjson"},
+            timeout=90,
+        )
+        r.raise_for_status()
+        if r.json().get("errors"):
+            raise RuntimeError("Bulk indexing failed")
+        request("POST", "/" + c.index_name + "/_refresh")
+        for a in selected:
+            query(
+                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",
+                {"id": a},
+            )
         # Removed assets cannot remain searchable.
-        request('POST','/'+c.index_name+'/_delete_by_query',{'query':{'bool':{'must_not':{'terms':{'asset_id':[a['id'] for a in assets]}}}}})
-        return {'indexed_assets':len(selected),'evidence_chunks':len(docs),'model':c.embedding_model,'dimensions':384}
+        request(
+            "POST",
+            "/" + c.index_name + "/_delete_by_query",
+            {
+                "query": {
+                    "bool": {
+                        "must_not": {"terms": {"asset_id": [a["id"] for a in assets]}}
+                    }
+                }
+            },
+        )
+        return {
+            "indexed_assets": len(selected),
+            "evidence_chunks": len(docs),
+            "model": c.embedding_model,
+            "dimensions": 384,
+        }
     except Exception:
-        for a in selected:query("UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",{'id':a})
+        for a in selected:
+            query(
+                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",
+                {"id": a},
+            )
         raise
 
-def retrieve(scope,query_text,concept_ids,limit=10):
-    if not 1<=limit<=30 or not query_text.strip():raise HTTPException(422,'Invalid retrieval request')
-    ensure_index();c=settings();allowed=[a['id'] for a in all_records(scope,'asset') if a.get('indexing_state')=='ready']
-    if not allowed:return []
-    filters=[{'terms':{'domain_id':scope.domain_ids}},{'terms':{'asset_id':allowed}}]
-    lexical=request('POST','/'+c.index_name+'/_search',{'size':100,'query':{'bool':{'filter':filters,'must':[{'match':{'text':{'query':query_text,'operator':'or'}}}],'should':[{'terms':{'concept_iris':concept_ids}}]}}})['hits']['hits']
-    vector=embed([query_text])[0]
-    semantic=request('POST','/'+c.index_name+'/_search',{'size':100,'query':{'script_score':{'query':{'bool':{'filter':filters}},'script':{'source':'knn_score','lang':'knn','params':{'field':'vector','query_value':vector,'space_type':'cosinesimil'}}}}})['hits']['hits']
+
+def retrieve(scope, query_text, concept_ids, limit=10):
+    if not 1 <= limit <= 30 or not query_text.strip():
+        raise HTTPException(422, "Invalid retrieval request")
+    ensure_index()
+    c = settings()
+    allowed = [
+        a["id"]
+        for a in all_records(scope, "asset")
+        if a.get("indexing_state") == "ready"
+    ]
+    if not allowed:
+        return []
+    filters = [
+        {"terms": {"domain_id": scope.domain_ids}},
+        {"terms": {"asset_id": allowed}},
+    ]
+    lexical = request(
+        "POST",
+        "/" + c.index_name + "/_search",
+        {
+            "size": 100,
+            "query": {
+                "bool": {
+                    "filter": filters,
+                    "must": [
+                        {"match": {"text": {"query": query_text, "operator": "or"}}}
+                    ],
+                    "should": [{"terms": {"concept_iris": concept_ids}}],
+                }
+            },
+        },
+    )["hits"]["hits"]
+    vector = embed([query_text])[0]
+    semantic = request(
+        "POST",
+        "/" + c.index_name + "/_search",
+        {
+            "size": 100,
+            "query": {
+                "script_score": {
+                    "query": {"bool": {"filter": filters}},
+                    "script": {
+                        "source": "knn_score",
+                        "lang": "knn",
+                        "params": {
+                            "field": "vector",
+                            "query_value": vector,
+                            "space_type": "cosinesimil",
+                        },
+                    },
+                }
+            },
+        },
+    )["hits"]["hits"]
     # Exclude very weak matches instead of returning irrelevant answers.
-    semantic=[h for h in semantic if h['_score']>=1.35]
-    scores=defaultdict(float);sources={}
-    for hits in [lexical,semantic]:
-        for rank,h in enumerate(hits):
-            sources[h['_id']]=h['_source'];scores[h['_id']]+=1/(60+rank)
-    ordered=sorted(scores,key=lambda id:scores[id],reverse=True)
+    semantic = [h for h in semantic if h["_score"] >= 1.35]
+    scores = defaultdict(float)
+    sources = {}
+    for hits in [lexical, semantic]:
+        for rank, h in enumerate(hits):
+            sources[h["_id"]] = h["_source"]
+            scores[h["_id"]] += 1 / (60 + rank)
+    ordered = sorted(scores, key=lambda id: scores[id], reverse=True)
     # Diversify sources so one table's near-identical rows do not consume all results.
-    results=[];per_asset=defaultdict(int)
+    results = []
+    per_asset = defaultdict(int)
     # Reserve the highest-ranked evidence of each source type, then fill by fused rank.
-    seen_types=set(); diversified=[]
+    seen_types = set()
+    diversified = []
     for id in ordered:
-        kind=sources[id]['provenance']['type']
-        if kind not in seen_types:diversified.append(id);seen_types.add(kind)
+        kind = sources[id]["provenance"]["type"]
+        if kind not in seen_types:
+            diversified.append(id)
+            seen_types.add(kind)
     diversified += [id for id in ordered if id not in diversified]
     for id in diversified:
-        d=sources[id]
-        if per_asset[d['asset_id']]>=2:continue
-        per_asset[d['asset_id']]+=1;d.pop('vector',None);d['score']=round(scores[id],5);results.append(d)
-        if len(results)>=limit:break
+        d = sources[id]
+        if per_asset[d["asset_id"]] >= 2:
+            continue
+        per_asset[d["asset_id"]] += 1
+        d.pop("vector", None)
+        d["score"] = round(scores[id], 5)
+        results.append(d)
+        if len(results) >= limit:
+            break
     return results
 
-def get_evidence(scope,evidence_id):
-    asset_id=evidence_id.split(':')[0];a=get_record(scope,asset_id,'asset')
-    if a.get('indexing_state')!='ready':raise HTTPException(409,'Evidence index is not current')
-    try:d=request('GET','/'+settings().index_name+'/_doc/'+quote(evidence_id,safe=''))['_source']
-    except Exception:raise HTTPException(404,'Evidence not found')
-    d.pop('vector',None);return d
 
-def expand_evidence(scope,evidence):
+def get_evidence(scope, evidence_id):
+    asset_id = evidence_id.split(":")[0]
+    a = get_record(scope, asset_id, "asset")
+    if a.get("indexing_state") != "ready":
+        raise HTTPException(409, "Evidence index is not current")
+    try:
+        d = request(
+            "GET", "/" + settings().index_name + "/_doc/" + quote(evidence_id, safe="")
+        )["_source"]
+    except Exception:
+        raise HTTPException(404, "Evidence not found")
+    d.pop("vector", None)
+    return d
+
+
+def expand_evidence(scope, evidence):
     # Resolve provenance through scope-aware services before it reaches synthesis.
-    return [get_evidence(scope,e['id']) for e in evidence]
+    return [get_evidence(scope, e["id"]) for e in evidence]

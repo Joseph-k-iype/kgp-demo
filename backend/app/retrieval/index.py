@@ -1,14 +1,48 @@
 import httpx
 from app.config import settings
 
-def request(method,path,body=None):
-    r=httpx.request(method,settings().opensearch_url+path,json=body,timeout=45)
-    r.raise_for_status();return r.json()
+
+def request(method, path, body=None):
+    r = httpx.request(method, settings().opensearch_url + path, json=body, timeout=45)
+    r.raise_for_status()
+    return r.json()
+
 
 def ensure_index():
-    c=settings();r=httpx.get(c.opensearch_url+'/'+c.index_name,timeout=10)
-    if r.status_code==404:
-        request('PUT','/'+c.index_name,{'settings':{'number_of_shards':1,'number_of_replicas':0},'mappings':{'_meta':{'model':c.embedding_model,'revision':c.embedding_revision},'properties':{'id':{'type':'keyword'},'asset_id':{'type':'keyword'},'domain_id':{'type':'keyword'},'concept_iris':{'type':'keyword'},'product_ids':{'type':'keyword'},'text':{'type':'text'},'content_hash':{'type':'keyword'},'vector':{'type':'knn_vector','dimension':384}}}})
+    c = settings()
+    r = httpx.get(c.opensearch_url + "/" + c.index_name, timeout=10)
+    if r.status_code == 404:
+        request(
+            "PUT",
+            "/" + c.index_name,
+            {
+                "settings": {"number_of_shards": 1, "number_of_replicas": 0},
+                "mappings": {
+                    "_meta": {
+                        "model": c.embedding_model,
+                        "revision": c.embedding_revision,
+                    },
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "asset_id": {"type": "keyword"},
+                        "domain_id": {"type": "keyword"},
+                        "concept_iris": {"type": "keyword"},
+                        "product_ids": {"type": "keyword"},
+                        "text": {"type": "text"},
+                        "content_hash": {"type": "keyword"},
+                        "vector": {"type": "knn_vector", "dimension": 384},
+                    },
+                },
+            },
+        )
     else:
-        r.raise_for_status();mapping=r.json()[c.index_name]['mappings']
-        if mapping.get('_meta')!={'model':c.embedding_model,'revision':c.embedding_revision} or mapping['properties']['vector']['dimension']!=384:raise ValueError('Embedding model or index dimension mismatch; rebuild with a new index name')
+        r.raise_for_status()
+        mapping = r.json()[c.index_name]["mappings"]
+        if (
+            mapping.get("_meta")
+            != {"model": c.embedding_model, "revision": c.embedding_revision}
+            or mapping["properties"]["vector"]["dimension"] != 384
+        ):
+            raise ValueError(
+                "Embedding model or index dimension mismatch; rebuild with a new index name"
+            )

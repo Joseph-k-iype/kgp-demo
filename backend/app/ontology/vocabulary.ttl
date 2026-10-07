@@ -17,9 +17,6 @@ atlas:Exposure a owl:Class ;
 atlas:Obligation a owl:Class ;
     rdfs:label "Obligation" .
 
-atlas:Policy a owl:Class ;
-    rdfs:label "Policy" .
-
 atlas:Product a owl:Class ;
     rdfs:label "Product" .
 
@@ -42,10 +39,20 @@ atlas:belongsToSubdomain a owl:ObjectProperty ;
     rdfs:domain atlas:KnowledgeProduct ;
     rdfs:range atlas:Subdomain .
 
+atlas:delegatedTo a owl:ObjectProperty ;
+    rdfs:label "delegatedTo" ;
+    rdfs:domain atlas:Domain ;
+    rdfs:range atlas:Person .
+
 atlas:deliversProduct a owl:ObjectProperty ;
     rdfs:label "deliversProduct" ;
     rdfs:domain atlas:Project ;
     rdfs:range atlas:KnowledgeProduct .
+
+atlas:governedBy a owl:ObjectProperty ;
+    rdfs:label "governedBy" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Policy .
 
 atlas:hasGap a owl:ObjectProperty ;
     rdfs:label "hasGap" ;
@@ -72,28 +79,36 @@ atlas:stewardedBy a owl:ObjectProperty ;
     rdfs:domain atlas:Asset ;
     rdfs:range atlas:Person .
 
+atlas:storedIn a owl:ObjectProperty ;
+    rdfs:label "storedIn" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Source .
+
 atlas:usesAsset a owl:ObjectProperty ;
     rdfs:label "usesAsset" ;
     rdfs:domain atlas:KnowledgeProduct ;
     rdfs:range atlas:Asset .
 
-atlas:Domain a owl:Class ;
-    rdfs:label "Domain" .
-
 atlas:Gap a owl:Class ;
     rdfs:label "Gap" .
 
-atlas:Person a owl:Class ;
-    rdfs:label "Person" .
+atlas:Policy a owl:Class ;
+    rdfs:label "Policy" .
 
 atlas:Project a owl:Class ;
     rdfs:label "Project" .
 
-atlas:Source a owl:Class ;
-    rdfs:label "Source" .
-
 atlas:Subdomain a owl:Class ;
     rdfs:label "Subdomain" .
+
+atlas:Domain a owl:Class ;
+    rdfs:label "Domain" .
+
+atlas:Person a owl:Class ;
+    rdfs:label "Person" .
+
+atlas:Source a owl:Class ;
+    rdfs:label "Source" .
 
 atlas:DataElement a owl:Class ;
     rdfs:label "DataElement" .
