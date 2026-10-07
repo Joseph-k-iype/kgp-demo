@@ -1,0 +1,5 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix atlas: <https://atlas.example/ontology/> .
+atlas:AssetStewardShape a sh:NodeShape ;
+  sh:targetClass atlas:Asset ;
+  sh:property [ sh:path atlas:stewardedBy ; sh:minCount 1 ; sh:message "Every asset needs asserted stewardship in the RDF graph." ] .

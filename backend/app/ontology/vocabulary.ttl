@@ -1,0 +1,106 @@
+@prefix atlas: <https://atlas.example/ontology/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+atlas:Contract a owl:Class ;
+    rdfs:label "Contract" .
+
+atlas:Counterparty a owl:Class ;
+    rdfs:label "Counterparty" .
+
+atlas:Document a owl:Class ;
+    rdfs:label "Document" .
+
+atlas:Exposure a owl:Class ;
+    rdfs:label "Exposure" .
+
+atlas:Obligation a owl:Class ;
+    rdfs:label "Obligation" .
+
+atlas:Policy a owl:Class ;
+    rdfs:label "Policy" .
+
+atlas:Product a owl:Class ;
+    rdfs:label "Product" .
+
+atlas:Role a owl:Class ;
+    rdfs:label "Role" .
+
+atlas:Service a owl:Class ;
+    rdfs:label "Service" .
+
+atlas:StructuredAsset a owl:Class ;
+    rdfs:label "StructuredAsset" .
+
+atlas:belongsToDomain a owl:ObjectProperty ;
+    rdfs:label "belongsToDomain" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Domain .
+
+atlas:belongsToSubdomain a owl:ObjectProperty ;
+    rdfs:label "belongsToSubdomain" ;
+    rdfs:domain atlas:KnowledgeProduct ;
+    rdfs:range atlas:Subdomain .
+
+atlas:deliversProduct a owl:ObjectProperty ;
+    rdfs:label "deliversProduct" ;
+    rdfs:domain atlas:Project ;
+    rdfs:range atlas:KnowledgeProduct .
+
+atlas:hasGap a owl:ObjectProperty ;
+    rdfs:label "hasGap" ;
+    rdfs:domain atlas:KnowledgeProduct ;
+    rdfs:range atlas:Gap .
+
+atlas:relatedTo a owl:ObjectProperty ;
+    rdfs:label "relatedTo" ;
+    rdfs:domain atlas:DataElement ;
+    rdfs:range atlas:DataElement .
+
+atlas:representsConcept a owl:ObjectProperty ;
+    rdfs:label "representsConcept" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:DataElement .
+
+atlas:sourcedFrom a owl:ObjectProperty ;
+    rdfs:label "sourcedFrom" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Source .
+
+atlas:stewardedBy a owl:ObjectProperty ;
+    rdfs:label "stewardedBy" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Person .
+
+atlas:usesAsset a owl:ObjectProperty ;
+    rdfs:label "usesAsset" ;
+    rdfs:domain atlas:KnowledgeProduct ;
+    rdfs:range atlas:Asset .
+
+atlas:Domain a owl:Class ;
+    rdfs:label "Domain" .
+
+atlas:Gap a owl:Class ;
+    rdfs:label "Gap" .
+
+atlas:Person a owl:Class ;
+    rdfs:label "Person" .
+
+atlas:Project a owl:Class ;
+    rdfs:label "Project" .
+
+atlas:Source a owl:Class ;
+    rdfs:label "Source" .
+
+atlas:Subdomain a owl:Class ;
+    rdfs:label "Subdomain" .
+
+atlas:DataElement a owl:Class ;
+    rdfs:label "DataElement" .
+
+atlas:KnowledgeProduct a owl:Class ;
+    rdfs:label "KnowledgeProduct" .
+
+atlas:Asset a owl:Class ;
+    rdfs:label "Asset" .
+
