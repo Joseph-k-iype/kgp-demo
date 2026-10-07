@@ -12,12 +12,15 @@ Success means a user can browse all requested domains, inspect products and thei
 
 ## Architecture
 
-- React/Next.js with TypeScript for the web application and server API.
+- React/Next.js with TypeScript for the web application; Python/FastAPI for the application API, ingestion, LangGraph search, and MCP service. Keep shared API schemas in generated OpenAPI types.
 - PostgreSQL for catalog records, stewardship, roles, projects, gaps, quality findings, search runs, and sample business tables.
 - MinIO for original synthetic documents and extracted-text artifacts. Use a private demo bucket and short-lived signed links for source previews.
 - Apache Jena Fuseki for persisted RDF ontology and asset relationships, queried through SPARQL. Store vocabulary and instance triples in separate named graphs.
 - OpenSearch for keyword and vector indexes of structured asset descriptions and document chunks, enriched with ontology IRIs, stable record IDs, provenance, classification, and access scope.
 - A local ingestion/search worker for seeding, extraction, chunking, embeddings, indexing, and search orchestration. A local sentence-transformer embedding model supplies real embeddings; record model identity and dimensions on the index. Select a compatible pinned model and service versions during implementation after checking their official documentation.
+- The official OpenAI Python SDK and Responses API supply LLM query planning and evidence-backed synthesis. Configure the model server-side through `OPENAI_MODEL`, the API key through `OPENAI_API_KEY`, and use strict schema outputs. Never expose credentials to the browser. Retain local embeddings independently of the LLM provider.
+- LangGraph orchestrates bounded search nodes and persists checkpoints in PostgreSQL. Serve progress events to the UI; checkpoint identity is bound to the requesting persona and scope.
+- An MCP server exposes read-only catalog, ontology, evidence, and agentic search capabilities over Streamable HTTP at `/mcp`, with an optional stdio entry point for local clients. Both transports use the same scoped application services.
 - Docker Compose for data services and worker. Provide documented development and full-demo startup commands with health checks and persistent volumes.
 
 PostgreSQL owns catalog metadata; MinIO owns original objects; Fuseki owns semantic definitions and relationships. OpenSearch is a rebuildable derived index. A seed manifest assigns stable IDs and maps them to RDF IRIs, SQL identifiers, object keys, and search documents. Explicit stages and readiness indicators handle partial failures; do not imply an atomic transaction across services.
@@ -103,7 +106,7 @@ Seed/index jobs are idempotent. Changed content hashes trigger reindexing; remov
 
 ## Agentic search
 
-The backend orchestrates an observable tool sequence:
+LangGraph orchestrates an observable tool sequence using a typed state and conditional transitions:
 
 1. Resolve query intent and ontology concepts within the active persona's scope.
 2. Traverse approved RDF relationships with bounded depth and node limits.
@@ -111,9 +114,27 @@ The backend orchestrates an observable tool sequence:
 4. Fuse rankings and expand permitted evidence with graph context.
 5. Assemble an answer with citations, graph paths, governance warnings, and coverage gaps.
 
-The default requires no hosted LLM key: use deterministic query planning and extractive answer composition over real retrieval. Label it "Demo agent" and explain that synthesis is extractive. Optional configured LLM synthesis may use the same scoped tools and evidence; it must not claim unsupported facts. Show completed tool steps rather than private reasoning. Treat retrieved content as evidence, never as instructions.
+The default agent uses the OpenAI Responses API for planning and synthesis. Plan output contains concept labels, query variants, and permitted retrieval strategies; the application resolves identifiers and authorizes every tool request. Answer output contains statements with evidence IDs, gaps, and uncertainty. Validate citations against retrieved authorized evidence before display. Model refusal, malformed output, missing credentials, or provider failures must produce explicit states; do not silently replace the requested LLM behavior with a simulation. Provide a separately selected, clearly labeled extractive demo mode for use without a key.
+
+Nodes: authorize → plan → resolve concepts → retrieve → expand evidence → assess coverage → synthesize → validate citations → finish. Coverage assessment may request one additional retrieval pass. Limit each run to two retrieval passes, 12 tool calls, and 90 seconds; enforce output-token limits and bounded provider retries. Persist run state and support cancellation. Resume must revalidate access and never repeat a completed synthesis charge solely because a client reconnects. Show completed tool steps rather than private reasoning. Treat retrieved content as evidence, never as instructions.
 
 Example query: "Find trusted sources for counterparty exposure and supporting due diligence documents." The answer should join permitted PostgreSQL asset metadata and sample evidence with MinIO document chunks through relevant RDF concepts and cite each supported statement. Questions without evidence return a clear no-evidence result. Support cancellation, timeout, partial retrieval diagnostics, and unavailable-service errors without fabricated fallback answers.
+
+## MCP interface
+
+Expose tools `list_domains`, `search_catalog`, `get_knowledge_product`, `get_asset`, `explore_ontology`, `get_evidence`, and `agentic_search`. Tool schemas reuse API DTOs and enforce pagination, graph limits, and query limits. Return structured results with stable IDs and provenance, alongside readable summaries. Tools cannot accept a caller-selected persona or arbitrary SQL/SPARQL; identity comes from server-side transport authentication.
+
+Expose resources `knowledge://domains`, `knowledge://products/{id}`, and `knowledge://ontology`, plus a `search_knowledge` prompt template. Resource reads obey the same scope checks as tools. HTTP clients use a local demo bearer token mapped to a fixed persona; stdio uses a configured fixed persona. Bind local services to loopback and validate HTTP origin/host. Credentials, unrestricted object links, and inaccessible evidence must never appear in returned data. Long agentic searches return a run ID and pending/completed state that can be polled with the same `agentic_search` tool; polling a run rechecks ownership. Document client connection examples and verify a real SDK client handshake and calls. Remote public hosting and OAuth registration are outside this local demo.
+
+## API and framework references
+
+- OpenAI Responses API function tools: https://developers.openai.com/api/docs/guides/function-calling
+- OpenAI structured outputs: https://developers.openai.com/api/docs/guides/structured-outputs
+- LangGraph orchestration: https://docs.langchain.com/oss/python/langgraph/overview
+- LangGraph persistence: https://docs.langchain.com/oss/python/langgraph/persistence
+- MCP server guide: https://modelcontextprotocol.io/docs/develop/build-server
+
+Pin compatible SDK versions at implementation; verify exact API schemas against these official sources. Interpret the user's "Open AI API spec" as the official OpenAI API contracts, not an additional orchestration framework.
 
 ## Boundaries
 
@@ -142,6 +163,9 @@ Excluded: production SSO, live external enterprise connectors, production deploy
 - Real embeddings and OpenSearch keyword/vector retrieval return attributable evidence; model/index mismatches fail clearly.
 - A cross-source counterparty query returns cited structured and document evidence plus a meaningful RDF path.
 - A denied asset never appears in search evidence, answer citations, graph neighborhoods, or object links.
+- OpenAI requests use the configured model, validated schemas, server-side credentials, and authorized evidence only. API failures and refusal are visible; explicit offline mode is labeled.
+- LangGraph run limits, scoped checkpoint resume, cancellation, and citation validation are exercised.
+- MCP client initialization, tool discovery/calls, resource reads, prompt retrieval, run polling, and denied-scope errors work through both supported transports.
 - No-evidence queries and unavailable services produce honest states.
 - Seed reruns do not duplicate data; application restart preserves authorized edits.
 - Metadata edits invalidate affected derived records; retries recover failed indexing without duplicate evidence.
@@ -149,4 +173,4 @@ Excluded: production SSO, live external enterprise connectors, production deploy
 
 ## Review status
 
-The user approved the full-stack direction and MinIO choice. This written specification is ready for review. Implementation planning follows written-spec approval under the brainstorming workflow.
+The user approved the specification and requested OpenAI API integration, LangGraph agentic search, and MCP exposure. These additions are incorporated above and carried into the implementation plan.
