@@ -18,12 +18,14 @@ export default function SearchBox({
 }: SearchBoxProps) {
   const { token } = useSession();
   const domains = useData<RecordItem[]>("/domains", token);
+  const [hydrated, setHydrated] = useState(false);
   const [draft, setDraft] = useState(query),
     [domain, setDomain] = useState(domainId || "");
   const composing = useRef(false);
   useEffect(() => {
     setDraft(query);
     setDomain(domainId || "");
+    setHydrated(true);
   }, [query, domainId]);
   return (
     <form
@@ -43,6 +45,7 @@ export default function SearchBox({
         minLength={3}
         maxLength={2000}
         required
+        disabled={!hydrated}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onCompositionStart={() => {
@@ -62,6 +65,7 @@ export default function SearchBox({
       <div className="search-domain">
         <Globe2 size={16} />
         <select
+          disabled={!hydrated}
           aria-label="Search domain"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
@@ -75,6 +79,7 @@ export default function SearchBox({
         </select>
       </div>
       <button
+        disabled={!hydrated}
         type="submit"
         className="knowledge-submit"
         aria-label="Search knowledge"
