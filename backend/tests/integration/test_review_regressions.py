@@ -97,3 +97,25 @@ def test_expiration_during_validation_cannot_complete(monkeypatch):
                 "evidence": [],
             }
         )
+
+
+def test_completed_status_includes_final_event_atomically(monkeypatch):
+    from app.agent import service
+    scope = resolve_scope('admin')
+    monkeypatch.setattr(service, 'executor', SimpleNamespace(submit=lambda *a: None))
+    run = service.start_search(scope, SearchRequest(query='counterparty', mode='extractive'))
+    observed = []
+    original = service.transition_run
+    def transition(id, patch, *args, **kwargs):
+        result = original(id, patch, *args, **kwargs)
+        if result and patch.get('status') == 'completed':
+            observed.append(service.raw_run(id))
+        return result
+    class FakeGraph:
+        def invoke(self, *a, **kwargs):
+            return {'statements': [], 'evidence': [], 'gaps': [], 'graph': {}, 'retrieval_passes': 1, 'tool_calls': 1}
+    monkeypatch.setattr(service, 'transition_run', transition)
+    monkeypatch.setattr(service, 'build_graph', lambda *a: FakeGraph())
+    service.execute_run(run['run_id'])
+    assert observed and observed[0]['status'] == 'completed'
+    assert observed[0]['events'] and observed[0]['events'][-1]['status'] == 'completed'

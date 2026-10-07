@@ -72,6 +72,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/discovery/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Discovery */
+    get: operations["discovery_discovery_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/domains": {
     parameters: {
       query?: never;
@@ -473,6 +490,53 @@ export interface components {
     } & {
       [key: string]: unknown;
     };
+    /** DiscoveryItem */
+    DiscoveryItem: {
+      /** Id */
+      id: string;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "product" | "data" | "document";
+      /** Title */
+      title: string;
+      /** Excerpt */
+      excerpt: string;
+      /** Domain Id */
+      domain_id: string;
+      /** Source Type */
+      source_type: string;
+      /** Asset Id */
+      asset_id?: string | null;
+      /** Product Id */
+      product_id?: string | null;
+      /** Evidence Id */
+      evidence_id?: string | null;
+      /** Steward */
+      steward?: string | null;
+      /** Quality */
+      quality?: number | null;
+      /** Score */
+      score: number;
+    };
+    /** DiscoveryPage */
+    DiscoveryPage: {
+      /** Items */
+      items: components["schemas"]["DiscoveryItem"][];
+      /** Returned Count */
+      returned_count: number;
+      /** Has More */
+      has_more: boolean;
+      /** Page */
+      page: number;
+      /** Page Size */
+      page_size: number;
+      /** Query */
+      query: string;
+      /** Domain Id */
+      domain_id?: string | null;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -517,6 +581,8 @@ export interface components {
     };
     /** SearchRequest */
     SearchRequest: {
+      /** Domain Id */
+      domain_id?: string | null;
       /** Query */
       query: string;
       /**
@@ -528,6 +594,8 @@ export interface components {
     };
     /** SearchResult */
     SearchResult: {
+      /** Domain Id */
+      domain_id?: string | null;
       /** Run Id */
       run_id: string;
       /** Status */
@@ -691,6 +759,44 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CatalogPage"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  discovery_discovery_search_get: {
+    parameters: {
+      query: {
+        q: string;
+        domain_id?: string | null;
+        type?: "all" | "product" | "data" | "document";
+        sort?: "relevance" | "name";
+        page?: number;
+        page_size?: number;
+      };
+      header?: {
+        authorization?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DiscoveryPage"];
         };
       };
       /** @description Validation Error */

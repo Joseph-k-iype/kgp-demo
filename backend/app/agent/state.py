@@ -5,6 +5,7 @@ class SearchState(TypedDict, total=False):
     run_id: str
     person_id: str
     scope_version: int
+    domain_id: str | None
     query: str
     mode: str
     started: float

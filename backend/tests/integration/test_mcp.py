@@ -13,6 +13,7 @@ async def test_http_mcp_discovery_and_scoped_tools():
             await session.initialize()
             names = {t.name for t in (await session.list_tools()).tools}
             assert names == {
+                "search_knowledge",
                 "list_domains",
                 "search_catalog",
                 "get_knowledge_product",
@@ -56,6 +57,8 @@ async def test_stdio_mcp_and_resource_reads():
             assert "Risk and Compliance" not in str(domains)
             result = await session.call_tool("get_asset", {"asset_id": "risk-asset-0"})
             assert result.is_error
+            denied = await session.call_tool("search_knowledge", {"query": "counterparty", "domain_id": "risk"})
+            assert denied.is_error
             result = await session.call_tool(
                 "explore_ontology", {"concept_id": "Counterparty", "limit": 8}
             )
@@ -95,6 +98,8 @@ async def test_standalone_fastmcp_client_uses_governed_services():
     async with Client('http://127.0.0.1:58123/mcp', auth='atlas-local-analyst-token') as client:
         tools = await client.list_tools()
         assert 'get_asset' in {tool.name for tool in tools}
+        result = await client.call_tool('search_knowledge', {'query': 'counterparty', 'domain_id': 'risk'})
+        assert 'risk-product-0' in str(result)
         domains = await client.call_tool('list_domains', {})
         assert 'Risk and Compliance' in str(domains)
         assert await client.list_resources()

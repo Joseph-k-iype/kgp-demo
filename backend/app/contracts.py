@@ -26,6 +26,7 @@ class CatalogQuery(BaseModel):
 
 
 class SearchRequest(BaseModel):
+    domain_id: str | None = None
     query: str = Field(min_length=3, max_length=2000)
     mode: Literal["llm", "openai", "extractive"] = "llm"
     model_config = ConfigDict(extra="forbid")
@@ -88,6 +89,7 @@ class SearchEvent(BaseModel):
 
 
 class SearchResult(BaseModel):
+    domain_id: str | None = None
     run_id: str
     status: str
     query: str

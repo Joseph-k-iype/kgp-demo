@@ -8,13 +8,15 @@ Endpoint: `http://127.0.0.1:58123/mcp`
 
 Send `Authorization: Bearer atlas-local-analyst-token` (or the configured `MCP_TOKEN`). The token maps to the Analyst demo persona. The server is bound to loopback. This is a local demonstration identity, not production OAuth.
 
-Tools: `list_domains`, `search_catalog`, `get_knowledge_product`, `get_asset`, `explore_ontology`, `get_evidence`, `agentic_search`.
+Tools: `list_domains`, `search_catalog`, `get_knowledge_product`, `get_asset`, `explore_ontology`, `get_evidence`, `agentic_search`, `search_knowledge`.
 
 Resources: `knowledge://domains`, `knowledge://products/{id}`, `knowledge://ontology`.
 
 Prompt: `search_knowledge(query)`.
 
-Start `agentic_search` with `query` and `mode` (`llm` or explicitly selected `extractive`). It returns a `run_id`. Poll the same tool with `run_id` instead of `query`. Run ownership and current scope are checked on every poll. Evidence contains stable asset IDs and structured row or document offset provenance.
+`search_knowledge(query, domain_id=None, type="all", page=1, page_size=20)` shares ranked product/data/document discovery with the web app. Domain filters intersect current access; inaccessible domains are rejected.
+
+Start `agentic_search` with `query`, optional `domain_id`, and `mode` (`llm` or explicitly selected `extractive`). It returns a `run_id`. Poll the same tool with `run_id` instead of `query`. Run ownership and current scope are checked on every poll. Evidence contains stable asset IDs and structured row or document offset provenance.
 
 ## stdio
 

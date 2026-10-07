@@ -6,7 +6,7 @@ from app.db import query
 from app.config import settings
 from app.agent.graph import build_graph, RunCancelled, ScopeChanged
 from app.agent.provider import ConfigurationRequired, ModelRefusal
-from app.auth import resolve_scope
+from app.auth import resolve_scope, narrow_scope
 from app.contracts import SearchRequest
 
 executor = ThreadPoolExecutor(max_workers=2)
@@ -22,14 +22,15 @@ def raw_run(id):
     return rows[0]["payload"]
 
 
-def transition_run(id, patch, allowed, deadline=None):
+def transition_run(id, patch, allowed, deadline=None, final_event=None):
     rows = query(
-        "UPDATE search_runs SET payload=payload || CAST(:patch AS jsonb) WHERE id=:id AND payload->>'status'=ANY(:allowed) AND (CAST(:deadline AS double precision) IS NULL OR EXTRACT(EPOCH FROM clock_timestamp()) < :deadline) RETURNING id",
+        "UPDATE search_runs SET payload=jsonb_set(payload || CAST(:patch AS jsonb),'{events}', (payload->'events') || CAST(:final_events AS jsonb)) WHERE id=:id AND payload->>'status'=ANY(:allowed) AND (CAST(:deadline AS double precision) IS NULL OR EXTRACT(EPOCH FROM clock_timestamp()) < :deadline) RETURNING id",
         {
             "id": id,
             "patch": json.dumps(patch),
             "allowed": allowed,
             "deadline": deadline,
+            "final_events": json.dumps([final_event] if final_event else []),
         },
     )
     return bool(rows)
@@ -76,11 +77,13 @@ def get_search(scope, run_id):
 
 def start_search(scope, request):
     request = SearchRequest.model_validate(request)
+    narrow_scope(scope, request.domain_id)
     id = str(uuid.uuid4())
     run = {
         "run_id": id,
         "person_id": scope.person_id,
         "scope_version": scope.scope_version,
+        "domain_id": request.domain_id,
         "query": request.query,
         "mode": request.mode,
         "status": "pending",
@@ -125,6 +128,7 @@ def execute_run(id, resume=False):
                 "run_id": id,
                 "person_id": run["person_id"],
                 "scope_version": run["scope_version"],
+                "domain_id": run.get("domain_id"),
                 "query": run["query"],
                 "mode": run["mode"],
                 "started": run["created_at"],
@@ -163,12 +167,9 @@ def execute_run(id, resume=False):
             },
             ["running"],
             deadline=run["created_at"] + 90,
+            final_event={"stage": "finish", "status": "completed", "summary": "Search completed with validated citations", "at": time.time()},
         )
-        if completed:
-            event(
-                id, "finish", "completed", "Search completed with validated citations"
-            )
-        elif time.time() >= run["created_at"] + 90:
+        if not completed and time.time() >= run["created_at"] + 90:
             raise TimeoutError("Search exceeded its 90 second limit")
     except RunCancelled:
         transition_run(id, {"status": "cancelled"}, ["pending", "running"])

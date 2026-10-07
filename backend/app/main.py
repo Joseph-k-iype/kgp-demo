@@ -26,6 +26,8 @@ from app.retrieval.service import get_evidence
 from app.agent.service import start_search, get_search, cancel_search, resume_search
 from app.mcp.server import mcp_http_app, identity
 from app.config import settings
+from app.discovery.contracts import DiscoveryQuery, DiscoveryPage
+from app.discovery.service import search_discovery
 
 
 @asynccontextmanager
@@ -105,6 +107,11 @@ def session(persona: str = Body(embed=True)):
 @app.get("/catalog", response_model=CatalogPage)
 def list_catalog(filters: CatalogQuery = Depends(), scope=Depends(scope_dependency)):
     return catalog.list_catalog(scope, filters.model_dump())
+
+
+@app.get("/discovery/search", response_model=DiscoveryPage)
+def discovery(request: DiscoveryQuery = Depends(), scope=Depends(scope_dependency)):
+    return search_discovery(scope, request)
 
 
 @app.get("/domains")

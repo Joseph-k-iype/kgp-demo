@@ -70,3 +70,11 @@ def scope_dependency(authorization: str = Header("")):
     if token.startswith("atlas-session-"):
         return resolve_scope(token.removeprefix("atlas-session-"))
     raise HTTPException(401, "Invalid demo session")
+
+
+def narrow_scope(scope: ScopeContext, domain_id: str | None) -> ScopeContext:
+    if domain_id is None:
+        return scope
+    if domain_id not in scope.domain_ids:
+        raise HTTPException(404, "Domain not found in your scope")
+    return scope.model_copy(update={"domain_ids": [domain_id]})

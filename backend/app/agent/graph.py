@@ -7,7 +7,7 @@ from app.agent.provider import (
     validate_answer,
     ConfigurationRequired,
 )
-from app.auth import resolve_scope
+from app.auth import resolve_scope, narrow_scope
 from app.ontology.service import resolve_concepts, explore_ontology
 from app.retrieval.service import retrieve, expand_evidence
 from app.contracts import AnswerOutput
@@ -50,7 +50,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
                     "finish": "Finalizing verified evidence",
                 }[stage],
             )
-        return scope
+        return narrow_scope(scope, s.get("domain_id"))
 
     def authorize(s):
         guard(s, "authorize")
