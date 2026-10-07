@@ -9,28 +9,50 @@ export function searchKey(
 ) {
   return JSON.stringify([persona, query.trim(), domainId || null]);
 }
-export function prepareSearch(value: SearchSubmission, persona: string) {
-  const query = value.query.trim();
+export function prepareSearch(
+  value: SearchSubmission,
+  persona: string,
+  mode: "llm" | "extractive" = "llm",
+  force = false,
+) {
+  const query = value.query.trim(),
+    key = searchKey(query, value.domainId, persona);
+  const params = new URLSearchParams({ q: query });
+  if (value.domainId) params.set("domain_id", value.domainId);
+  try {
+    const previous = JSON.parse(
+      sessionStorage.getItem("kpm-search-intent") || "null",
+    );
+    if (
+      !force &&
+      previous?.key === key &&
+      (previous.mode || "llm") === mode &&
+      Date.now() - previous.submittedAt < 1000
+    )
+      return "/search?" + params;
+  } catch {}
   const intent = {
     id: crypto.randomUUID(),
     query,
     domainId: value.domainId,
     persona,
-    key: searchKey(query, value.domainId, persona),
+    key,
+    mode,
+    submittedAt: Date.now(),
   };
   sessionStorage.setItem("kpm-search-intent", JSON.stringify(intent));
   let previous: string[] = [];
   try {
-    previous = JSON.parse(
+    const data = JSON.parse(
       localStorage.getItem("kpm-recent-" + persona) || "[]",
     );
+    if (Array.isArray(data))
+      previous = data.filter((q) => typeof q === "string");
   } catch {}
-  const recent = [
-    query,
-    ...previous.filter((q) => typeof q === "string" && q !== query),
-  ].slice(0, 5);
-  localStorage.setItem("kpm-recent-" + persona, JSON.stringify(recent));
-  const params = new URLSearchParams({ q: query });
-  if (value.domainId) params.set("domain_id", value.domainId);
+  localStorage.setItem(
+    "kpm-recent-" + persona,
+    JSON.stringify([query, ...previous.filter((q) => q !== query)].slice(0, 5)),
+  );
+  window.dispatchEvent(new Event("kpm-search-submitted"));
   return "/search?" + params;
 }

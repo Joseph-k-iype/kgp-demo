@@ -66,6 +66,7 @@ export type GraphData = {
   truncated?: boolean;
 };
 export type Run = {
+  domain_id?: string | null;
   run_id: string;
   query: string;
   status: string;

@@ -1,26 +1,30 @@
 import { test, expect } from "@playwright/test";
-test("extractive search shows trace and cited evidence", async ({ page }) => {
-  await page.goto("/search");
-  await page.getByLabel("Search mode").selectOption("extractive");
+test("source-only search shows real trace and cited evidence", async ({
+  page,
+}) => {
+  await page.goto("/search?q=counterparty+exposure+due+diligence");
+  await page.getByText("Answer options", { exact: true }).click();
   await page
-    .getByLabel("Ask a knowledge question")
-    .fill("counterparty exposure due diligence");
-  await page
-    .getByRole("button", { name: "Search knowledge", exact: true })
+    .getByRole("button", { name: "Use source excerpts", exact: true })
     .click();
-  await expect(page.getByText("Search completed", { exact: true })).toBeVisible(
-    { timeout: 85000 },
-  );
+  await expect(page.locator(".answer-content")).toBeVisible({ timeout: 85000 });
   await expect(
     page.getByText("Extractive demo:", { exact: false }).first(),
   ).toBeVisible();
+  await page.getByText("Search steps", { exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Open evidence 1", exact: true }),
+    page.getByText("Search completed with validated citations", {
+      exact: true,
+    }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Open evidence 1", exact: true })
+    .first()
     .click();
-  await expect(
-    page.getByRole("heading", { name: "Source evidence", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.locator(".evidence-excerpt")).toContainText(
+    "counterparty",
+    { ignoreCase: true },
+  );
+  await expect(page.getByRole("dialog")).toContainText("Original source");
 });
