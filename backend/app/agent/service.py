@@ -22,11 +22,17 @@ def raw_run(id):
     return rows[0]["payload"]
 
 
-def patch_run(id, patch):
-    query(
-        "UPDATE search_runs SET payload=payload || CAST(:patch AS jsonb) WHERE id=:id RETURNING id",
-        {"id": id, "patch": json.dumps(patch)},
+def transition_run(id, patch, allowed, deadline=None):
+    rows = query(
+        "UPDATE search_runs SET payload=payload || CAST(:patch AS jsonb) WHERE id=:id AND payload->>'status'=ANY(:allowed) AND (CAST(:deadline AS double precision) IS NULL OR EXTRACT(EPOCH FROM clock_timestamp()) < :deadline) RETURNING id",
+        {
+            "id": id,
+            "patch": json.dumps(patch),
+            "allowed": allowed,
+            "deadline": deadline,
+        },
     )
+    return bool(rows)
 
 
 def event(id, stage, status, summary):
@@ -49,14 +55,15 @@ def get_search(scope, run_id):
         )
     if (
         run["status"] in ["pending", "running"]
-        and time.time() - run["created_at"] > 100
+        and time.time() - run["created_at"] >= 90
     ):
-        patch_run(
+        transition_run(
             run_id,
             {
                 "status": "failed",
                 "error": "Search deadline expired or the worker was interrupted. Start a new search.",
             },
+            ["pending", "running"],
         )
         run = raw_run(run_id)
     run = dict(run)
@@ -100,7 +107,14 @@ def execute_run(id, resume=False):
         with _active_lock:
             _active.discard(id)
         return
-    patch_run(id, {"status": "running"})
+    if not transition_run(
+        id,
+        {"status": "running"},
+        ["pending", "running", "failed", "configuration_required"],
+    ):
+        with _active_lock:
+            _active.discard(id)
+        return
     conn = settings().database_url.replace("postgresql+psycopg://", "postgresql://")
     try:
         with PostgresSaver.from_conn_string(conn) as saver:
@@ -135,9 +149,7 @@ def execute_run(id, resume=False):
                     None if resume and snapshot and snapshot.values else state,
                     config=config,
                 )
-        if raw_run(id)["status"] == "cancelled":
-            return
-        patch_run(
+        completed = transition_run(
             id,
             {
                 "status": "completed",
@@ -149,10 +161,17 @@ def execute_run(id, resume=False):
                 "retrieval_passes": output["retrieval_passes"],
                 "tool_calls": output["tool_calls"],
             },
+            ["running"],
+            deadline=run["created_at"] + 90,
         )
-        event(id, "finish", "completed", "Search completed with validated citations")
+        if completed:
+            event(
+                id, "finish", "completed", "Search completed with validated citations"
+            )
+        elif time.time() >= run["created_at"] + 90:
+            raise TimeoutError("Search exceeded its 90 second limit")
     except RunCancelled:
-        patch_run(id, {"status": "cancelled"})
+        transition_run(id, {"status": "cancelled"}, ["pending", "running"])
     except Exception as e:
         status = (
             "configuration_required"
@@ -180,12 +199,12 @@ def execute_run(id, resume=False):
         import logging
 
         logging.getLogger(__name__).exception("Search run %s failed", id)
-        if raw_run(id)["status"] != "cancelled":
-            patch_run(
-                id,
-                {"status": status, "error": message, "statements": [], "evidence": []},
-            )
-        event(id, "finish", status, message)
+        if transition_run(
+            id,
+            {"status": status, "error": message, "statements": [], "evidence": []},
+            ["pending", "running"],
+        ):
+            event(id, "finish", status, message)
     finally:
         with _active_lock:
             _active.discard(id)
@@ -199,12 +218,13 @@ def resume_search(scope, run_id):
         if run_id in _active:
             return run
         if time.time() - run["created_at"] > 90:
-            patch_run(
+            transition_run(
                 run_id,
                 {
                     "status": "failed",
                     "error": "Original search deadline expired. Start a new search.",
                 },
+                ["pending", "running", "failed", "configuration_required"],
             )
             return get_search(scope, run_id)
         _active.add(run_id)
@@ -215,6 +235,6 @@ def resume_search(scope, run_id):
 def cancel_search(scope, run_id):
     run = get_search(scope, run_id)
     if run["status"] in ["pending", "running"]:
-        patch_run(run_id, {"status": "cancelled"})
-        event(run_id, "finish", "cancelled", "Search cancelled")
+        if transition_run(run_id, {"status": "cancelled"}, ["pending", "running"]):
+            event(run_id, "finish", "cancelled", "Search cancelled")
     return get_search(scope, run_id)

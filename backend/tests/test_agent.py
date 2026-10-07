@@ -143,3 +143,40 @@ def test_openrouter_uses_deepseek_and_openai_compatible_schema(monkeypatch):
     assert captured[0][0].endswith("/chat/completions")
     assert captured[0][1]["model"] == "deepseek/deepseek-v3.2"
     assert captured[0][1]["response_format"]["json_schema"]["strict"] is True
+    assert captured[0][1]["plugins"] == [{"id": "response-healing"}]
+
+
+def test_openrouter_rejects_malformed_output_without_leaking_content(monkeypatch):
+    import httpx
+    from openai import OpenAI
+    from app.agent import provider
+
+    def respond(request):
+        return httpx.Response(200, json={
+            "id": "chat_bad", "object": "chat.completion", "created": 0,
+            "model": "deepseek/deepseek-v3.2", "choices": [{
+                "index": 0, "finish_reason": "stop", "message": {
+                    "role": "assistant", "content": '{ĊĠĠ"private_provider_content": []}'
+                }
+            }]
+        })
+
+    monkeypatch.setattr(provider, "client", lambda: OpenAI(
+        api_key="test-only", base_url="https://openrouter.ai/api/v1",
+        http_client=httpx.Client(transport=httpx.MockTransport(respond)),
+    ))
+    with pytest.raises(ValueError, match="invalid structured result") as failure:
+        provider.plan_query("counterparty exposure")
+    assert "private_provider_content" not in str(failure.value)
+
+
+def test_tokenizer_whitespace_is_decoded_only_outside_json_strings():
+    from app.agent.provider import decode_structured_content
+    from app.contracts import PlanOutput
+
+    result = decode_structured_content(PlanOutput,
+        '{ĊĠĠ"concept_labels": ["literal Ġ and Ċ"],ĊĠĠ"query_variants": [],ĊĠĠ"strategies": ["vector"]Ċ}')
+    assert result.concept_labels == ["literal Ġ and Ċ"]
+    assert result.strategies == ["vector"]
+    with pytest.raises(ValueError):
+        decode_structured_content(PlanOutput, '{"concept_labels": [], "query_variants": [], "strategies": ["write"]}')

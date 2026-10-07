@@ -102,13 +102,17 @@ export async function api<T>(
   return body as T;
 }
 export function useData<T>(path: string | null, token: string) {
-  const [data, setData] = useState<T | null>(null),
+  const [result, setResult] = useState<{
+      path: string;
+      token: string;
+      data: T;
+    } | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
     [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
-    setData(null);
+    setResult(null);
     setError("");
     if (!path) {
       setLoading(false);
@@ -117,7 +121,7 @@ export function useData<T>(path: string | null, token: string) {
     setLoading(true);
     api<T>(path, token)
       .then((d) => {
-        if (active) setData(d);
+        if (active) setResult({ path, token, data: d });
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -129,7 +133,14 @@ export function useData<T>(path: string | null, token: string) {
       active = false;
     };
   }, [path, token, revision]);
-  return { data, error, loading, reload: () => setRevision((n) => n + 1) };
+  const data =
+    result?.path === path && result.token === token ? result.data : null;
+  return {
+    data,
+    error,
+    loading: loading || Boolean(path && !data && !error),
+    reload: () => setRevision((n) => n + 1),
+  };
 }
 export async function streamRun(
   id: string,

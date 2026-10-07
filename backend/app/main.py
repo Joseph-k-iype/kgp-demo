@@ -30,6 +30,10 @@ from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app):
+    from app.retrieval.embed import embed
+
+    # Load the pinned local model before accepting time-bounded searches.
+    await asyncio.to_thread(embed, ["Knowledge Product Manager readiness"])
     async with mcp.session_manager.run():
         yield
 

@@ -32,17 +32,20 @@ class SearchRequest(BaseModel):
 
 
 class PlanOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     concept_labels: list[str]
     query_variants: list[str]
     strategies: list[Literal["keyword", "vector", "graph"]]
 
 
 class Statement(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     text: str
     evidence_ids: list[str]
 
 
 class AnswerOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     statements: list[Statement]
     gaps: list[str]
     uncertainty: str

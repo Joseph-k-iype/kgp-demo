@@ -1,4 +1,4 @@
-# Atlas MCP
+# Knowledge Product Manager MCP
 
 The server exposes read-only application capabilities through Streamable HTTP and stdio. Both use the same catalog permissions and evidence retrieval as the web app.
 
@@ -14,7 +14,7 @@ Resources: `knowledge://domains`, `knowledge://products/{id}`, `knowledge://onto
 
 Prompt: `search_knowledge(query)`.
 
-Start `agentic_search` with `query` and `mode` (`openai` or explicitly selected `extractive`). It returns a `run_id`. Poll the same tool with `run_id` instead of `query`. Run ownership and current scope are checked on every poll. Evidence contains stable asset IDs and structured row or document offset provenance.
+Start `agentic_search` with `query` and `mode` (`llm` or explicitly selected `extractive`). It returns a `run_id`. Poll the same tool with `run_id` instead of `query`. Run ownership and current scope are checked on every poll. Evidence contains stable asset IDs and structured row or document offset provenance.
 
 ## stdio
 
@@ -26,7 +26,7 @@ PYTHONPATH=backend uv run --project backend python -m app.mcp.stdio
 
 Configure the client command as the absolute `backend/.venv/bin/python`, arguments `-m app.mcp.stdio`, and environment `PYTHONPATH` as the absolute backend directory. `MCP_STDIO_PERSONA` defaults to `analyst`; `legal` demonstrates restricted scope. Identity is selected by server configuration, never tool arguments. The backend must be configured with the same PostgreSQL, MinIO, Fuseki and OpenSearch endpoints.
 
-The MCP server cannot execute arbitrary SQL or SPARQL, mutate catalog data, or expose denied source excerpts. A missing API key returns a clear configuration-required search state; no silent LLM substitute is used.
+The MCP server cannot execute arbitrary SQL or SPARQL, mutate catalog data, or expose denied source excerpts. A missing provider API key returns a clear configuration-required search state; no silent LLM substitute is used.
 
 ## Client verification
 

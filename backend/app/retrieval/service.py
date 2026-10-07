@@ -1,4 +1,5 @@
 import json, hashlib
+import httpx
 from urllib.parse import quote
 from collections import defaultdict
 from fastapi import HTTPException
@@ -9,6 +10,7 @@ from app.catalog.service import all_records, get_record
 from app.retrieval.extract import extract_evidence
 from app.retrieval.embed import embed
 from app.retrieval.index import request, ensure_index
+from app.deadline import remaining_timeout
 
 
 def index_assets(asset_ids):
@@ -18,16 +20,16 @@ def index_assets(asset_ids):
     assets = all_records(scope, "asset")
     docs = []
     selected = []
-    for a in assets:
-        if asset_ids and a["id"] not in asset_ids:
-            continue
-        selected.append(a["id"])
-        query(
-            "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
-            {"id": a["id"]},
-        )
-        docs.extend(extract_evidence(scope, a))
     try:
+        for a in assets:
+            if asset_ids and a["id"] not in asset_ids:
+                continue
+            selected.append(a["id"])
+            query(
+                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
+                {"id": a["id"]},
+            )
+            docs.extend(extract_evidence(scope, a))
         vectors = embed([d["text"] for d in docs])
         import httpx
 
@@ -90,10 +92,14 @@ def index_assets(asset_ids):
         raise
 
 
-def retrieve(scope, query_text, concept_ids, limit=10):
+def retrieve(scope, query_text, concept_ids, limit=10, deadline=None):
     if not 1 <= limit <= 30 or not query_text.strip():
         raise HTTPException(422, "Invalid retrieval request")
-    ensure_index()
+    ensure_index(timeout=remaining_timeout(deadline, 10))
+
+    def search_request(method, path, body=None):
+        return request(method, path, body, timeout=remaining_timeout(deadline))
+
     c = settings()
     allowed = [
         a["id"]
@@ -106,7 +112,7 @@ def retrieve(scope, query_text, concept_ids, limit=10):
         {"terms": {"domain_id": scope.domain_ids}},
         {"terms": {"asset_id": allowed}},
     ]
-    lexical = request(
+    lexical = search_request(
         "POST",
         "/" + c.index_name + "/_search",
         {
@@ -123,7 +129,7 @@ def retrieve(scope, query_text, concept_ids, limit=10):
         },
     )["hits"]["hits"]
     vector = embed([query_text])[0]
-    semantic = request(
+    semantic = search_request(
         "POST",
         "/" + c.index_name + "/_search",
         {
@@ -178,21 +184,55 @@ def retrieve(scope, query_text, concept_ids, limit=10):
     return results
 
 
-def get_evidence(scope, evidence_id):
+def get_evidence(scope, evidence_id, deadline=None):
     asset_id = evidence_id.split(":")[0]
     a = get_record(scope, asset_id, "asset")
     if a.get("indexing_state") != "ready":
         raise HTTPException(409, "Evidence index is not current")
     try:
         d = request(
-            "GET", "/" + settings().index_name + "/_doc/" + quote(evidence_id, safe="")
+            "GET",
+            "/" + settings().index_name + "/_doc/" + quote(evidence_id, safe=""),
+            timeout=remaining_timeout(deadline),
         )["_source"]
-    except Exception:
-        raise HTTPException(404, "Evidence not found")
+    except TimeoutError:
+        raise
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(404, "Evidence not found")
+        raise
     d.pop("vector", None)
     return d
 
 
-def expand_evidence(scope, evidence):
-    # Resolve provenance through scope-aware services before it reaches synthesis.
-    return [get_evidence(scope, e["id"]) for e in evidence]
+def expand_evidence(scope, evidence, deadline=None):
+    # Recheck the current asset scope/readiness once, then fetch bounded evidence
+    # together. Serial per-item calls consume the agent's deadline unnecessarily.
+    if not evidence:
+        return []
+    if len(evidence) > 30:
+        raise HTTPException(422, "Too many evidence items")
+    assets = {a["id"]: a for a in all_records(scope, "asset")}
+    ids = [e["id"] for e in evidence]
+    for id in ids:
+        asset = assets.get(id.split(":")[0])
+        if not asset:
+            raise HTTPException(404, "Evidence not found")
+        if asset.get("indexing_state") != "ready":
+            raise HTTPException(409, "Evidence index is not current")
+    response = request(
+        "POST", "/" + settings().index_name + "/_mget", {"ids": ids},
+        timeout=remaining_timeout(deadline),
+    )
+    docs = {d["_id"]: d for d in response["docs"]}
+    result = []
+    for id in ids:
+        item = docs.get(id, {})
+        doc = item.get("_source", {})
+        if (not item.get("found") or doc.get("id") != id
+            or doc.get("asset_id") != id.split(":")[0]
+            or doc.get("domain_id") not in scope.domain_ids):
+            raise HTTPException(404, "Evidence not found")
+        doc.pop("vector", None)
+        result.append(doc)
+    return result

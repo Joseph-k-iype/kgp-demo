@@ -1646,6 +1646,7 @@
             "title": "Evidence Ids"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
           "text",

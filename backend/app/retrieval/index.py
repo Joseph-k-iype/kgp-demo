@@ -2,15 +2,17 @@ import httpx
 from app.config import settings
 
 
-def request(method, path, body=None):
-    r = httpx.request(method, settings().opensearch_url + path, json=body, timeout=45)
+def request(method, path, body=None, timeout=45):
+    r = httpx.request(
+        method, settings().opensearch_url + path, json=body, timeout=timeout
+    )
     r.raise_for_status()
     return r.json()
 
 
-def ensure_index():
+def ensure_index(timeout=10):
     c = settings()
-    r = httpx.get(c.opensearch_url + "/" + c.index_name, timeout=10)
+    r = httpx.get(c.opensearch_url + "/" + c.index_name, timeout=timeout)
     if r.status_code == 404:
         request(
             "PUT",

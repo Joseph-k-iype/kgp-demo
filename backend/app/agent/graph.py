@@ -47,6 +47,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
                     "assess": "Assessing source coverage",
                     "synthesize": "Composing an evidence-backed answer",
                     "validate": "Validating source citations",
+                    "finish": "Finalizing verified evidence",
                 }[stage],
             )
         return scope
@@ -62,7 +63,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
     def plan(s):
         guard(s, "plan")
         if s["mode"] != "extractive":
-            p = plan_query(s["query"])
+            p = plan_query(s["query"], deadline=s["started"] + 90)
             labels = p.concept_labels
             variants = p.query_variants[:2]
         else:
@@ -91,6 +92,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
             s["variants"][min(s["retrieval_passes"], len(s["variants"]) - 1)],
             s["concepts"],
             limit=10,
+            deadline=s["started"] + 90,
         )
         merged = {e["id"]: e for e in s.get("evidence", [])}
         merged.update({e["id"]: e for e in items})
@@ -103,7 +105,9 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
     def expand(s):
         scope = guard(s, "expand")
         return {
-            "evidence": expand_evidence(scope, s["evidence"]),
+            "evidence": expand_evidence(
+                scope, s["evidence"], deadline=s["started"] + 90
+            ),
             "tool_calls": s["tool_calls"] + 1,
         }
 
@@ -127,7 +131,9 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
     def synthesis(s):
         guard(s, "synthesize")
         if s["mode"] != "extractive":
-            answer = synthesize(s["query"], s["evidence"]).model_dump()
+            answer = synthesize(
+                s["query"], s["evidence"], deadline=s["started"] + 90
+            ).model_dump()
         else:
             chosen = []
             types = set()
@@ -147,7 +153,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
 
     def validation(s):
         scope = guard(s, "validate")
-        current = expand_evidence(scope, s["evidence"])
+        current = expand_evidence(scope, s["evidence"], deadline=s["started"] + 90)
         validate_answer(
             AnswerOutput(
                 statements=s["statements"], gaps=s["gaps"], uncertainty=s["uncertainty"]
@@ -157,6 +163,7 @@ def build_graph(checkpointer=None, event_callback=None, run_reader=None):
         return {"evidence": current, "tool_calls": s["tool_calls"] + 1}
 
     def finish(s):
+        guard(s, "finish")
         if not s.get("evidence"):
             return {
                 "statements": [],

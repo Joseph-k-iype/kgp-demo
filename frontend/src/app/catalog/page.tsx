@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Layers,
@@ -27,7 +28,10 @@ import {
   DetailGrid,
 } from "@/components/Common";
 import AssetDetail from "@/components/AssetDetail";
-export default function Catalog() {
+function CatalogContent() {
+  const queryString = useSearchParams().toString();
+  const router = useRouter();
+  const lastWritten = useRef<string | null>(null);
   const { token } = useSession();
   const [domain, setDomain] = useState(""),
     [text, setText] = useState(""),
@@ -46,7 +50,8 @@ export default function Catalog() {
     [classification, setClassification] = useState(""),
     [assetType, setAssetType] = useState("");
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    if (lastWritten.current === queryString) return;
+    const params = new URLSearchParams(queryString);
     setDomain(params.get("domain_id") || "");
     setText(params.get("text") || "");
     setKind(params.get("kind") || "product");
@@ -70,7 +75,7 @@ export default function Catalog() {
     );
     setSelected(params.get("selected") || "");
     setReady(true);
-  }, []);
+  }, [queryString]);
   useEffect(() => {
     if (!ready) return;
     const p = new URLSearchParams();
@@ -87,11 +92,11 @@ export default function Catalog() {
     if (status) p.set("status", status);
     if (classification) p.set("classification", classification);
     if (assetType) p.set("asset_type", assetType);
-    history.replaceState(
-      null,
-      "",
-      "/catalog" + (p.size ? "?" + p.toString() : ""),
-    );
+    lastWritten.current = p.toString();
+    if (p.toString() === queryString) return;
+    router.replace("/catalog" + (p.size ? "?" + p.toString() : ""), {
+      scroll: false,
+    });
   }, [
     domain,
     text,
@@ -127,14 +132,13 @@ export default function Catalog() {
     domains = useData<RecordItem[]>("/domains", token),
     sources = useData<CatalogPage>("/catalog?kind=source&page_size=100", token),
     overview = useData<{ counts: Record<string, number> }>("/overview", token);
+  const effectiveSelected = selected || list.data?.items[0]?.id || "";
   const detail = useData<RecordItem>(
-    selected && kind === "product" ? "/products/" + selected : null,
+    effectiveSelected && kind === "product"
+      ? "/products/" + effectiveSelected
+      : null,
     token,
   );
-  useEffect(() => {
-    if (list.data?.items.length && !selected)
-      setSelected(list.data.items[0].id);
-  }, [list.data, selected]);
   function changeFilter(fn: () => void) {
     fn();
     setPage(1);
@@ -408,7 +412,8 @@ export default function Catalog() {
                 <button
                   key={r.id}
                   className={
-                    "record-row " + (selected === r.id ? "selected" : "")
+                    "record-row " +
+                    (effectiveSelected === r.id ? "selected" : "")
                   }
                   onClick={() =>
                     kind === "asset" ? setAsset(r.id) : setSelected(r.id)
@@ -499,7 +504,7 @@ export default function Catalog() {
                 ontology.
               </p>
             </div>
-          ) : detail.loading && selected ? (
+          ) : detail.loading && effectiveSelected ? (
             <Loading />
           ) : detail.error ? (
             <Loading error={detail.error} />
@@ -652,5 +657,13 @@ export default function Catalog() {
       </div>
       {asset && <AssetDetail id={asset} onClose={() => setAsset("")} />}
     </>
+  );
+}
+
+export default function Catalog() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CatalogContent />
+    </Suspense>
   );
 }

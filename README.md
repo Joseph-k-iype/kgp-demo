@@ -16,11 +16,11 @@ make dev
 
 Open `http://127.0.0.1:53000`. API documentation: `http://127.0.0.1:58123/docs`. Start the API and web separately with `make api` and `make web` if preferred. Use `make down` to stop this demo without deleting stored data.
 
-The first indexing run downloads the pinned `sentence-transformers/all-MiniLM-L6-v2` model (384 dimensions). Allow several minutes and roughly 4 GB of Docker memory. Startup checks service readiness rather than treating an unavailable service as a working mock.
+The first indexing run downloads the pinned `sentence-transformers/all-MiniLM-L6-v2` model (384 dimensions). Allow several minutes and roughly 4 GB of Docker memory. Startup checks service readiness rather than treating an unavailable service as a working mock. The API loads the local embedding model before accepting searches, so startup can take longer on a heavily loaded machine.
 
 ## OpenRouter, DeepSeek, and agentic search
 
-Copy `.env.example` to `.env` at the repository root and set `OPENROUTER_API_KEY`. `OPENROUTER_MODEL` defaults to `deepseek/deepseek-v3.2`. OpenRouter calls use the OpenAI-compatible Chat Completions contract with strict JSON schemas. Restart the API after changing settings. Keys remain server-side; never use a `NEXT_PUBLIC_` credential variable.
+Copy `.env.example` to `.env` at the repository root and set `OPENROUTER_API_KEY`. `OPENROUTER_MODEL` defaults to `deepseek/deepseek-v3.2`. OpenRouter calls use the OpenAI-compatible Chat Completions contract with strict JSON schemas and its response-healing plugin. The server still validates every result and rejects malformed output and unsupported citations. A narrow decoder handles tokenizer whitespace markers outside JSON strings without changing source text. Restart the API after changing settings. Keys remain server-side; never use a `NEXT_PUBLIC_` credential variable.
 
 Default search uses DeepSeek through OpenRouter with the official OpenAI SDK for schema-validated query planning and cited synthesis. LangGraph orchestrates authorization, planning, RDF concept resolution, keyword/vector retrieval, provenance expansion, coverage assessment, synthesis, and citation validation. PostgreSQL stores runs and checkpoints. Runs have a 90-second deadline, two retrieval passes, and 12 tool calls. The UI shows tool outcomes, not private model reasoning.
 
