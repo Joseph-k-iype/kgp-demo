@@ -4,8 +4,10 @@ test("mobile navigation fits viewport and dialogs close by keyboard", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/catalog");
-  await expect(page.getByLabel("Open navigation")).toBeVisible();
-  await page.getByLabel("Open navigation").click();
+  await expect(
+    page.getByRole("button", { name: "Workspace", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
   await page.getByRole("link", { name: "Domains", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Business domains" }),
@@ -30,7 +32,11 @@ test("project edits persist and analyst sees read-only metadata", async ({
       exact: true,
     })
     .click();
-  await page.getByLabel("Project budget").fill("975000");
+  await page.getByLabel("Project budget").fill("");
+  await page
+    .getByLabel("Project budget")
+    .pressSequentially("975000", { delay: 30 });
+  await expect(page.getByLabel("Project budget")).toHaveValue("975000");
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(page.getByText("Changes saved", { exact: true })).toBeVisible();
   await page.reload();

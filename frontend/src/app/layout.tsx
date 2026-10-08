@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import MotionProvider from "@/components/discovery/MotionProvider";
 import Shell from "@/components/Shell";
 import "./globals.css";
 import "./theme.css";
@@ -12,7 +13,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Shell>{children}</Shell>
+        <MotionProvider>
+          <Shell>{children}</Shell>
+        </MotionProvider>
       </body>
     </html>
   );

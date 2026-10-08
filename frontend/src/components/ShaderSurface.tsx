@@ -1,8 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MeshGradient, DotGrid } from "@paper-design/shaders-react";
 const colors = ["#faf8f6", "#f0eeeb", "#f5e9e6", "#faf9f7"];
 export default function ShaderSurface() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(true);
   const [ready, setReady] = useState(false),
     [motion, setMotion] = useState(false);
   useEffect(() => {
@@ -16,15 +18,43 @@ export default function ShaderSurface() {
     setMotion(!media.matches);
     const change = () => setMotion(!media.matches);
     media.addEventListener("change", change);
+    useEffect(() => {
+      let inView = true;
+      const update = () => setVisible(inView && !document.hidden);
+      const observer = new IntersectionObserver((entries) => {
+        inView = entries[0].isIntersecting;
+        update();
+      });
+      if (ref.current) observer.observe(ref.current);
+      document.addEventListener("visibilitychange", update);
+      return () => {
+        observer.disconnect();
+        document.removeEventListener("visibilitychange", update);
+      };
+    }, []);
     return () => media.removeEventListener("change", change);
   }, []);
+  useEffect(() => {
+    let inView = true;
+    const update = () => setVisible(inView && !document.hidden);
+    const observer = new IntersectionObserver((entries) => {
+      inView = entries[0].isIntersecting;
+      update();
+    });
+    if (ref.current) observer.observe(ref.current);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
   return (
-    <div className="shader-surface" aria-hidden="true">
+    <div ref={ref} className="shader-surface" aria-hidden="true">
       <div className="shader-mesh">
         {ready && (
           <MeshGradient
             colors={colors}
-            speed={motion ? 0.08 : 0}
+            speed={motion && visible ? 0.08 : 0}
             distortion={0.3}
             swirl={0.2}
             grainMixer={0.05}

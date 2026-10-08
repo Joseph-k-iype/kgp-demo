@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Search, Globe2 } from "lucide-react";
 import { useData, RecordItem } from "@/api/client";
 import { useSession } from "@/components/Shell";
@@ -9,13 +10,16 @@ export type SearchBoxProps = {
   domainId?: string | null;
   onSubmit: (value: SearchSubmission) => void;
   compact?: boolean;
+  showDomainSelector?: boolean;
 };
 export default function SearchBox({
   query = "",
   domainId = null,
   onSubmit,
   compact = false,
+  showDomainSelector = true,
 }: SearchBoxProps) {
+  const reduced = useReducedMotion();
   const { token } = useSession();
   const domains = useData<RecordItem[]>("/domains", token);
   const [hydrated, setHydrated] = useState(false);
@@ -24,11 +28,15 @@ export default function SearchBox({
   const composing = useRef(false);
   useEffect(() => {
     setDraft(query);
-    setDomain(domainId || "");
     setHydrated(true);
-  }, [query, domainId]);
+  }, [query]);
+  useEffect(() => {
+    setDomain(domainId || "");
+  }, [domainId]);
   return (
-    <form
+    <motion.form
+      layoutId="knowledge-search"
+      transition={{ duration: reduced ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
       role="search"
       className={"knowledge-search " + (compact ? "compact" : "")}
       onSubmit={(e) => {
@@ -62,22 +70,24 @@ export default function SearchBox({
             e.preventDefault();
         }}
       />
-      <div className="search-domain">
-        <Globe2 size={16} />
-        <select
-          disabled={!hydrated}
-          aria-label="Search domain"
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-        >
-          <option value="">All domains</option>
-          {domains.data?.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      {showDomainSelector && (
+        <div className="search-domain">
+          <Globe2 size={16} />
+          <select
+            disabled={!hydrated}
+            aria-label="Search domain"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+          >
+            <option value="">All domains</option>
+            {domains.data?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <button
         disabled={!hydrated}
         type="submit"
@@ -86,6 +96,6 @@ export default function SearchBox({
       >
         <Search size={22} />
       </button>
-    </form>
+    </motion.form>
   );
 }

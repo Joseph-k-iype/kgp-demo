@@ -1,17 +1,37 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ArrowRight, Search, History, X } from "lucide-react";
 import { useSession } from "@/components/Shell";
 import SearchBox, { SearchSubmission } from "@/components/discovery/SearchBox";
 import { prepareSearch } from "@/api/discovery";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+gsap.registerPlugin(useGSAP);
 const examples = [
   "Find counterparty exposure and due diligence evidence",
   "Which policies govern treasury liquidity?",
   "Show technology service health sources",
 ];
 export default function SearchHome() {
+  const home = useRef<HTMLElement>(null);
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(".home-introduction h1, .home-introduction p", {
+          y: 12,
+          opacity: 0,
+          duration: 0.48,
+          stagger: 0.06,
+          ease: "power2.out",
+        });
+      });
+      return () => media.revert();
+    },
+    { scope: home },
+  );
   const { persona } = useSession();
   const router = useRouter();
   const [recent, setRecent] = useState<string[]>([]);
@@ -33,7 +53,7 @@ export default function SearchHome() {
     router.push(prepareSearch(value, persona));
   }
   return (
-    <section className="knowledge-home">
+    <section ref={home} className="knowledge-home">
       <div className="home-introduction">
         <h1>
           Find knowledge.

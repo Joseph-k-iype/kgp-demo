@@ -1,4 +1,5 @@
 "use client";
+import { motion, useReducedMotion } from "framer-motion";
 import { Box, Database, FileText, ArrowUpRight } from "lucide-react";
 import { DomainName } from "@/components/Common";
 import type { DiscoveryItem } from "@/api/discovery";
@@ -9,9 +10,10 @@ export default function ResultList({
   items: DiscoveryItem[];
   onSelect: (item: DiscoveryItem) => void;
 }) {
+  const reduced = useReducedMotion();
   return (
     <div className="discovery-result-list">
-      {items.map((item) => {
+      {items.map((item, index) => {
         const Icon =
           item.kind === "product"
             ? Box
@@ -19,7 +21,16 @@ export default function ResultList({
               ? FileText
               : Database;
         return (
-          <article className="discovery-result" key={item.id}>
+          <motion.article
+            className="discovery-result"
+            key={item.id}
+            initial={reduced ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.2,
+              delay: reduced ? 0 : Math.min(index, 5) * 0.024,
+            }}
+          >
             <div className="result-provenance">
               <Icon size={14} />
               <span>
@@ -50,7 +61,7 @@ export default function ResultList({
                 <span className="result-quality">{item.quality}% quality</span>
               )}
             </div>
-          </article>
+          </motion.article>
         );
       })}
     </div>

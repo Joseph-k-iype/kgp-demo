@@ -1,4 +1,5 @@
 "use client";
+import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import {
   X,
@@ -131,6 +132,8 @@ export function Loading({
     </div>
   );
 }
+let modalLocks = 0;
+let originalOverflow = "";
 export function Modal({
   title,
   children,
@@ -140,25 +143,47 @@ export function Modal({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  const reduced = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     const before = document.activeElement as HTMLElement;
     ref.current?.focus();
-    const bodyOverflow = document.body.style.overflow;
+    if (modalLocks++ === 0) originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     function key(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      const dialogs = document.querySelectorAll(
+        '[role="dialog"][aria-modal="true"]',
+      );
+      if (dialogs[dialogs.length - 1] !== ref.current) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeRef.current();
+      }
       if (e.key === "Tab") {
-        const focus = ref.current?.querySelectorAll<HTMLElement>(
-          'button,input,select,a[href],textarea,[tabindex="0"]',
+        const focus = Array.from(
+          ref.current?.querySelectorAll<HTMLElement>(
+            'button,input,select,a[href],textarea,[tabindex="0"]',
+          ) || [],
+        ).filter(
+          (el) => el.getClientRects().length && !el.hasAttribute("disabled"),
         );
         if (!focus?.length) return;
         const first = focus[0],
           last = focus[focus.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        if (
+          e.shiftKey &&
+          (document.activeElement === first ||
+            document.activeElement === ref.current)
+        ) {
           e.preventDefault();
           last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
+        } else if (
+          !e.shiftKey &&
+          (document.activeElement === last ||
+            document.activeElement === ref.current)
+        ) {
           e.preventDefault();
           first.focus();
         }
@@ -167,12 +192,18 @@ export function Modal({
     document.addEventListener("keydown", key);
     return () => {
       document.removeEventListener("keydown", key);
-      document.body.style.overflow = bodyOverflow;
-      before?.focus();
+      if (--modalLocks === 0) document.body.style.overflow = originalOverflow;
+      if (before?.isConnected) before.focus();
     };
-  }, [onClose]);
+  }, []);
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <motion.div
+      className="modal-backdrop"
+      onClick={onClose}
+      initial={reduced ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.16 }}
+    >
       <div
         ref={ref}
         className="modal"
@@ -194,7 +225,7 @@ export function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </motion.div>
   );
 }
 export function Quality({ value = 100 }: { value?: number }) {
