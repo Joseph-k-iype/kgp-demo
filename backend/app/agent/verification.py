@@ -35,11 +35,25 @@ class SupportedClaim(BaseModel):
     governance_paths: list[list[str]] = Field(default_factory=list, max_length=3)
 
 
+class DraftSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: Literal[
+        "Answer",
+        "Governing policies",
+        "Key requirements",
+        "Data findings",
+        "Related obligations",
+        "Gaps and exceptions",
+    ]
+    claim_indices: list[int] = Field(min_length=1, max_length=12)
+
+
 class DraftAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid")
     claims: list[SupportedClaim] = Field(default_factory=list, max_length=12)
     gaps: list[str] = Field(default_factory=list, max_length=8)
     uncertainty: str = Field(default="", max_length=1000)
+    sections: list[DraftSection] = Field(default_factory=list, max_length=4)
 
 
 class TextJudgment(BaseModel):
@@ -74,6 +88,11 @@ class VerificationReport(BaseModel):
 def fresh(ctx, evidence):
     scope = guard(ctx)
     ref = evidence.source_ref
+    if evidence.content_kind == "definition":
+        from app.knowledge.content import open_content
+
+        page = open_content(ctx, {"kind": "definition", "id": ref.asset_id})
+        return bool(page.source_refs) and page.source_refs[0] == ref
     asset = get_record(scope, ref.asset_id, "asset")
     if asset["domain_id"] != ref.domain_id:
         return False
@@ -112,6 +131,10 @@ def fresh(ctx, evidence):
 def live_content(ctx, evidence):
     scope = guard(ctx)
     ref = evidence.source_ref
+    if evidence.content_kind == "definition":
+        from app.knowledge.content import open_content
+
+        return open_content(ctx, {"kind": "definition", "id": ref.asset_id}).text
     if evidence.content_kind == "document":
         iterator = iter_document_sections(scope, ref.asset_id)
         try:
@@ -394,6 +417,15 @@ def verify_claims(
     else:
         for claim in valid:
             exact = all(c.quote == claim.text for c in claim.citations)
+            if (
+                all(c.field for c in claim.citations)
+                and len({c.evidence_id for c in claim.citations}) == 1
+            ):
+                e = lookup[claim.citations[0].evidence_id]
+                expected = {
+                    c.field: (e.values or {}).get(c.field) for c in claim.citations
+                }
+                exact = claim.text == json.dumps(expected, sort_keys=True)
             review = ClaimReview(
                 claim=claim,
                 status="supported" if exact else "unsupported",

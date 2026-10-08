@@ -253,6 +253,9 @@ def build_research_graph(
                                     else "structured",
                                 ),
                                 text=entry["text"],
+                                source_title=entry.get("source_title")
+                                or entry.get("title")
+                                or entry.get("name"),
                                 source_ref=ref,
                                 values=entry.get("values"),
                                 provenance=entry.get("provenance", {}),
@@ -284,6 +287,7 @@ def build_research_graph(
                                 domain_id=ref.domain_id,
                                 content_kind="structured",
                                 text=json.dumps(entry["values"]),
+                                source_title=entry.get("title"),
                                 source_ref=ref,
                                 values=entry["values"],
                                 provenance={

@@ -33,15 +33,13 @@ def get_record(scope, record_id, kind=None):
 
 def list_catalog(scope, filters):
     f = CatalogQuery.model_validate(filters)
-    items = all_records(scope, f.kind)
-    if f.source_id and f.kind == "product":
-        matching = {
-            p
-            for a in all_records(scope, "asset")
-            if a.get("source_id") == f.source_id
-            for p in a.get("product_ids", [])
-        }
-        items = [p for p in items if p["id"] in matching]
+    predicates = ["r.kind=:kind", "(r.domain_id IS NULL OR r.domain_id=ANY(:domains))"]
+    params = {
+        "kind": f.kind,
+        "domains": scope.domain_ids,
+        "limit": f.page_size,
+        "offset": (f.page - 1) * f.page_size,
+    }
     for field in [
         "domain_id",
         "subdomain_id",
@@ -50,76 +48,88 @@ def list_catalog(scope, filters):
         "status",
         "classification",
     ]:
-        if field == "source_id" and f.kind == "product":
-            continue
         value = getattr(f, field)
-        if value:
-            items = [r for r in items if r.get(field) == value]
+        if not value:
+            continue
+        params[field] = value
+        if field == "source_id" and f.kind == "product":
+            predicates.append(
+                "EXISTS (SELECT 1 FROM records a WHERE a.kind='asset' AND a.domain_id=ANY(:domains) AND a.payload->>'source_id'=:source_id AND a.payload->'product_ids' @> jsonb_build_array(r.id))"
+            )
+        elif field == "domain_id":
+            predicates.append("r.domain_id=:domain_id")
+        else:
+            predicates.append("r.payload->>'" + field + "'= :" + field)
     if f.asset_type:
-        items = [r for r in items if r.get("type") == f.asset_type]
+        predicates.append("r.payload->>'type'=:asset_type")
+        params["asset_type"] = f.asset_type
     if f.quality:
-        items = [
-            r
-            for r in items
-            if ("attention" if r.get("quality", 100) < 90 else "healthy") == f.quality
-        ]
-    if f.text:
-        terms = f.text.lower().split()
-        items = [
-            r
-            for r in items
-            if all(
-                t
-                in (
-                    r.get("name", "")
-                    + " "
-                    + r.get("description", "")
-                    + " "
-                    + " ".join(r.get("tags", []))
-                ).lower()
-                for t in terms
-            )
-        ]
+        predicates.append(
+            "COALESCE((r.payload->>'quality')::numeric,100) "
+            + ("<90" if f.quality == "attention" else ">=90")
+        )
+    for n, term in enumerate(f.text.lower().split()):
+        key = "term" + str(n)
+        params[key] = term
+        predicates.append(
+            "strpos(lower(COALESCE(r.payload->>'name','') || ' ' || COALESCE(r.payload->>'description','') || ' ' || COALESCE((SELECT string_agg(t,' ') FROM jsonb_array_elements_text(COALESCE(r.payload->'tags','[]'::jsonb)) t),'')),:"
+            + key
+            + ")>0"
+        )
+    where = " AND ".join(predicates)
+    total = query("SELECT count(*) AS n FROM records r WHERE " + where, params)[0]["n"]
+    order = {
+        "name": "r.payload->>'name',r.id",
+        "quality": "COALESCE((r.payload->>'quality')::numeric,100),r.id",
+        "updated": "r.updated_at DESC,r.id",
+    }[f.sort]
+    items = [
+        unpack(r)
+        for r in query(
+            "SELECT r.* FROM records r WHERE "
+            + where
+            + " ORDER BY "
+            + order
+            + " LIMIT :limit OFFSET :offset",
+            params,
+        )
+    ]
     if f.kind == "gap":
-        issues = all_records(scope, "issue")
         for gap in items:
-            gap["quality_issues"] = sum(
-                i.get("asset_id") in gap.get("asset_ids", [])
-                and i.get("status") == "Open"
-                for i in issues
-            )
+            gap["quality_issues"] = query(
+                "SELECT count(*) AS n FROM records WHERE kind='issue' AND domain_id=ANY(:domains) AND payload->>'status'='Open' AND payload->>'asset_id'=ANY(:ids)",
+                {"domains": scope.domain_ids, "ids": gap.get("asset_ids", [])},
+            )[0]["n"]
             gap["coverage"] = (
                 round(gap["covered"] / gap["required"] * 100)
                 if gap.get("required")
                 else 0
             )
-    items.sort(
-        key=lambda r: r.get(
-            {"updated": "updated_at", "quality": "quality"}.get(f.sort, "name"), ""
-        ),
-        reverse=f.sort == "updated",
-    )
-    total = len(items)
-    start = (f.page - 1) * f.page_size
-    return {
-        "items": items[start : start + f.page_size],
-        "total": total,
-        "page": f.page,
-        "page_size": f.page_size,
-    }
+    return {"items": items, "total": total, "page": f.page, "page_size": f.page_size}
 
 
 def get_product(scope, product_id):
     p = get_record(scope, product_id, "product")
-    p["assets"] = [
-        a for a in all_records(scope, "asset") if product_id in a.get("product_ids", [])
-    ]
-    p["projects"] = [
-        a for a in all_records(scope, "project") if a.get("product_id") == product_id
-    ]
-    p["gaps"] = [
-        a for a in all_records(scope, "gap") if a.get("product_id") == product_id
-    ]
+    for key, kind in [("assets", "asset"), ("projects", "project"), ("gaps", "gap")]:
+        predicate = (
+            "payload->'product_ids' @> CAST(:products AS jsonb)"
+            if kind == "asset"
+            else "payload->>'product_id'=:id"
+        )
+        found = query(
+            "SELECT * FROM records WHERE kind=:kind AND domain_id=ANY(:domains) AND "
+            + predicate
+            + " ORDER BY id LIMIT 101",
+            {
+                "kind": kind,
+                "domains": scope.domain_ids,
+                "products": json.dumps([product_id]),
+                "id": product_id,
+            },
+        )
+        p[key] = [unpack(row) for row in found[:100]]
+        if len(found) > 100:
+            p[key + "_truncated"] = True
     return p
 
 
@@ -127,26 +137,48 @@ def get_asset(scope, asset_id):
     a = get_record(scope, asset_id, "asset")
     a["source"] = get_record(scope, a["source_id"], "source")
     a["issues"] = [
-        r for r in all_records(scope, "issue") if r.get("asset_id") == asset_id
+        unpack(r)
+        for r in query(
+            "SELECT * FROM records WHERE kind='issue' AND domain_id=ANY(:domains) AND payload->>'asset_id'=:asset ORDER BY id LIMIT 100",
+            {"domains": scope.domain_ids, "asset": asset_id},
+        )
     ]
     a["products"] = [
-        get_record(scope, p, "product")
-        for p in a["product_ids"]
-        if any(r["id"] == p for r in all_records(scope, "product"))
+        unpack(r)
+        for r in query(
+            "SELECT * FROM records WHERE kind='product' AND id=ANY(:ids) AND domain_id=ANY(:domains) ORDER BY id LIMIT 100",
+            {"domains": scope.domain_ids, "ids": a.get("product_ids", [])},
+        )
     ]
     return a
 
 
 def list_domains(scope):
-    domains = all_records(scope, "domain")
-    products = all_records(scope, "product")
-    assets = all_records(scope, "asset")
+    domains = [
+        unpack(r)
+        for r in query(
+            "SELECT * FROM records WHERE kind='domain' AND (domain_id IS NULL OR domain_id=ANY(:domains)) ORDER BY id LIMIT 100",
+            {"domains": scope.domain_ids},
+        )
+    ]
+    counts = {
+        (r["domain_id"], r["kind"]): r["n"]
+        for r in query(
+            "SELECT domain_id,kind,count(*) AS n FROM records WHERE kind IN ('asset','product') AND domain_id=ANY(:domains) GROUP BY domain_id,kind",
+            {"domains": scope.domain_ids},
+        )
+    }
+    subdomains = [
+        unpack(r)
+        for r in query(
+            "SELECT * FROM records WHERE kind='subdomain' AND domain_id=ANY(:domains) ORDER BY id LIMIT 1000",
+            {"domains": scope.domain_ids},
+        )
+    ]
     for d in domains:
-        d["product_count"] = sum(p["domain_id"] == d["id"] for p in products)
-        d["asset_count"] = sum(a["domain_id"] == d["id"] for a in assets)
-        d["subdomains"] = [
-            s for s in all_records(scope, "subdomain") if s["domain_id"] == d["id"]
-        ]
+        d["product_count"] = counts.get((d["id"], "product"), 0)
+        d["asset_count"] = counts.get((d["id"], "asset"), 0)
+        d["subdomains"] = [s for s in subdomains if s["domain_id"] == d["id"]]
     return domains
 
 
@@ -243,23 +275,33 @@ def update_metadata(scope, kind, record_id, patch):
 
 
 def overview(scope):
-    records = all_records(scope)
-    counts = {
-        kind: sum(r["kind"] == kind for r in records)
-        for kind in ["domain", "product", "asset", "source", "gap", "project", "issue"]
+    kinds = ["domain", "product", "asset", "source", "gap", "project", "issue"]
+    grouped = {
+        r["kind"]: r["n"]
+        for r in query(
+            "SELECT kind,count(*) AS n FROM records WHERE (domain_id IS NULL OR domain_id=ANY(:domains)) GROUP BY kind",
+            {"domains": scope.domain_ids},
+        )
     }
     return {
-        "counts": counts,
+        "counts": {k: grouped.get(k, 0) for k in kinds},
         "domains": list_domains(scope),
         "attention": [
-            r for r in records if r["kind"] == "gap" and r["status"] == "Open"
-        ][:6],
-        "recent": sorted(
-            [r for r in records if r["kind"] == "product"],
-            key=lambda r: r["updated_at"],
-            reverse=True,
-        )[:5],
-        "indexed": sum(
-            r["kind"] == "asset" and r.get("indexing_state") == "ready" for r in records
-        ),
+            unpack(r)
+            for r in query(
+                "SELECT * FROM records WHERE kind='gap' AND domain_id=ANY(:domains) AND payload->>'status'='Open' ORDER BY id LIMIT 6",
+                {"domains": scope.domain_ids},
+            )
+        ],
+        "recent": [
+            unpack(r)
+            for r in query(
+                "SELECT * FROM records WHERE kind='product' AND domain_id=ANY(:domains) ORDER BY updated_at DESC,id LIMIT 5",
+                {"domains": scope.domain_ids},
+            )
+        ],
+        "indexed": query(
+            "SELECT count(*) AS n FROM records WHERE kind='asset' AND domain_id=ANY(:domains) AND payload->>'indexing_state'='ready'",
+            {"domains": scope.domain_ids},
+        )[0]["n"],
     }

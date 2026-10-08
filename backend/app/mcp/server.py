@@ -66,14 +66,21 @@ def explore_ontology(
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
-def get_evidence(evidence_id: str) -> dict:
+def get_evidence(evidence_id: str, run_id: str | None = None) -> dict:
     """Read an authorized evidence excerpt and its original source pointer."""
+    if run_id:
+        from app.knowledge.content import run_evidence
+
+        return run_evidence(scope(), run_id, evidence_id)
     return evidence(scope(), evidence_id)
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False})
 def agentic_search(
-    query: str | None = None, run_id: str | None = None, mode: str = "llm", domain_id: str | None = None
+    query: str | None = None,
+    run_id: str | None = None,
+    mode: str = "llm",
+    domain_id: str | None = None,
 ) -> dict:
     """Start a LangGraph evidence-backed search or poll its run ID. Provide exactly one of query and run_id."""
     if bool(query) == bool(run_id):
@@ -83,7 +90,9 @@ def agentic_search(
     return (
         get_search(scope(), run_id)
         if run_id
-        else start_search(scope(), SearchRequest(query=query, mode=mode, domain_id=domain_id))
+        else start_search(
+            scope(), SearchRequest(query=query, mode=mode, domain_id=domain_id)
+        )
     )
 
 
@@ -113,6 +122,118 @@ def search_knowledge(query: str) -> str:
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
-def search_knowledge(query: str, domain_id: str | None = None, type: str = "all", page: int = 1, page_size: int = 20) -> dict:
+def search_knowledge(
+    query: str,
+    domain_id: str | None = None,
+    type: str = "all",
+    page: int = 1,
+    page_size: int = 20,
+) -> dict:
     """Find ranked knowledge products, data and documents with source pointers in your authorized domain scope."""
-    return search_discovery(scope(), DiscoveryQuery(q=query, domain_id=domain_id, type=type, page=page, page_size=page_size)).model_dump()
+    return search_discovery(
+        scope(),
+        DiscoveryQuery(
+            q=query, domain_id=domain_id, type=type, page=page, page_size=page_size
+        ),
+    ).model_dump()
+
+
+# The agent and external MCP callers share the same validated read kernel.
+# Identity comes only from the authenticated transport/stdio session.
+def read_context(domain_id=None):
+    import time
+    from app.knowledge.contracts import ToolContext
+
+    return ToolContext(scope=scope(), domain_id=domain_id, deadline=time.time() + 30)
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def resolve_entities(query: str, domain_id: str | None = None) -> dict:
+    """Resolve scoped business entities and report material ambiguity."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import ResolveEntitiesAction
+
+    return execute_read(
+        read_context(domain_id), ResolveEntitiesAction(query=query)
+    ).model_dump(mode="json")
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def traverse_graph(
+    roots: list[str],
+    predicates: list[str] = [],
+    target_kinds: list[str] = [],
+    depth: int = 2,
+    domain_id: str | None = None,
+) -> dict:
+    """Follow bounded, source-backed RDF paths to approved original source handles."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import TraverseGraphAction
+
+    return execute_read(
+        read_context(domain_id),
+        TraverseGraphAction(
+            roots=roots, predicates=predicates, target_kinds=target_kinds, depth=depth
+        ),
+    ).model_dump(mode="json")
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def read_document(
+    asset_id: str, section_id: str | None = None, domain_id: str | None = None
+) -> dict:
+    """Read a versioned original document passage using a returned source locator."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import ReadDocumentAction
+
+    return execute_read(
+        read_context(domain_id),
+        ReadDocumentAction(asset_id=asset_id, section_id=section_id),
+    ).model_dump(mode="json")
+
+
+from app.knowledge.contracts import DatasetQuery
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def query_dataset(query: DatasetQuery, domain_id: str | None = None) -> dict:
+    """Read/aggregate registered dataset fields using typed filters and cursor pagination. No raw SQL."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import QueryDatasetAction
+
+    return execute_read(
+        read_context(domain_id), QueryDatasetAction(query=query)
+    ).model_dump(mode="json")
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def search_evidence(
+    query: str,
+    asset_ids: list[str] | None = None,
+    kinds: list[str] = [],
+    strategy: str = "hybrid",
+    domain_id: str | None = None,
+) -> dict:
+    """Search current source fragments with keyword/vector/hybrid retrieval, optionally within graph-selected assets."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import SearchEvidenceAction
+
+    return execute_read(
+        read_context(domain_id),
+        SearchEvidenceAction(
+            query=query, asset_ids=asset_ids, kinds=kinds, strategy=strategy
+        ),
+    ).model_dump(mode="json")
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False})
+def read_content(
+    kind: str, id: str, cursor: str | None = None, domain_id: str | None = None
+) -> dict:
+    """Open actual product/document/dataset/RDF content; keep metadata context separate."""
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import ReadContentAction
+
+    return execute_read(
+        read_context(domain_id), ReadContentAction(kind=kind, id=id, cursor=cursor)
+    ).model_dump(mode="json")

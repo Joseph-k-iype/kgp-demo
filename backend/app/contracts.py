@@ -97,6 +97,11 @@ class SearchEvent(BaseModel):
     at: float
 
 
+class AnswerSection(BaseModel):
+    title: str
+    statement_indices: list[int]
+
+
 class SearchResult(BaseModel):
     domain_id: str | None = None
     run_id: str
@@ -104,6 +109,7 @@ class SearchResult(BaseModel):
     query: str
     mode: str
     statements: list[VerifiedStatement]
+    answer_sections: list[AnswerSection] = Field(default_factory=list)
     evidence: list[dict]
     gaps: list[str]
     events: list[SearchEvent]

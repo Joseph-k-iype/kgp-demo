@@ -11,6 +11,7 @@ from app.knowledge.contracts import (
     ReadDocumentAction,
     QueryDatasetAction,
     SearchEvidenceAction,
+    ReadContentAction,
 )
 from app.knowledge.tools import available_tools
 
@@ -60,6 +61,7 @@ def native_tools():
         "read_document": ReadDocumentAction,
         "query_dataset": QueryDatasetAction,
         "search_evidence": SearchEvidenceAction,
+        "read_content": ReadContentAction,
     }
     tools = []
     for name in available_tools():
@@ -78,6 +80,7 @@ def native_tools():
                         "read_document": "Read a specific original document passage.",
                         "query_dataset": "Read or aggregate approved dataset fields with typed filters.",
                         "search_evidence": "Find content candidates within authorized source handles.",
+                        "read_content": "Open actual document, rows, RDF facts or product content with separate catalog context.",
                     }[name],
                     "parameters": schema,
                 },

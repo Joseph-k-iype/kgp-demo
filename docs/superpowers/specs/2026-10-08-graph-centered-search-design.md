@@ -115,3 +115,7 @@ Build for growing catalogs and multiple API/worker processes, while retaining lo
 ## Approved UI steering (result rendering / ontology)
 
 Use React Flow with elkjs for ontology interactions and asynchronous layout. Include search/focus, domain/type/relation filters, fit/zoom/minimap, neighborhood/evidence-path highlighting, source-content opening, keyboard access and list fallback; test empty/cyclic/disconnected graphs and stale/failing layout responses. Evaluate Blume across official docs/subpages for Markdown compatibility; keep permission-scoped runtime content and native citations. Integration findings: `docs/research/2026-10-08-result-rendering-and-graph.md`. Apply during Task7 and include in final UI/backend verification; do not replace Next.js solely for Blume Astro site generation.
+
+## Approved answer presentation steering
+
+AI results must directly answer the question as coherent, well-formed content. Use a concise leading answer and neutral sections when helpful, with readable source titles/locators attached to the specific verified claims. Do not render an arbitrary reference list as the answer. For treasury, show named current governing policies, requirements and source-backed applicability. Remove unsupported/unrelated claims before rendering; section structure may reference only accepted statement indices. Clicking a source opens the exact supporting passage/row, with metadata separate. Preserve ordinary results and honest missing/conflicting evidence states.

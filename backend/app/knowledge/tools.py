@@ -20,6 +20,7 @@ from app.knowledge.contracts import (
     TraverseGraphAction,
     ResolveEntitiesAction,
     SearchEvidenceAction,
+    ReadContentAction,
 )
 from app.knowledge.graph import resolve_entities, traverse_graph
 
@@ -31,6 +32,7 @@ def available_tools():
         "read_document",
         "query_dataset",
         "search_evidence",
+        "read_content",
     ]
 
 
@@ -193,6 +195,7 @@ def query_dataset(ctx, call):
             items=[
                 {
                     "asset_id": q.asset_id,
+                    "title": asset["name"],
                     "values": values,
                     "operation": q.model_dump(mode="json"),
                 }
@@ -225,6 +228,7 @@ def query_dataset(ctx, call):
             {
                 "id": r["id"],
                 "asset_id": q.asset_id,
+                "title": asset["name"],
                 "values": {f: r["payload"].get(f) for f in fields},
                 "locator": r["id"],
             }
@@ -263,6 +267,58 @@ def execute_read(ctx: ToolContext, call) -> ToolResult:
 
         result = search_evidence(
             ctx, call.query, call.asset_ids, call.kinds, call.strategy
+        )
+    elif isinstance(call, ReadContentAction):
+        from app.knowledge.content import open_content
+
+        page = open_content(ctx, {"kind": call.kind, "id": call.id}, cursor=call.cursor)
+        fragments = []
+        if page.content_type == "document":
+            for section, ref in zip(page.sections, page.source_refs):
+                fragments.append(
+                    {
+                        "id": ref.asset_id + ":" + ref.locator,
+                        "asset_id": ref.asset_id,
+                        "text": section["text"],
+                        "content_kind": "document",
+                        "source_ref": ref.model_dump(mode="json"),
+                        "title": page.title,
+                    }
+                )
+        elif page.content_type == "dataset":
+            for row in page.rows:
+                ref = row["source_ref"]
+                fragments.append(
+                    {
+                        "id": ref["asset_id"] + ":" + row["locator"],
+                        "asset_id": ref["asset_id"],
+                        "text": json.dumps(row["values"]),
+                        "values": row["values"],
+                        "title": page.title,
+                        "content_kind": "structured",
+                        "source_ref": ref,
+                    }
+                )
+        elif page.content_type == "definition" and page.text:
+            ref = page.source_refs[0]
+            fragments.append(
+                {
+                    "id": ref.asset_id + ":rdf",
+                    "asset_id": ref.asset_id,
+                    "text": page.text[:1600],
+                    "content_kind": "definition",
+                    "title": page.title,
+                    "source_ref": ref.model_dump(mode="json"),
+                }
+            )
+        result = ToolResult(
+            content=page.model_dump(mode="json"),
+            items=fragments,
+            source_refs=page.source_refs,
+            paths=page.paths,
+            cursor=page.cursor,
+            has_more=page.has_more,
+            truncated=page.truncated,
         )
     else:
         raise HTTPException(422, "Tool is not available")

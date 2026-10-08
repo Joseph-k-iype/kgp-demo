@@ -215,76 +215,9 @@ def resolve_concepts(scope, labels):
 
 
 def explore_ontology(scope, concept_id="Counterparty", depth=1, limit=50):
-    if not 1 <= depth <= 3 or not 1 <= limit <= 100:
-        raise HTTPException(422, "Invalid graph bounds")
-    g = rdf_graph(scope)
-    root = K[concept_id] if concept_id in CLASSES else I[concept_id]
-    if not any(g.triples((root, None, None))) and not any(
-        g.triples((None, None, root))
-    ):
-        raise HTTPException(404, "Concept or asset not found")
+    from app.knowledge.explorer import neighborhood
 
-    def node_info(uri):
-        id = str(uri).replace(str(I), "").replace(str(K), "")
-        label = str(g.value(uri, RDFS.label) or id)
-        types = list(g.objects(uri, RDF.type))
-        kind = str(types[0]).split("/")[-1] if types else "Concept"
-        if str(uri).startswith(str(K)):
-            kind = "Concept"
-        return {"id": id, "iri": str(uri), "name": label, "kind": kind}
-
-    selected = {root}
-    front = {root}
-    edges = []
-    truncated = False
-    for _ in range(depth):
-        next_front = set()
-        triples = sorted(
-            set(
-                t
-                for n in front
-                for t in list(g.triples((n, None, None)))
-                + list(g.triples((None, None, n)))
-            ),
-            key=lambda t: (
-                t[1] != K.relatedTo,
-                int(str(t[0]).rsplit("-", 1)[-1])
-                if "-asset-" in str(t[0]) and str(t[0]).rsplit("-", 1)[-1].isdigit()
-                else 100,
-                tuple(map(str, t)),
-            ),
-        )
-        for s, p, o in triples:
-            if (
-                p not in [K[x] for x in RELATIONS]
-                or not isinstance(o, URIRef)
-                or s == o
-            ):
-                continue
-            required = {s, o} - selected
-            if len(selected) + len(required) > limit:
-                truncated = True
-                continue
-            selected.update(required)
-            next_front.update(required)
-            edge = {
-                "source": node_info(s)["id"],
-                "target": node_info(o)["id"],
-                "label": str(p).split("/")[-1],
-                "asserted": True,
-            }
-            if edge not in edges:
-                edges.append(edge)
-        front = next_front
-    return {
-        "nodes": sorted(
-            [node_info(n) for n in selected],
-            key=lambda n: (n["id"] != concept_id, n["name"]),
-        ),
-        "edges": edges,
-        "truncated": truncated,
-        "root": concept_id,
-    }
+    return neighborhood(scope, concept_id, depth, limit)
 
 
 def validate_ontology(scope=None):

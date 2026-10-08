@@ -59,6 +59,7 @@ class EntityResolution(BaseModel):
 
 
 class ToolResult(BaseModel):
+    content: dict | None = None
     outcome: Literal["ok", "no_match", "ambiguous", "stale", "unavailable"] = "ok"
     items: list[dict] = Field(default_factory=list)
     source_refs: list[SourceRef] = Field(default_factory=list)
@@ -159,6 +160,7 @@ class SearchIntentV2(BaseModel):
 
 
 class EvidenceFragment(BaseModel):
+    source_title: str | None = None
     id: str
     asset_id: str
     domain_id: str
@@ -179,3 +181,75 @@ class CoverageReport(BaseModel):
     irrelevant_ids: list[str] = Field(default_factory=list)
     conflicts: list[str] = Field(default_factory=list)
     suggested_source_needs: list[str] = Field(default_factory=list)
+
+
+class ContentHandle(StrictModel):
+    kind: Literal["asset", "record", "document-section", "definition", "product"]
+    id: str = Field(min_length=1, max_length=181)
+    locator: str | None = Field(default=None, max_length=200)
+    version: str | None = Field(default=None, max_length=200)
+    run_id: str | None = Field(default=None, max_length=80)
+    evidence_id: str | None = Field(default=None, max_length=240)
+
+
+class ContentSource(StrictModel):
+    title: str
+    source_type: str
+    handle: ContentHandle
+
+
+class ProductContentManifest(StrictModel):
+    product_id: str
+    title: str
+    primary: ContentHandle | None = None
+    sources: list[ContentSource] = Field(default_factory=list)
+    truncated: bool = False
+
+
+class ContentPage(StrictModel):
+    handle: ContentHandle
+    title: str
+    content_type: Literal["document", "dataset", "definition", "unavailable"]
+    text: str = ""
+    sections: list[dict] = Field(default_factory=list)
+    rows: list[dict] = Field(default_factory=list)
+    columns: list[dict] = Field(default_factory=list)
+    facts: list[dict] = Field(default_factory=list)
+    source_refs: list[SourceRef] = Field(default_factory=list)
+    paths: list[dict] = Field(default_factory=list)
+    context: dict = Field(default_factory=dict)
+    manifest: ProductContentManifest | None = None
+    cursor: str | None = None
+    has_more: bool = False
+    truncated: bool = False
+    freshness: Literal["current", "changed"] = "current"
+    requested_version: str | None = None
+    cited_snapshot: dict | None = None
+    detail: str | None = None
+
+
+class GraphNode(StrictModel):
+    id: str
+    iri: str
+    name: str
+    kind: str
+    domain_id: str | None = None
+    content_handle: ContentHandle
+    source_type: str | None = None
+    status: str | None = None
+
+
+class GraphEdge(StrictModel):
+    source: str
+    target: str
+    label: str
+    asserted: bool = True
+    source_ref: SourceRef | None = None
+
+
+class GraphPage(StrictModel):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+    root: str
+    truncated: bool
+    limits: dict

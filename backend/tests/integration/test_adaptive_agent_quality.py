@@ -232,3 +232,98 @@ def test_exact_aggregate_preserves_large_decimal_precision():
             "UPDATE business_rows SET payload=CAST(:p AS jsonb) WHERE id=:id RETURNING id",
             {"id": row, "p": json.dumps(original)},
         )
+
+
+def test_answer_sections_include_only_verified_claims_and_named_sources():
+    from app.agent.actions import ResearchState
+    from app.agent.finalization import finalize_research
+    from app.agent.verification import DraftAnswer
+
+    ctx = context()
+    e = document(ctx, "finance-asset-1").model_copy(
+        update={"source_title": "TL-POL-001 — Treasury Liquidity Monitoring Policy"}
+    )
+    state = ResearchState(
+        query="What reconciliation frequency is required?",
+        intent={
+            "query": "What reconciliation frequency is required?",
+            "facets": [
+                {"id": "frequency", "description": "Frequency", "kinds": ["document"]}
+            ],
+        },
+        evidence=[e],
+    )
+    draft = DraftAnswer(
+        claims=[
+            SupportedClaim(
+                text="Treasury must reconcile liquidity positions daily.",
+                citations=[ClaimCitation(evidence_id=e.id, quote=e.text)],
+                facet_ids=["frequency"],
+            ),
+            SupportedClaim(
+                text="Weekly reconciliation is required.",
+                citations=[
+                    ClaimCitation(
+                        evidence_id=e.id, quote="Weekly reconciliation is required."
+                    )
+                ],
+            ),
+        ],
+        sections=[
+            {"title": "Answer", "claim_indices": [0, 1]},
+            {"title": "Key requirements", "claim_indices": [1]},
+        ],
+    )
+    result = finalize_research(
+        ctx,
+        state,
+        "llm",
+        lambda *a: None,
+        lambda *a: None,
+        draft_provider=lambda *a: draft,
+        judge_provider=lambda *a: [
+            TextJudgment(claim_index=0, status="supported", facet_ids=["frequency"])
+        ],
+    )
+    assert len(result["statements"]) == 1
+    assert result["answer_sections"] == [{"title": "Answer", "statement_indices": [0]}]
+    assert result["evidence"][0]["source_title"].startswith("TL-POL-001")
+    assert result["statements"][0]["supporting_locators"][0]["source_title"].startswith(
+        "TL-POL-001"
+    )
+
+
+def test_source_only_dataset_values_are_verified_without_json_key_order_assumptions():
+    from app.agent.actions import ResearchState
+    from app.agent.finalization import finalize_research
+
+    ctx = context()
+    result = execute_read(
+        ctx,
+        QueryDatasetAction(
+            query={
+                "asset_id": "finance-asset-0",
+                "select": ["position_id", "liquidity_usd", "as_of"],
+                "limit": 1,
+            }
+        ),
+    )
+    item = result.items[0]
+    e = EvidenceFragment(
+        id=item["id"],
+        asset_id="finance-asset-0",
+        domain_id="finance",
+        content_kind="structured",
+        text=json.dumps(item["values"]),
+        values=item["values"],
+        source_ref=result.source_refs[0],
+    )
+    output = finalize_research(
+        ctx,
+        ResearchState(query="FIN-100 liquidity", evidence=[e]),
+        "extractive",
+        lambda *a: None,
+        lambda *a: None,
+    )
+    assert output["statements"] and "12500000" in output["statements"][0]["text"]
+    assert output["statements"][0]["support_status"] == "source_only"

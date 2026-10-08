@@ -70,3 +70,14 @@ def test_ai_uses_selected_domain_for_every_retrieval():
     assert result['domain_id'] == 'risk'
     assert result['evidence']
     assert all(item['domain_id'] == 'risk' for item in result['evidence'])
+
+
+def test_discovery_uses_bounded_content_candidates_not_full_estate(monkeypatch):
+    import app.discovery.service as discovery
+    import app.catalog.service as catalog
+    def forbidden(*a,**k): raise AssertionError("Discovery cannot materialize the estate")
+    monkeypatch.setattr(discovery,"all_records",forbidden)
+    monkeypatch.setattr(catalog,"all_records",forbidden)
+    response=client.get('/discovery/search',params={"q":"counterparty","domain_id":"risk","page_size":10},headers=headers)
+    assert response.status_code==200,response.text
+    assert response.json()["items"]

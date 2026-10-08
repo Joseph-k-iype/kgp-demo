@@ -661,6 +661,263 @@
         }
       }
     },
+    "/content/{kind}/{id}": {
+      "get": {
+        "summary": "Content",
+        "operationId": "content_content__kind___id__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "asset",
+                "record",
+                "document-section",
+                "definition",
+                "product"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "locator",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Locator"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "evidence_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 240
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Evidence Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}/content": {
+      "get": {
+        "summary": "Product Content",
+        "operationId": "product_content_products__id__content_get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "preferred_asset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 181
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preferred Asset Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/assets/{id}/preview": {
       "get": {
         "summary": "Preview",
@@ -720,6 +977,23 @@
             "schema": {
               "type": "string",
               "title": "Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
             }
           },
           {
@@ -848,7 +1122,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/GraphPage"
+                }
               }
             }
           },
@@ -1400,6 +1676,27 @@
   },
   "components": {
     "schemas": {
+      "AnswerSection": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "statement_indices": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Statement Indices"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "statement_indices"
+        ],
+        "title": "AnswerSection"
+      },
       "AssetDetail": {
         "properties": {
           "id": {
@@ -1544,6 +1841,265 @@
         ],
         "title": "CatalogRecord"
       },
+      "ContentHandle": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "record",
+              "document-section",
+              "definition",
+              "product"
+            ],
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "maxLength": 181,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "locator": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locator"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 240
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ContentHandle"
+      },
+      "ContentPage": {
+        "properties": {
+          "handle": {
+            "$ref": "#/components/schemas/ContentHandle"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "document",
+              "dataset",
+              "definition",
+              "unavailable"
+            ],
+            "title": "Content Type"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "default": ""
+          },
+          "sections": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "columns": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "facts": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "source_refs": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "type": "array",
+            "title": "Source Refs"
+          },
+          "paths": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Paths"
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context"
+          },
+          "manifest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductContentManifest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "default": false
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "current",
+              "changed"
+            ],
+            "title": "Freshness",
+            "default": "current"
+          },
+          "requested_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Version"
+          },
+          "cited_snapshot": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cited Snapshot"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "handle",
+          "title",
+          "content_type"
+        ],
+        "title": "ContentPage"
+      },
+      "ContentSource": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          },
+          "handle": {
+            "$ref": "#/components/schemas/ContentHandle"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "source_type",
+          "handle"
+        ],
+        "title": "ContentSource"
+      },
       "DiscoveryItem": {
         "properties": {
           "id": {
@@ -1630,6 +2186,37 @@
             ],
             "title": "Quality"
           },
+          "source_ref": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_handle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentHandle"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Kind"
+          },
           "score": {
             "type": "number",
             "title": "Score"
@@ -1699,6 +2286,152 @@
         ],
         "title": "DiscoveryPage"
       },
+      "GraphEdge": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "asserted": {
+            "type": "boolean",
+            "title": "Asserted",
+            "default": true
+          },
+          "source_ref": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "label"
+        ],
+        "title": "GraphEdge"
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "iri": {
+            "type": "string",
+            "title": "Iri"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "domain_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
+          "content_handle": {
+            "$ref": "#/components/schemas/ContentHandle"
+          },
+          "source_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Type"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "iri",
+          "name",
+          "kind",
+          "content_handle"
+        ],
+        "title": "GraphNode"
+      },
+      "GraphPage": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "limits": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Limits"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges",
+          "root",
+          "truncated",
+          "limits"
+        ],
+        "title": "GraphPage"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1711,6 +2444,47 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ProductContentManifest": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "title": "Product Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "primary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentHandle"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/ContentSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "product_id",
+          "title"
+        ],
+        "title": "ProductContentManifest"
       },
       "ProductDetail": {
         "properties": {
@@ -1811,6 +2585,20 @@
       },
       "SearchRequest": {
         "properties": {
+          "intent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent Id"
+          },
           "domain_id": {
             "anyOf": [
               {
@@ -1877,10 +2665,17 @@
           },
           "statements": {
             "items": {
-              "$ref": "#/components/schemas/Statement"
+              "$ref": "#/components/schemas/VerifiedStatement"
             },
             "type": "array",
             "title": "Statements"
+          },
+          "answer_sections": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerSection"
+            },
+            "type": "array",
+            "title": "Answer Sections"
           },
           "evidence": {
             "items": {
@@ -1930,27 +2725,36 @@
         ],
         "title": "SearchResult"
       },
-      "Statement": {
+      "SourceRef": {
         "properties": {
-          "text": {
+          "asset_id": {
             "type": "string",
-            "title": "Text"
+            "title": "Asset Id"
           },
-          "evidence_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Evidence Ids"
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Version"
+          },
+          "locator": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Locator"
+          },
+          "domain_id": {
+            "type": "string",
+            "title": "Domain Id"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "text",
-          "evidence_ids"
+          "asset_id",
+          "version",
+          "locator",
+          "domain_id"
         ],
-        "title": "Statement"
+        "title": "SourceRef"
       },
       "ValidationError": {
         "properties": {
@@ -1991,6 +2795,58 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerifiedStatement": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          },
+          "support_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "supported",
+                  "source_only"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Support Status"
+          },
+          "facet_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Facet Ids"
+          },
+          "supporting_locators": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Supporting Locators"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "evidence_ids"
+        ],
+        "title": "VerifiedStatement"
       }
     }
   }

@@ -28,6 +28,9 @@ from app.mcp.server import mcp_http_app, identity
 from app.config import settings
 from app.discovery.contracts import DiscoveryQuery, DiscoveryPage
 from app.discovery.service import search_discovery
+from app.knowledge.contracts import ContentHandle, ContentPage, ToolContext, GraphPage
+from app.knowledge.content import open_content
+from typing import Literal
 
 
 @asynccontextmanager
@@ -141,13 +144,66 @@ def rows(
     return preview_rows(scope, id, limit)
 
 
+@app.get("/content/{kind}/{id}", response_model=ContentPage)
+def content(
+    kind: Literal["asset", "record", "document-section", "definition", "product"],
+    id: str,
+    locator: str | None = Query(None, max_length=200),
+    version: str | None = Query(None, max_length=200),
+    cursor: str | None = Query(None, max_length=2000),
+    limit: int = Query(20, ge=1, le=100),
+    run_id: str | None = Query(None, max_length=80),
+    evidence_id: str | None = Query(None, max_length=240),
+    scope=Depends(scope_dependency),
+):
+    ctx = ToolContext(scope=scope, deadline=time.time() + 30)
+    return open_content(
+        ctx,
+        ContentHandle(
+            kind=kind,
+            id=id,
+            locator=locator,
+            version=version,
+            run_id=run_id,
+            evidence_id=evidence_id,
+        ),
+        cursor,
+        limit,
+    )
+
+
+@app.get("/products/{id}/content", response_model=ContentPage)
+def product_content(
+    id: str,
+    preferred_asset_id: str | None = Query(None, max_length=181),
+    cursor: str | None = Query(None, max_length=2000),
+    limit: int = Query(20, ge=1, le=100),
+    scope=Depends(scope_dependency),
+):
+    return open_content(
+        ToolContext(scope=scope, deadline=time.time() + 30),
+        ContentHandle(kind="product", id=id),
+        cursor,
+        limit,
+        preferred_asset_id,
+    )
+
+
 @app.get("/assets/{id}/preview")
 def preview(id: str, scope=Depends(scope_dependency)):
     return preview_object(scope, id)
 
 
 @app.get("/evidence/{id}")
-def evidence(id: str, scope=Depends(scope_dependency)):
+def evidence(
+    id: str,
+    run_id: str | None = Query(None, max_length=80),
+    scope=Depends(scope_dependency),
+):
+    if run_id:
+        from app.knowledge.content import run_evidence
+
+        return run_evidence(scope, run_id, id)
     return get_evidence(scope, id)
 
 
@@ -159,7 +215,7 @@ def concepts(scope=Depends(scope_dependency)):
     ]
 
 
-@app.get("/ontology/neighborhood")
+@app.get("/ontology/neighborhood", response_model=GraphPage)
 def neighborhood(
     concept_id: str = "Counterparty",
     depth: int = Query(1, ge=1, le=3),

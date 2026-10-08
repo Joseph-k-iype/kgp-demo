@@ -149,6 +149,9 @@ def search_evidence(ctx, query_text, asset_ids=None, kinds=None, strategy="hybri
             domain_id=ref.domain_id,
             content_kind=d["content_kind"],
             text=d["text"],
+            source_title=d["text"].splitlines()[0].lstrip("# ")
+            if d["content_kind"] == "document"
+            else asset.get("name"),
             source_ref=ref,
             values=d.get("values"),
             provenance=d["provenance"],

@@ -3,6 +3,7 @@ import codecs
 from io import BytesIO
 from datetime import timedelta
 from minio import Minio
+import urllib3
 from app.config import settings
 from app.catalog.service import get_record
 from fastapi import HTTPException
@@ -15,6 +16,12 @@ def client():
         access_key=c.minio_access_key,
         secret_key=c.minio_secret_key,
         secure=False,
+        http_client=urllib3.PoolManager(
+            timeout=urllib3.Timeout(connect=3, read=10),
+            retries=False,
+            maxsize=8,
+            block=True,
+        ),
     )
 
 

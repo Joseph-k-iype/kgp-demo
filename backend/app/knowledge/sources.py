@@ -51,6 +51,18 @@ def iter_document_sections(scope, asset_id):
         }
 
     try:
+        served_version = response.headers.get(
+            "x-amz-meta-sha256"
+        ) or "etag:" + response.headers.get("ETag", "").strip('"')
+        if served_version != ref.version:
+            raise HTTPException(
+                409, "The document changed between source inspection and reading"
+            )
+        media = response.headers.get("Content-Type", "").split(";", 1)[0]
+        if media not in ["text/plain", "text/markdown", "text/x-markdown"]:
+            raise HTTPException(
+                415, "A text reader is not available for this document format"
+            )
         for chunk in response.stream(amt=32768):
             pending += decoder.decode(chunk)
             while "\n" in pending or len(pending) > 2048:

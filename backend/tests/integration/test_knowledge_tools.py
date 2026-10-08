@@ -88,6 +88,7 @@ def test_actual_document_read_and_budget_scope_guards():
         "read_document",
         "query_dataset",
         "search_evidence",
+        "read_content",
     } == set(available_tools())
     with pytest.raises(TimeoutError):
         execute_read(

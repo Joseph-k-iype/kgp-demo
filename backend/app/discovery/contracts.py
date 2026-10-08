@@ -5,16 +5,19 @@ from pydantic import BaseModel, Field, ConfigDict
 class DiscoveryQuery(BaseModel):
     q: str = Field(min_length=3, max_length=2000)
     domain_id: str | None = None
-    type: Literal['all', 'product', 'data', 'document'] = 'all'
-    sort: Literal['relevance', 'name'] = 'relevance'
+    type: Literal["all", "product", "data", "document"] = "all"
+    sort: Literal["relevance", "name"] = "relevance"
     page: int = Field(default=1, ge=1, le=10000)
     page_size: int = Field(default=20, ge=1, le=30)
     model_config = ConfigDict(str_strip_whitespace=True)
 
 
+from app.knowledge.contracts import SourceRef, ContentHandle
+
+
 class DiscoveryItem(BaseModel):
     id: str
-    kind: Literal['product', 'data', 'document']
+    kind: Literal["product", "data", "document"]
     title: str
     excerpt: str
     domain_id: str
@@ -24,6 +27,9 @@ class DiscoveryItem(BaseModel):
     evidence_id: str | None = None
     steward: str | None = None
     quality: float | None = None
+    source_ref: SourceRef | None = None
+    content_handle: ContentHandle | None = None
+    content_kind: str | None = None
     score: float
 
 
