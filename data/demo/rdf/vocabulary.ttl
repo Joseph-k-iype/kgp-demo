@@ -1,0 +1,257 @@
+PREFIX ns1: <https://atlas.example/ontology/>
+
+ns1:Contract  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Contract" .
+
+ns1:Counterparty  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Counterparty" .
+
+ns1:Document  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Document" .
+
+ns1:Exposure  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Exposure" .
+
+ns1:Obligation  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Obligation" .
+
+ns1:Policy  a   <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Policy" .
+
+ns1:Product  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Product" .
+
+ns1:Role  a     <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Role" .
+
+ns1:Service  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Service" .
+
+ns1:StructuredAsset  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "StructuredAsset" .
+
+ns1:belongsToDomain  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "belongsToDomain";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Domain .
+
+ns1:Asset  a    <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Asset" .
+
+ns1:Domain  a   <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Domain" .
+
+ns1:belongsToSubdomain
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:KnowledgeProduct;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "belongsToSubdomain";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Subdomain .
+
+ns1:KnowledgeProduct  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "KnowledgeProduct" .
+
+ns1:Subdomain  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Subdomain" .
+
+ns1:deliversProduct  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Project;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "deliversProduct";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:KnowledgeProduct .
+
+ns1:Project  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Project" .
+
+ns1:hasGap  a   <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:KnowledgeProduct;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "hasGap";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Gap .
+
+ns1:Gap  a      <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Gap" .
+
+ns1:relatedTo  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:DataElement;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "relatedTo";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:DataElement .
+
+ns1:DataElement  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "DataElement" .
+
+ns1:representsConcept
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "representsConcept";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:DataElement .
+
+ns1:sourcedFrom  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "sourcedFrom";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Source .
+
+ns1:Source  a   <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Source" .
+
+ns1:stewardedBy  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "stewardedBy";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Person .
+
+ns1:Person  a   <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Person" .
+
+ns1:usesAsset  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:KnowledgeProduct;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "usesAsset";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Asset .
+
+ns1:delegatedTo  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Domain;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "delegatedTo";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Person .
+
+ns1:governedBy  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:BusinessEntity;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "governedBy";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Policy .
+
+ns1:storedIn  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "storedIn";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Source .
+
+ns1:GraphAssertion  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "GraphAssertion" .
+
+ns1:BusinessEntity  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "BusinessEntity" .
+
+ns1:hasPolicyClassification
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Asset;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "hasPolicyClassification";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Policy .
+
+ns1:measures  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:BusinessEntity;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "measures";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:LiquidityPosition .
+
+ns1:LiquidityPosition
+        a       <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "LiquidityPosition" .
+
+ns1:partOf  a   <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:EvidenceSection;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "partOf";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Asset .
+
+ns1:EvidenceSection  a  <http://www.w3.org/2002/07/owl#Class>;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "EvidenceSection" .
+
+ns1:partyTo  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Counterparty;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "partyTo";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Contract .
+
+ns1:recordedIn  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:BusinessEntity;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "recordedIn";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Asset .
+
+ns1:representsEntity  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:KnowledgeProduct;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "representsEntity";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:BusinessEntity .
+
+ns1:requiresContract  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:Policy;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "requiresContract";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:Contract .
+
+ns1:supportedBy  a  <http://www.w3.org/2002/07/owl#ObjectProperty>;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                ns1:BusinessEntity;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "supportedBy";
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                ns1:EvidenceSection .

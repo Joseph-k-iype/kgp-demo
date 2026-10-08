@@ -193,6 +193,11 @@ def test_durable_worker_finishes_without_exposing_checkpoint_or_private_history(
             )
         ),
     )
+    from app.agent import finalization
+    from app.agent.verification import DraftAnswer
+
+    # The provider boundary is offline even when the developer has a real key.
+    monkeypatch.setattr(finalization, "parse_response", lambda *a, **kw: DraftAnswer())
     scope = resolve_scope("admin")
     run = service.start_search(
         scope,
@@ -205,7 +210,10 @@ def test_durable_worker_finishes_without_exposing_checkpoint_or_private_history(
         result = service.get_search(scope, id)
         assert result["status"] == "completed", result
         assert result["answer_outcome"] == "no_evidence" and not result["statements"]
-        assert result["tool_calls"] == 1
+        assert 1 <= result["tool_calls"] <= 3
+        assert (
+            result["paid_calls"] == 1
+        )  # One persisted mocked synthesis attempt; no SDK call.
         assert len([e for e in result["events"] if e["stage"] == "finish"]) == 1
         assert "native_history" not in result and "checkpoint" not in result
     finally:
@@ -333,3 +341,47 @@ def test_scope_revocation_between_guard_and_publication_is_atomic(monkeypatch):
             {"p": json.dumps(original)},
         )
         query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})
+
+
+def test_failure_retains_known_usage_and_reports_safe_error_category(monkeypatch):
+    from app.agent.worker import begin_model, complete_model
+    from app.agent import provider
+
+    monkeypatch.setattr(settings(), "local_search_worker", False)
+    monkeypatch.setattr(settings(), "graph_search_v2", True)
+    scope = resolve_scope("admin")
+    run = service.start_search(
+        scope,
+        SearchRequest(
+            query="A diagnostic failure", mode="llm", intent_id=uuid.uuid4().hex
+        ),
+    )
+    id = run["run_id"]
+    assert claim_next("owner", run_id=id)
+    try:
+        begin_model(id, "owner", "known")
+        complete_model(
+            id,
+            "owner",
+            "known",
+            {
+                "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": 3,
+                    "total_tokens": 13,
+                }
+            },
+        )
+
+        def unavailable(*a, **kw):
+            raise RuntimeError("Private diagnostic details must not escape")
+
+        monkeypatch.setattr(provider, "make_decider", unavailable)
+        service.execute_graph_run(id, "owner")
+        result = service.get_search(scope, id)
+        assert result["status"] == "failed"
+        assert result["usage"]["total_tokens"] == 13
+        assert result["error_category"] == "RuntimeError"
+        assert "Private diagnostic" not in str(result)
+    finally:
+        service.cancel_search(scope, id)

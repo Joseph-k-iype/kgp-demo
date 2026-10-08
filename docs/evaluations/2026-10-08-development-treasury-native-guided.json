@@ -1,0 +1,43 @@
+{
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-1",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Name the current liquidity monitoring policy.",
+      "elapsed_seconds": 127.423,
+      "error": "Search deadline expired or the worker was interrupted. Start a new search.",
+      "metrics": {
+        "retrieval_recall": 0.0,
+        "facet_coverage": 0.0,
+        "support_precision": 0.0,
+        "path_coverage": 1.0,
+        "outcome_valid": false
+      },
+      "answer_outcome": null,
+      "run_id": "2c42149e-c1c8-4c9d-8816-28883264a540",
+      "tool_calls": 0,
+      "model_attempts": 5,
+      "usage": {},
+      "versions": {},
+      "statements": [],
+      "retrieved_sources": [],
+      "graph_paths": []
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 1,
+    "model_attempts": 5,
+    "retrieval_recall": 0.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "outcome_accuracy": 0.0,
+    "p50_seconds": 127.423,
+    "p95_seconds": 127.423
+  },
+  "limitations": []
+}

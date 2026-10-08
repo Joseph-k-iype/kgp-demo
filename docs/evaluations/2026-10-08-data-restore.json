@@ -1,0 +1,11 @@
+{
+  "catalog_records": 359,
+  "business_rows": 880,
+  "objects": 40,
+  "rdf_triples": {
+    "vocabulary": 126,
+    "instances": 3427
+  },
+  "catalog_rows_objects_roundtrip_equal": true,
+  "isolated_resources_removed": true
+}

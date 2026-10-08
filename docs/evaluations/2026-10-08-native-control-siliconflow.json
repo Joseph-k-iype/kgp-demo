@@ -1,0 +1,105 @@
+{
+  "model": "deepseek/deepseek-v3.2",
+  "upstream": "SiliconFlow",
+  "maximum_requests": 3,
+  "requests": [
+    {
+      "phase": "native_plan",
+      "provider": "SiliconFlow",
+      "model": "deepseek/deepseek-v3.2",
+      "elapsed_seconds": 10.34,
+      "usage": {
+        "completion_tokens": 146,
+        "prompt_tokens": 1733,
+        "total_tokens": 1879,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null,
+          "image_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost": 0.000510167,
+        "is_byok": false,
+        "cost_details": {
+          "upstream_inference_cost": 0.000510167,
+          "upstream_inference_prompt_cost": 0.000448847,
+          "upstream_inference_completions_cost": 6.132e-05
+        }
+      }
+    },
+    {
+      "phase": "native_source_read",
+      "provider": "SiliconFlow",
+      "model": "deepseek/deepseek-v3.2",
+      "elapsed_seconds": 4.949,
+      "usage": {
+        "completion_tokens": 66,
+        "prompt_tokens": 1976,
+        "total_tokens": 2042,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null,
+          "image_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost": 0.000539504,
+        "is_byok": false,
+        "cost_details": {
+          "upstream_inference_cost": 0.000539504,
+          "upstream_inference_prompt_cost": 0.000511784,
+          "upstream_inference_completions_cost": 2.772e-05
+        }
+      }
+    },
+    {
+      "phase": "native_receipt_answer",
+      "provider": "SiliconFlow",
+      "model": "deepseek/deepseek-v3.2",
+      "elapsed_seconds": 20.787,
+      "usage": {
+        "completion_tokens": 17,
+        "prompt_tokens": 624,
+        "total_tokens": 641,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null,
+          "image_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost": 0.000168756,
+        "is_byok": false,
+        "cost_details": {
+          "upstream_inference_cost": 0.000168756,
+          "upstream_inference_prompt_cost": 0.000161616,
+          "upstream_inference_completions_cost": 7.14e-06
+        }
+      }
+    }
+  ],
+  "native_plan_verified": true,
+  "native_tools_verified": true,
+  "native_multiturn_verified": true,
+  "sdk_retries": 0,
+  "receipt_answer": "Based on the Treasury Liquidity Monitoring Policy controls, treasury must reconcile liquidity positions daily."
+}

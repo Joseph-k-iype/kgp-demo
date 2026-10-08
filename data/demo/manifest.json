@@ -1,0 +1,350 @@
+{
+  "business_rows": 880,
+  "catalog_records": 359,
+  "files": [
+    {
+      "file": "catalog.json",
+      "sha256": "59e4226ef0bb52efe581f7e78ea3b5a53242965977624a87541d255af9644538"
+    },
+    {
+      "file": "business-rows.json",
+      "sha256": "9382c794da19e7e1536e479c880cfa5a591d660458528dacca248bb962b6c2f8"
+    }
+  ],
+  "format_version": 1,
+  "graphs": [
+    {
+      "file": "rdf/vocabulary.ttl",
+      "name": "vocabulary",
+      "sha256": "75e32de96f783308e7aa2e703d7f5d57d998932b5811a4454114c0f730ebab92"
+    },
+    {
+      "file": "rdf/instances.ttl",
+      "name": "instances",
+      "sha256": "8cbf032e91c277c0b07031093d0fb34b7f497cf8ba04567de571a80436f86a85"
+    }
+  ],
+  "objects": [
+    {
+      "asset_id": "customer-asset-1",
+      "bytes": 1267,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/customer-asset-1.txt",
+      "key": "customer/customer-asset-1.txt",
+      "sha256": "cb6b49890c7e67707d56a633efe7c152ff88c658b5f8702b493b33a575ad938a"
+    },
+    {
+      "asset_id": "customer-asset-5",
+      "bytes": 1273,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/customer-asset-5.txt",
+      "key": "customer/customer-asset-5.txt",
+      "sha256": "249fe3ba1cc4e5476f5dea5e69672ac2a3e4145d7efb17920ecec49fa06d3cae"
+    },
+    {
+      "asset_id": "customer-asset-9",
+      "bytes": 1273,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/customer-asset-9.txt",
+      "key": "customer/customer-asset-9.txt",
+      "sha256": "e31511f326d56b4b224432b04da889f6c9d7f92b2e1e3caf5a3b35b30dcfec14"
+    },
+    {
+      "asset_id": "data-asset-1",
+      "bytes": 1297,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/data-asset-1.txt",
+      "key": "data/data-asset-1.txt",
+      "sha256": "dc58f9caedc6ac6e49954690fe18538c3ba578f27a292c7d14f4f4539ecfb4ea"
+    },
+    {
+      "asset_id": "data-asset-13",
+      "bytes": 1303,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/data-asset-13.txt",
+      "key": "data/data-asset-13.txt",
+      "sha256": "b8b46e7c666954653a83fbce0120dc28a3d770c1f547af23e11e1e6b08b96135"
+    },
+    {
+      "asset_id": "data-asset-5",
+      "bytes": 1303,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/data-asset-5.txt",
+      "key": "data/data-asset-5.txt",
+      "sha256": "5fcbe8eb39f11a9dc7925b2bf5f30943b58db794c53fab3e50d68e299cd46d3f"
+    },
+    {
+      "asset_id": "data-asset-9",
+      "bytes": 1303,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/data-asset-9.txt",
+      "key": "data/data-asset-9.txt",
+      "sha256": "bf949f5d1dc2f55912add0901e5b0541dd617f86c21ea54bafb46fcadf29bae3"
+    },
+    {
+      "asset_id": "finance-asset-1",
+      "bytes": 598,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/finance-asset-1.txt",
+      "key": "finance/finance-asset-1.txt",
+      "sha256": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad"
+    },
+    {
+      "asset_id": "finance-asset-13",
+      "bytes": 403,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/finance-asset-13.txt",
+      "key": "finance/finance-asset-13.txt",
+      "sha256": "a2756dacd9cee0e7be0846724ad3bba3752e3e5a2261f9e652273454395eac78"
+    },
+    {
+      "asset_id": "finance-asset-5",
+      "bytes": 658,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/finance-asset-5.txt",
+      "key": "finance/finance-asset-5.txt",
+      "sha256": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f"
+    },
+    {
+      "asset_id": "finance-asset-9",
+      "bytes": 305,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/finance-asset-9.txt",
+      "key": "finance/finance-asset-9.txt",
+      "sha256": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170"
+    },
+    {
+      "asset_id": "legal-asset-1",
+      "bytes": 427,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/legal-asset-1.txt",
+      "key": "legal/legal-asset-1.txt",
+      "sha256": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45"
+    },
+    {
+      "asset_id": "legal-asset-13",
+      "bytes": 1251,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/legal-asset-13.txt",
+      "key": "legal/legal-asset-13.txt",
+      "sha256": "5394ab66545a7d393350a78056968dc88445f81e152dc75f19cfa346b55a1891"
+    },
+    {
+      "asset_id": "legal-asset-5",
+      "bytes": 1251,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/legal-asset-5.txt",
+      "key": "legal/legal-asset-5.txt",
+      "sha256": "76f54723d0e77d3530fa2543c6642f7d5107996f32d6cde69bab07463f7a3765"
+    },
+    {
+      "asset_id": "legal-asset-9",
+      "bytes": 1251,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/legal-asset-9.txt",
+      "key": "legal/legal-asset-9.txt",
+      "sha256": "abe2c636d73a398403fb2ff112ee024966a89037433c70023ef20b9e565184d8"
+    },
+    {
+      "asset_id": "operations-asset-1",
+      "bytes": 1287,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/operations-asset-1.txt",
+      "key": "operations/operations-asset-1.txt",
+      "sha256": "c759cfcb26a15509e3f3cfa3ed3e8bbca9952a4d79ef176f5b4477711c239e7b"
+    },
+    {
+      "asset_id": "operations-asset-13",
+      "bytes": 1293,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/operations-asset-13.txt",
+      "key": "operations/operations-asset-13.txt",
+      "sha256": "ba53632367c154d3df3b20c8fb839ee5495e6d53b2a84d9372172499f21bb183"
+    },
+    {
+      "asset_id": "operations-asset-5",
+      "bytes": 1293,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/operations-asset-5.txt",
+      "key": "operations/operations-asset-5.txt",
+      "sha256": "90c03830060a06a31b66cf6ec6dc153663d93d9067cada03a5f84d4eca8eecc2"
+    },
+    {
+      "asset_id": "operations-asset-9",
+      "bytes": 1293,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/operations-asset-9.txt",
+      "key": "operations/operations-asset-9.txt",
+      "sha256": "62712759578b160e814aa6d718f89bbde5a999a426141dab5513da9a6eaae00a"
+    },
+    {
+      "asset_id": "people-asset-1",
+      "bytes": 1228,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/people-asset-1.txt",
+      "key": "people/people-asset-1.txt",
+      "sha256": "283e8b57d0c1213e503dc2d12a563d68e90231ce5ae66cf2fe00e39f6a6b8ade"
+    },
+    {
+      "asset_id": "people-asset-5",
+      "bytes": 1234,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/people-asset-5.txt",
+      "key": "people/people-asset-5.txt",
+      "sha256": "f58dfe6984f5b762373176c5120880dfa0540458041d11a80229785b9a9e004e"
+    },
+    {
+      "asset_id": "people-asset-9",
+      "bytes": 1234,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/people-asset-9.txt",
+      "key": "people/people-asset-9.txt",
+      "sha256": "31b77cc960254de598c38cca56ae5675cb4c7bab5f2f5d131abf3ff48a79dd6f"
+    },
+    {
+      "asset_id": "product-asset-1",
+      "bytes": 1232,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/product-asset-1.txt",
+      "key": "product/product-asset-1.txt",
+      "sha256": "b66bf1d3a70eecadad661f6dc7ce984bd2a851c99dd1cf0085700de5dd00aac9"
+    },
+    {
+      "asset_id": "product-asset-13",
+      "bytes": 1238,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/product-asset-13.txt",
+      "key": "product/product-asset-13.txt",
+      "sha256": "32375421e94a028421eb5a944713a4d39a5009249873f18ad5ca3607519ef26f"
+    },
+    {
+      "asset_id": "product-asset-5",
+      "bytes": 1238,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/product-asset-5.txt",
+      "key": "product/product-asset-5.txt",
+      "sha256": "5351dd887d4de6752471babc29fb3e9a727d7292d6486cc464dea47890c56cc8"
+    },
+    {
+      "asset_id": "product-asset-9",
+      "bytes": 1238,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/product-asset-9.txt",
+      "key": "product/product-asset-9.txt",
+      "sha256": "a233eee57e4fcd74f40b176b7e4e6e214abed959a6750951bba420c22f939b16"
+    },
+    {
+      "asset_id": "risk-asset-1",
+      "bytes": 731,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/risk-asset-1.txt",
+      "key": "risk/risk-asset-1.txt",
+      "sha256": "c831c494a500b681135cc3e51f582d66ff7dbef1e5162635d0e94de75a50d5f4"
+    },
+    {
+      "asset_id": "risk-asset-13",
+      "bytes": 1346,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/risk-asset-13.txt",
+      "key": "risk/risk-asset-13.txt",
+      "sha256": "9546d80772a74d8949407a44271388a1a455ff4d00967a166f738d766f8e1309"
+    },
+    {
+      "asset_id": "risk-asset-5",
+      "bytes": 1346,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/risk-asset-5.txt",
+      "key": "risk/risk-asset-5.txt",
+      "sha256": "a099c2c28897ff8c8bc5f4970a2a6099b248160f158ad8143e14fe1a0f2bee90"
+    },
+    {
+      "asset_id": "risk-asset-9",
+      "bytes": 1346,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/risk-asset-9.txt",
+      "key": "risk/risk-asset-9.txt",
+      "sha256": "435a88a5e4757cd188c3e523fa7023ee70e78d8220c61092b4d013093f65233d"
+    },
+    {
+      "asset_id": "strategy-asset-1",
+      "bytes": 1252,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/strategy-asset-1.txt",
+      "key": "strategy/strategy-asset-1.txt",
+      "sha256": "620b5667881d3c651392675edbb81be621ceb533e8156a8eb440fb58f51b406f"
+    },
+    {
+      "asset_id": "strategy-asset-5",
+      "bytes": 1258,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/strategy-asset-5.txt",
+      "key": "strategy/strategy-asset-5.txt",
+      "sha256": "a2b7565e3f4a2d9c5af5b3674dadd3f55e48eb976806b50ce3332403093faa10"
+    },
+    {
+      "asset_id": "strategy-asset-9",
+      "bytes": 1258,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/strategy-asset-9.txt",
+      "key": "strategy/strategy-asset-9.txt",
+      "sha256": "553680414c9bf1f0c80616c9c7975056862319323a043f71770da4647f57f001"
+    },
+    {
+      "asset_id": "technology-asset-1",
+      "bytes": 1250,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/technology-asset-1.txt",
+      "key": "technology/technology-asset-1.txt",
+      "sha256": "dfbb95ff7c08097703f83cba2c73cd5b3c469f5cf22e46aae1a66bdf8274acc1"
+    },
+    {
+      "asset_id": "technology-asset-13",
+      "bytes": 1256,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/technology-asset-13.txt",
+      "key": "technology/technology-asset-13.txt",
+      "sha256": "46abdd9be601c94a842890920887e866c3d614fc19a99eacb052e84ffba0286e"
+    },
+    {
+      "asset_id": "technology-asset-5",
+      "bytes": 1256,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/technology-asset-5.txt",
+      "key": "technology/technology-asset-5.txt",
+      "sha256": "eb9207148fc8f33a0164f469e713bb3020e749efe23519f86882b754c970ceb9"
+    },
+    {
+      "asset_id": "technology-asset-9",
+      "bytes": 1256,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/technology-asset-9.txt",
+      "key": "technology/technology-asset-9.txt",
+      "sha256": "3fdd2039fee43e4a9073b43fd61b489e23eed431ebffeeffefde4ef780b927e2"
+    },
+    {
+      "asset_id": "third-party-asset-1",
+      "bytes": 1276,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/third-party-asset-1.txt",
+      "key": "third-party/third-party-asset-1.txt",
+      "sha256": "4acec106dab86f6e6fba22920ff5073cfbcfdc143a7886c46d261b1555362657"
+    },
+    {
+      "asset_id": "third-party-asset-5",
+      "bytes": 1300,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/third-party-asset-5.txt",
+      "key": "third-party/third-party-asset-5.txt",
+      "sha256": "868c78134300cbca081ad55e1d22f9bea4a9fb7410c0982ea4af3b8ca199efb5"
+    },
+    {
+      "asset_id": "third-party-asset-9",
+      "bytes": 1300,
+      "content_type": "text/plain; charset=utf-8",
+      "file": "objects/third-party-asset-9.txt",
+      "key": "third-party/third-party-asset-9.txt",
+      "sha256": "917559453bc54c27c0fe5a434aa55b6fa36e274ad2017f6c663546cbdbd91fda"
+    }
+  ],
+  "synthetic": true
+}

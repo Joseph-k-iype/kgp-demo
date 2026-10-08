@@ -1,0 +1,7 @@
+# TF-POL-002 — Treasury Funding Evidence Policy
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Effective: 2026-04-01. Status: Active. Applies to Treasury Liquidity and funding evidence.
+## Controls
+Every treasury liquidity position must retain approved funding evidence and monthly review by Oliver Reed. Funding exception EX-FIN-001 for FIN-100 expires on 2026-12-31 and does not waive daily reconciliation.
+## Contract linkage
+Funding evidence for Aster Capital follows contract CT-2000 and its annual disclosure obligation. Verify the current contract clause in Legal evidence before asserting a counterparty obligation.

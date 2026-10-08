@@ -1,0 +1,74 @@
+{
+  "model": "deepseek/deepseek-v3.2",
+  "upstream": "Friendli",
+  "maximum_requests": 3,
+  "requests": [
+    {
+      "phase": "native_plan",
+      "provider": "Friendli",
+      "model": "deepseek/deepseek-v3.2",
+      "elapsed_seconds": 7.95,
+      "usage": {
+        "completion_tokens": 177,
+        "prompt_tokens": 1776,
+        "total_tokens": 1953,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null,
+          "image_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost": 0.0011535,
+        "is_byok": false,
+        "cost_details": {
+          "upstream_inference_cost": 0.0011535,
+          "upstream_inference_prompt_cost": 0.000888,
+          "upstream_inference_completions_cost": 0.0002655
+        }
+      }
+    },
+    {
+      "phase": "native_source_read",
+      "provider": "Friendli",
+      "model": "deepseek/deepseek-v3.2",
+      "elapsed_seconds": 6.015,
+      "usage": {
+        "completion_tokens": 67,
+        "prompt_tokens": 2049,
+        "total_tokens": 2116,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null,
+          "image_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 1792,
+          "video_tokens": 0
+        },
+        "cost": 0.000677,
+        "is_byok": false,
+        "cost_details": {
+          "upstream_inference_cost": 0.000677,
+          "upstream_inference_prompt_cost": 0.0005765,
+          "upstream_inference_completions_cost": 0.0001005
+        }
+      }
+    }
+  ],
+  "native_plan_verified": true,
+  "native_tools_verified": true,
+  "native_multiturn_verified": false,
+  "sdk_retries": 0,
+  "error": "RateLimitError"
+}

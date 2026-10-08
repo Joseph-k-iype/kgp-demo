@@ -1,4 +1,45 @@
-# Verification record
+# Current graph-centered verification (2026-10-08)
+
+This section supersedes the historical fixed-engine notes below. The new engine is an **experimental feature flag**, disabled in release defaults. Passing code/integration/browser tests does not mean that the live answer-quality rollout gates passed.
+
+## Reproducible checks
+
+Run backend/source mutation tests, then browser tests sequentially. The command environment must select the intended API/worker configuration; contract tests use mocked provider boundaries and explicit configuration rather than a developer's private model settings.
+
+```sh
+PYTHONPATH=backend uv run --project backend pytest backend/tests -q
+npm --prefix frontend run typecheck
+npm --prefix frontend run build
+npm --prefix frontend run test:e2e
+npm --prefix frontend audit
+uv pip freeze --python backend/.venv/bin/python > /tmp/kpm-requirements.txt
+uvx pip-audit -r /tmp/kpm-requirements.txt --disable-pip --no-deps
+PYTHONPATH=backend uv run --project backend python scripts/demo_data.py validate
+```
+
+The suite covers actual PostgreSQL/MinIO/Fuseki/OpenSearch integration, precise source/version citations, scope revocation and hidden graph intermediates, malformed/unsupported tool arguments, cancellation/deadline/idempotency/lease recovery, no uncertain paid replay, known receipt reuse, exact Decimal aggregation, typed units/dates, injection, content cursors and current-versus-snapshot opening. HTTP and stdio MCP tests use actual SDK initialization/tool/resource/prompt calls. Browser tests cover search generation boundaries, reload/filter behavior, failure/cancellation, all workspace destinations, responsive content-first opening, safe Markdown, React Flow/ELK, domain filtering and selected paths, cyclic/disconnected/empty graphs, focus/Escape and reduced motion.
+
+## Provider and answer quality
+
+The native plan/source/multi-turn and final server-schema probes passed for OpenRouter `deepseek/deepseek-v4.1-flash`, pinned to `Fireworks`, thinking disabled, SDK retries zero, explicit JSON-object output and strict Pydantic validation. Successful development policy runs returned named current policies with actual citations, including the policy-name case in 18.353 seconds/four attempts and TF-POL-002 applicability in 20.257 seconds/five attempts.
+
+First held-out live iteration: twenty cases; one failed run; answerable-case retrieval recall 92.86%, required-fact coverage 60.71%, gold-pattern claim relevance 28.41%, expected outcome 50%. Second disclosed iteration: twenty cases; three failed runs; answerable recall 71.43%, required-fact coverage 57.14%, gold-pattern claim relevance 37.5%, expected outcome 50%. Its missing-evidence, ambiguous and injection cases behaved appropriately, and the treasury governing-policy case returned both current policies with accepted citations. The gold-pattern precision field is a task relevance measure, not an independent factual-precision certificate. Read every per-case error/statement, not only the aggregate. Both iterations remain in [the artifact directory](evaluations/README.md); repeated evaluation is disclosed and is not fresh hold-out certification.
+
+The targets (90% recall, 85% facet coverage, 95% independently supported factual precision and all negative/ambiguous cases correct) are **not met**. No default rollout or claim of error-free AI generation is made. One additional isolated schema diagnostic on recorded synthetic context failed strict response validation; development cross-source diagnostics also succeeded. SDK bodies, keys and private reasoning are excluded. Safe failure categories and known completed usage are preserved for subsequent runs; older failed reports lack known receipt token totals. Historical interim reports record a base commit plus prompt/model/source versions, rather than claiming an exact release-tree SHA for uncommitted patches.
+
+## Scale and data evidence
+
+The isolated scale fixture contained 10,000 RDF entities and 100,000 PostgreSQL rows. The graph returned 49 items/20 paths/12,459 bytes; SQL returned 20 rows/9,540 bytes. Five latency samples and indexed query plans are retained in [the scale report](evaluations/2026-10-08-scale.json). Real PostgreSQL ownership checks covered exclusive claim, expired lease reclaim, rejection of the old owner and cancellation. This is a bounded local operation benchmark, not a production throughput or process-kill certification. Only the temporary database/container were removed.
+
+The published snapshot contains 359 catalog records (including 11 domains/33 subdomains/44 products/150 assets), 880 actual business rows, 40 documents, 126 vocabulary triples and 3,427 instance triples. An isolated database, bucket and Fuseki container restored and re-exported the snapshot with equal catalog, row and object bytes; [restore report](evaluations/2026-10-08-data-restore.json). Its temporary resources were removed. Content ANN schema-v3 was populated with 849 fragments from 150 assets; the prior exact-score content index remains available locally for rollback. Readers reject stale versions.
+
+## Build, audit and publication evidence
+
+Frontend typecheck and production build passed after the graph additions. npm audit reported zero vulnerabilities. The Python environment audit covered 143 installed dependencies and reported zero known vulnerabilities. Working-tree and all 49 pre-publication commits passed credential-pattern scanning; `.env` is ignored and has no tracked history. Final suite counts, review fixes and pushed SHA are recorded at completion below.
+
+---
+
+# Historical fixed-engine verification record
 
 The local demo uses running PostgreSQL, MinIO, Fuseki and OpenSearch services with actual synthetic data and local sentence-transformer embeddings.
 

@@ -1,0 +1,306 @@
+{
+  "environment": {
+    "git_commit": "da326352788e96182aa6febe24eb5fc826c1605f",
+    "split": "development",
+    "model": "deepseek/deepseek-v4.1-flash",
+    "upstream": "Fireworks",
+    "adapter": "native_tools",
+    "structured_mode": "json_object",
+    "openai_sdk": "2.54.0",
+    "langgraph": "1.2.14"
+  },
+  "status": "complete",
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "cross-3",
+      "category": "cross_source",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Show FIN-100 liquidity and governing policy.",
+      "elapsed_seconds": 18.614,
+      "error": null,
+      "metrics": {
+        "retrieval_recall": 1.0,
+        "facet_coverage": 1.0,
+        "support_precision": 0.5,
+        "path_coverage": 1.0,
+        "outcome_valid": true
+      },
+      "answer_outcome": "answered",
+      "run_id": "20d95040-2f2f-4cf2-9ae6-74365f9269a7",
+      "tool_calls": 5,
+      "model_attempts": 4,
+      "usage": {
+        "total_tokens": 36473,
+        "prompt_tokens": 33570,
+        "completion_tokens": 2903
+      },
+      "versions": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "engine": "graph_v2",
+        "prompt": "graph-search-v2.6",
+        "adapter": "native_tools",
+        "provider": "openrouter",
+        "upstream": "Fireworks",
+        "langgraph": "1.2.14",
+        "source_versions": {
+          "finance-asset-1:controls": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+          "finance-asset-1:overview": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+          "finance-asset-5:controls": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+          "finance-asset-5:overview": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+          "finance-asset-0:finance-asset-0-row-0": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b"
+        },
+        "structured_mode": "json_object",
+        "retrieved_graph_digest": "796c78c4e630aa672eb1faf9188e0260f69621c5359056d6957497a24f477d1a"
+      },
+      "statements": [
+        {
+          "text": "FIN-100's liquidity amount (liquidity_usd) is USD 12,500,000 as of 2026-09-30, recorded in USD.",
+          "facet_ids": [
+            "liquidity"
+          ],
+          "evidence_ids": [
+            "finance-asset-0:finance-asset-0-row-0"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": "USD",
+              "field": "liquidity_usd",
+              "quote": null,
+              "value": "12500000",
+              "period": "2026-09-30",
+              "source_ref": {
+                "locator": "finance-asset-0-row-0",
+                "version": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b",
+                "asset_id": "finance-asset-0",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-0:finance-asset-0-row-0",
+              "source_title": "Treasury Liquidity \u00b7 records"
+            }
+          ]
+        },
+        {
+          "text": "TL-POL-001 requires Treasury to reconcile liquidity positions daily, and each position requires an as-of date, currency, and reconciled funding source.",
+          "facet_ids": [
+            "policy"
+          ],
+          "evidence_ids": [
+            "finance-asset-1:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Treasury must reconcile liquidity positions daily. Each position requires an as-of date, currency and reconciled funding source.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:controls",
+              "source_title": "TL-POL-001 \u2014 Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        },
+        {
+          "text": "TF-POL-002 requires that every treasury liquidity position retain approved funding evidence and undergo monthly review by Oliver Reed.",
+          "facet_ids": [
+            "policy"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Every treasury liquidity position must retain approved funding evidence and monthly review by Oliver Reed.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:controls",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        },
+        {
+          "text": "Funding exception EX-FIN-001 for FIN-100 expires on 2026-12-31 and does not waive daily reconciliation.",
+          "facet_ids": [
+            "policy"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Funding exception EX-FIN-001 for FIN-100 expires on 2026-12-31 and does not waive daily reconciliation.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:controls",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        }
+      ],
+      "retrieved_sources": [
+        {
+          "asset_id": "finance-asset-0",
+          "locator": "finance-asset-0-row-0"
+        },
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "controls"
+        },
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "overview"
+        },
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "controls"
+        },
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "overview"
+        }
+      ],
+      "graph_paths": [
+        [
+          "FIN-100",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "FIN-100",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 0,
+    "model_attempts": 4,
+    "retrieval_recall": 1.0,
+    "facet_coverage": 1.0,
+    "support_precision": 0.5,
+    "outcome_accuracy": 1.0,
+    "p50_seconds": 18.614,
+    "p95_seconds": 18.614,
+    "answerable_case_count": 1,
+    "answerable_metrics": {
+      "retrieval_recall": 1.0,
+      "facet_coverage": 1.0,
+      "support_precision": 0.5,
+      "path_coverage": 1.0,
+      "outcome_valid": 1.0
+    }
+  },
+  "limitations": []
+}

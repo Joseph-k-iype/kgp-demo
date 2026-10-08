@@ -1,0 +1,209 @@
+{
+  "environment": {
+    "git_commit": "da326352788e96182aa6febe24eb5fc826c1605f",
+    "split": "development",
+    "model": "deepseek/deepseek-v4.1-flash",
+    "upstream": "Fireworks",
+    "adapter": "native_tools",
+    "structured_mode": "json_object",
+    "openai_sdk": "2.54.0",
+    "langgraph": "1.2.14"
+  },
+  "status": "complete",
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-1",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Name the current liquidity monitoring policy.",
+      "elapsed_seconds": 18.353,
+      "error": null,
+      "metrics": {
+        "retrieval_recall": 1.0,
+        "facet_coverage": 1.0,
+        "support_precision": 1.0,
+        "path_coverage": 1.0,
+        "outcome_valid": true
+      },
+      "answer_outcome": "answered",
+      "run_id": "d1bbb9aa-d782-4bc1-85ae-dab496d07c10",
+      "tool_calls": 5,
+      "model_attempts": 4,
+      "usage": {
+        "total_tokens": 28540,
+        "prompt_tokens": 26962,
+        "completion_tokens": 1578
+      },
+      "versions": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "engine": "graph_v2",
+        "prompt": "graph-search-v2.5",
+        "adapter": "native_tools",
+        "provider": "openrouter",
+        "upstream": "Fireworks",
+        "langgraph": "1.2.14",
+        "source_versions": {
+          "finance-asset-1:overview": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad"
+        },
+        "retrieved_graph_digest": "861efab2597561d5f8bc89048855f9f1844e634c90ea0adb3a22a0fe11ca6d83"
+      },
+      "statements": [
+        {
+          "text": "The current liquidity monitoring policy is TL-POL-001 \u2014 Treasury Liquidity Monitoring Policy.",
+          "facet_ids": [
+            "policy-name"
+          ],
+          "evidence_ids": [
+            "finance-asset-1:overview"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "# TL-POL-001 \u2014 Treasury Liquidity Monitoring Policy",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "overview",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:overview",
+              "source_title": "TL-POL-001 \u2014 Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        }
+      ],
+      "retrieved_sources": [
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "overview"
+        }
+      ],
+      "graph_paths": [
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls",
+          "partOf",
+          "finance-asset-5"
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 0,
+    "model_attempts": 4,
+    "retrieval_recall": 1.0,
+    "facet_coverage": 1.0,
+    "support_precision": 1.0,
+    "outcome_accuracy": 1.0,
+    "p50_seconds": 18.353,
+    "p95_seconds": 18.353,
+    "answerable_case_count": 1,
+    "answerable_metrics": {
+      "retrieval_recall": 1.0,
+      "facet_coverage": 1.0,
+      "support_precision": 1.0,
+      "path_coverage": 1.0,
+      "outcome_valid": 1.0
+    }
+  },
+  "limitations": []
+}

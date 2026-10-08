@@ -1,0 +1,177 @@
+{
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-1",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Name the current liquidity monitoring policy.",
+      "elapsed_seconds": 22.223,
+      "error": null,
+      "metrics": {
+        "retrieval_recall": 1.0,
+        "facet_coverage": 0.0,
+        "support_precision": 0.0,
+        "path_coverage": 1.0,
+        "outcome_valid": false
+      },
+      "answer_outcome": "partial",
+      "run_id": "7978b3c9-75e8-464b-b271-14a02644c03f",
+      "tool_calls": 6,
+      "model_attempts": 5,
+      "usage": {
+        "total_tokens": 45354,
+        "prompt_tokens": 42703,
+        "completion_tokens": 2651
+      },
+      "versions": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "engine": "graph_v2",
+        "prompt": "graph-search-v2.4",
+        "adapter": "native_tools",
+        "provider": "openrouter",
+        "upstream": "Fireworks",
+        "langgraph": "1.2.14",
+        "source_versions": {
+          "finance-asset-1:controls": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+          "finance-asset-5:controls": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+          "finance-asset-1:escalation": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+          "finance-asset-5:contract-linkage": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f"
+        },
+        "retrieved_graph_digest": "861efab2597561d5f8bc89048855f9f1844e634c90ea0adb3a22a0fe11ca6d83"
+      },
+      "statements": [],
+      "retrieved_sources": [
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "controls"
+        },
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "escalation"
+        },
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "controls"
+        },
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "contract-linkage"
+        }
+      ],
+      "graph_paths": [
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls",
+          "partOf",
+          "finance-asset-5"
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 0,
+    "model_attempts": 5,
+    "retrieval_recall": 1.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "outcome_accuracy": 0.0,
+    "p50_seconds": 22.223,
+    "p95_seconds": 22.223
+  },
+  "limitations": []
+}

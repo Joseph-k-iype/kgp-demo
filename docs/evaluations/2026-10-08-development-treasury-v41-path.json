@@ -1,0 +1,262 @@
+{
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-1",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Name the current liquidity monitoring policy.",
+      "elapsed_seconds": 20.286,
+      "error": null,
+      "metrics": {
+        "retrieval_recall": 1.0,
+        "facet_coverage": 0.0,
+        "support_precision": 0.0,
+        "path_coverage": 1.0,
+        "outcome_valid": false
+      },
+      "answer_outcome": "partial",
+      "run_id": "8193479c-f319-4584-9de0-51e188f3e223",
+      "tool_calls": 5,
+      "model_attempts": 5,
+      "usage": {
+        "total_tokens": 35803,
+        "prompt_tokens": 33492,
+        "completion_tokens": 2311
+      },
+      "versions": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "engine": "graph_v2",
+        "prompt": "graph-search-v2.4",
+        "adapter": "native_tools",
+        "provider": "openrouter",
+        "upstream": "Fireworks",
+        "langgraph": "1.2.14",
+        "source_versions": {
+          "finance-asset-1:controls": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+          "finance-asset-1:escalation": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad"
+        },
+        "retrieved_graph_digest": "0d6bd45cf4fc87d32e62b5cca8f61f9d50465c22e42e9c7ab150bfbf185df062"
+      },
+      "statements": [
+        {
+          "text": "Under the controls section, Treasury must reconcile liquidity positions daily.",
+          "facet_ids": [
+            "policy-name"
+          ],
+          "evidence_ids": [
+            "finance-asset-1:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Treasury must reconcile liquidity positions daily.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:controls",
+              "source_title": "TL-POL-001 — Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        },
+        {
+          "text": "Each liquidity position requires an as-of date, currency and reconciled funding source.",
+          "facet_ids": [
+            "policy-name"
+          ],
+          "evidence_ids": [
+            "finance-asset-1:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Each position requires an as-of date, currency and reconciled funding source.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:controls",
+              "source_title": "TL-POL-001 — Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        },
+        {
+          "text": "Liquidity for FIN-100 is USD 12,500,000 as of 2026-09-30; this illustrative value must be checked against the position dataset.",
+          "facet_ids": [
+            "policy-name"
+          ],
+          "evidence_ids": [
+            "finance-asset-1:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": "USD",
+              "field": null,
+              "quote": "Liquidity for FIN-100 is USD 12,500,000 as of 2026-09-30; this illustrative value must be checked against the position dataset.",
+              "value": "USD 12,500,000",
+              "period": "2026-09-30",
+              "source_ref": {
+                "locator": "controls",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:controls",
+              "source_title": "TL-POL-001 — Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        },
+        {
+          "text": "A liquidity buffer below USD 10,000,000 requires same-day escalation to the Treasury sponsor.",
+          "facet_ids": [],
+          "evidence_ids": [
+            "finance-asset-1:escalation"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": "USD",
+              "field": null,
+              "quote": "A liquidity buffer below USD 10,000,000 requires same-day escalation to the Treasury sponsor.",
+              "value": "USD 10,000,000",
+              "period": null,
+              "source_ref": {
+                "locator": "escalation",
+                "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+                "asset_id": "finance-asset-1",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-1:escalation",
+              "source_title": "TL-POL-001 — Treasury Liquidity Monitoring Policy"
+            }
+          ]
+        }
+      ],
+      "retrieved_sources": [
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "controls"
+        },
+        {
+          "asset_id": "finance-asset-1",
+          "locator": "escalation"
+        }
+      ],
+      "graph_paths": [
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 0,
+    "model_attempts": 5,
+    "retrieval_recall": 1.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "outcome_accuracy": 0.0,
+    "p50_seconds": 20.286,
+    "p95_seconds": 20.286
+  },
+  "limitations": []
+}

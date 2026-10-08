@@ -27,6 +27,7 @@ function Explorer({ graph, selected, onSelect }: Props) {
   const reduced = useReducedMotion();
   const [direction, setDirection] = useState("RIGHT");
   const [kind, setKind] = useState("");
+  const [domain, setDomain] = useState("");
   const [relation, setRelation] = useState("");
   const [query, setQuery] = useState("");
   const [list, setList] = useState(false);
@@ -38,6 +39,9 @@ function Explorer({ graph, selected, onSelect }: Props) {
   });
   const [layoutError, setLayoutError] = useState("");
   const kinds = [...new Set(graph.nodes.map((node) => node.kind))].sort();
+  const domains = [
+    ...new Set(graph.nodes.map((node) => node.domain_id).filter(Boolean)),
+  ].sort();
   const relations = [...new Set(graph.edges.map((edge) => edge.label))].sort();
   const visible = useMemo(() => {
     const adjacent = new Set([selected]);
@@ -57,13 +61,40 @@ function Explorer({ graph, selected, onSelect }: Props) {
     return graph.nodes.filter(
       (node) =>
         (!kind || node.kind === kind) &&
+        (!domain || node.domain_id === domain || node.id === graph.root) &&
         (!local || adjacent.has(node.id)) &&
         (!governing || relevant.has(node.id)),
     );
-  }, [graph, kind, local, selected, governing]);
+  }, [graph, kind, domain, local, selected, governing]);
+  const proof = useMemo(() => {
+    const queue: { id: string; edges: string[]; nodes: string[] }[] = [
+      { id: graph.root, edges: [], nodes: [graph.root] },
+    ];
+    const visited = new Set<string>();
+    while (queue.length) {
+      const path = queue.shift()!;
+      if (path.id === selected) return path;
+      if (visited.has(path.id) || path.edges.length >= 3) continue;
+      visited.add(path.id);
+      graph.edges.forEach((edge, index) => {
+        if (
+          edge.source === path.id &&
+          edge.source_ref &&
+          !path.nodes.includes(edge.target)
+        )
+          queue.push({
+            id: edge.target,
+            edges: [...path.edges, String(index)],
+            nodes: [...path.nodes, edge.target],
+          });
+      });
+    }
+    return null;
+  }, [graph, selected]);
   const edges = useMemo(() => {
     const ids = new Set(visible.map((node) => node.id));
     return graph.edges
+      .map((edge, index) => ({ ...edge, originalIndex: index }))
       .filter(
         (edge) =>
           ids.has(edge.source) &&
@@ -74,6 +105,9 @@ function Explorer({ graph, selected, onSelect }: Props) {
       .map(
         (edge, index): Edge => ({
           id: edge.source + "-" + edge.target + "-" + edge.label + "-" + index,
+          className: proof?.edges.includes(String(edge.originalIndex))
+            ? "evidence-path"
+            : undefined,
           source: edge.source,
           target: edge.target,
           label: edge.label,
@@ -84,15 +118,18 @@ function Explorer({ graph, selected, onSelect }: Props) {
           },
           style: {
             stroke: edge.source_ref ? "#b94a48" : "#c5bfba",
-            strokeWidth:
-              edge.source === selected || edge.target === selected ? 2 : 1,
+            strokeWidth: proof?.edges.includes(String(edge.originalIndex))
+              ? 3
+              : edge.source === selected || edge.target === selected
+                ? 2
+                : 1,
             strokeDasharray: edge.source_ref ? undefined : "4 4",
           },
           labelStyle: { fill: "#706865", fontSize: 10 },
           labelBgStyle: { fill: "#faf9f7" },
         }),
       );
-  }, [graph, visible, relation, selected, governing]);
+  }, [graph, visible, relation, selected, governing, proof]);
   const key = JSON.stringify([
     visible.map((node) => node.id),
     edges.map((edge) => edge.id),
@@ -205,6 +242,18 @@ function Explorer({ graph, selected, onSelect }: Props) {
           onChange={(event) => setQuery(event.target.value)}
         />
         <select
+          aria-label="Graph domain"
+          value={domain}
+          onChange={(event) => setDomain(event.target.value)}
+        >
+          <option value="">All domains</option>
+          {domains.map((item) => (
+            <option key={item} value={item!}>
+              {item}
+            </option>
+          ))}
+        </select>
+        <select
           aria-label="Graph node type"
           value={kind}
           onChange={(event) => setKind(event.target.value)}
@@ -312,6 +361,11 @@ function Explorer({ graph, selected, onSelect }: Props) {
             />
           </ReactFlow>
         </div>
+      )}
+      {proof && proof.edges.length > 0 && (
+        <p className="ontology-legend">
+          Selected source-backed path: {proof.nodes.join(" → ")}
+        </p>
       )}
       <div className="ontology-legend">
         Solid edges: source-backed assertions · Dashed edges: catalog or

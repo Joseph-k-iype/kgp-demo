@@ -5,6 +5,10 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 from app.knowledge.contracts import SearchIntentV2, EvidenceFragment, CoverageReport
 
 
+class InvalidDecision(ValueError):
+    """A completed model response failed validation; safe to request a correction."""
+
+
 class PlannedCall(BaseModel):
     call_id: str | None = None
     model_config = ConfigDict(extra="forbid")

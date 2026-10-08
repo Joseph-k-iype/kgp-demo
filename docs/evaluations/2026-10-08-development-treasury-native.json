@@ -1,0 +1,43 @@
+{
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-1",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Name the current liquidity monitoring policy.",
+      "elapsed_seconds": 24.792,
+      "error": "1 validation error for SearchIntentV2\nfacets.1.kinds.1\n  Input should be 'document', 'structured', 'definition' or 'metadata' [type=literal_error, input_value='asset', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error",
+      "metrics": {
+        "retrieval_recall": 0.0,
+        "facet_coverage": 0.0,
+        "support_precision": 0.0,
+        "path_coverage": 1.0,
+        "outcome_valid": false
+      },
+      "answer_outcome": null,
+      "run_id": "a63d8afe-aafb-48f5-8cbd-c2b64f141e1b",
+      "tool_calls": 0,
+      "model_attempts": 1,
+      "usage": {},
+      "versions": {},
+      "statements": [],
+      "retrieved_sources": [],
+      "graph_paths": []
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 1,
+    "model_attempts": 1,
+    "retrieval_recall": 0.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "outcome_accuracy": 0.0,
+    "p50_seconds": 24.792,
+    "p95_seconds": 24.792
+  },
+  "limitations": []
+}

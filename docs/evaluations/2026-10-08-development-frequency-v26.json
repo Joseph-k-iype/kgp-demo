@@ -1,0 +1,327 @@
+{
+  "environment": {
+    "git_commit": "da326352788e96182aa6febe24eb5fc826c1605f",
+    "split": "development",
+    "model": "deepseek/deepseek-v4.1-flash",
+    "upstream": "Fireworks",
+    "adapter": "native_tools",
+    "structured_mode": "json_object",
+    "openai_sdk": "2.54.0",
+    "langgraph": "1.2.14"
+  },
+  "status": "complete",
+  "engine": "adaptive",
+  "provider_mode": "live",
+  "cases": [
+    {
+      "case_id": "treasury-2",
+      "category": "treasury",
+      "persona": "admin",
+      "domain_id": null,
+      "query": "Which funding evidence policy applies to treasury?",
+      "elapsed_seconds": 20.257,
+      "error": null,
+      "metrics": {
+        "retrieval_recall": 1.0,
+        "facet_coverage": 1.0,
+        "support_precision": 0.6,
+        "path_coverage": 1.0,
+        "outcome_valid": true
+      },
+      "answer_outcome": "answered",
+      "run_id": "3afa6625-d0fc-443f-8f7c-8cab6646e103",
+      "tool_calls": 6,
+      "model_attempts": 5,
+      "usage": {
+        "total_tokens": 40422,
+        "prompt_tokens": 38253,
+        "completion_tokens": 2169
+      },
+      "versions": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "engine": "graph_v2",
+        "prompt": "graph-search-v2.6",
+        "adapter": "native_tools",
+        "provider": "openrouter",
+        "upstream": "Fireworks",
+        "langgraph": "1.2.14",
+        "source_versions": {
+          "finance-asset-5:controls": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+          "finance-asset-5:overview": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f"
+        },
+        "retrieved_graph_digest": "0780471e3186c2b593cd60690d7e74fe92b146a55aae2cd9abddeaad5bdc936e"
+      },
+      "statements": [
+        {
+          "text": "The funding evidence policy that applies to treasury is TF-POL-002, the Treasury Funding Evidence Policy.",
+          "facet_ids": [
+            "policy_name"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:overview"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "# TF-POL-002 \u2014 Treasury Funding Evidence Policy",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "overview",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:overview",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        },
+        {
+          "text": "TF-POL-002 is effective 2026-04-01 and has status Active.",
+          "facet_ids": [
+            "policy_name"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:overview"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Effective: 2026-04-01. Status: Active.",
+              "value": null,
+              "period": "2026-04-01",
+              "source_ref": {
+                "locator": "overview",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:overview",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        },
+        {
+          "text": "TF-POL-002 applies to Treasury Liquidity and funding evidence.",
+          "facet_ids": [
+            "policy_name"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:overview"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Applies to Treasury Liquidity and funding evidence.",
+              "value": null,
+              "period": "2026-04-01",
+              "source_ref": {
+                "locator": "overview",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:overview",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        },
+        {
+          "text": "Every treasury liquidity position must retain approved funding evidence and monthly review by Oliver Reed.",
+          "facet_ids": [
+            "policy_clause"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Every treasury liquidity position must retain approved funding evidence and monthly review by Oliver Reed.",
+              "value": null,
+              "period": null,
+              "source_ref": {
+                "locator": "controls",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:controls",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        },
+        {
+          "text": "Funding exception EX-FIN-001 for FIN-100 expires on 2026-12-31 and does not waive daily reconciliation.",
+          "facet_ids": [
+            "policy_clause"
+          ],
+          "evidence_ids": [
+            "finance-asset-5:controls"
+          ],
+          "support_status": "supported",
+          "supporting_locators": [
+            {
+              "unit": null,
+              "field": null,
+              "quote": "Funding exception EX-FIN-001 for FIN-100 expires on 2026-12-31 and does not waive daily reconciliation.",
+              "value": null,
+              "period": "2026-12-31",
+              "source_ref": {
+                "locator": "controls",
+                "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+                "asset_id": "finance-asset-5",
+                "domain_id": "finance"
+              },
+              "evidence_id": "finance-asset-5:controls",
+              "source_title": "TF-POL-002 \u2014 Treasury Funding Evidence Policy"
+            }
+          ]
+        }
+      ],
+      "retrieved_sources": [
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "overview"
+        },
+        {
+          "asset_id": "finance-asset-5",
+          "locator": "controls"
+        }
+      ],
+      "graph_paths": [
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TF-POL-002"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls"
+        ],
+        [
+          "FIN-100",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "FIN-100",
+          "recordedIn",
+          "finance-asset-0"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "governedBy",
+          "TL-POL-001",
+          "supportedBy",
+          "finance-asset-1-section-controls"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "treasury-liquidity",
+          "supportedBy",
+          "finance-asset-1-section-controls",
+          "partOf",
+          "finance-asset-1"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls",
+          "partOf",
+          "finance-asset-5"
+        ],
+        [
+          "TF-POL-002",
+          "supportedBy",
+          "finance-asset-5-section-controls",
+          "partOf",
+          "finance-asset-5"
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "errors": 0,
+    "model_attempts": 5,
+    "retrieval_recall": 1.0,
+    "facet_coverage": 1.0,
+    "support_precision": 0.6,
+    "outcome_accuracy": 1.0,
+    "p50_seconds": 20.257,
+    "p95_seconds": 20.257,
+    "answerable_case_count": 1,
+    "answerable_metrics": {
+      "retrieval_recall": 1.0,
+      "facet_coverage": 1.0,
+      "support_precision": 0.6,
+      "path_coverage": 1.0,
+      "outcome_valid": 1.0
+    }
+  },
+  "limitations": []
+}

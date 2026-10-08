@@ -1,86 +1,82 @@
 # Knowledge Product Manager
 
-A local enterprise knowledge catalog with 11 business domains, 33 subdomains, 44 knowledge products, and 150 assets. Synthetic metadata connects actual PostgreSQL rows and MinIO documents to RDF governance and OpenSearch keyword/vector indexes.
+A search-first enterprise knowledge catalog over **11 domains, 33 subdomains, 44 knowledge products and 150 assets**. Search shows an AI answer and ordinary results together. Opening a result shows actual PostgreSQL rows, MinIO document passages or RDF definitions first, with metadata and relationships kept as context.
 
-## Run
+The local demo combines PostgreSQL, MinIO (S3-compatible), Jena Fuseki RDF, OpenSearch lexical/vector retrieval, OpenRouter DeepSeek, LangGraph and a FastMCP server. The UI is light-only with red accents, subtle rose glass, a Swiss typographic grid, restrained motion and a React Flow/ELK ontology explorer.
 
-Requires Docker, Node.js 22+, and uv. The Python environment uses Python 3.12.
+## Run from the supplied mock data
+
+Requires Docker, Node.js 22+ and uv; Python 3.12 is pinned by setup.
 
 ```sh
+cp .env.example .env
 make install
 make up
-make seed
+make migrate
+PYTHONPATH=backend uv run --project backend python scripts/demo_data.py validate
+PYTHONPATH=backend uv run --project backend python scripts/demo_data.py restore --execute
 make index
 make dev
 ```
 
-Open `http://127.0.0.1:53000`. API documentation: `http://127.0.0.1:58123/docs`. Start the API and web separately with `make api` and `make web` if preferred. Use `make down` to stop this demo without deleting stored data.
+Open [the app](http://127.0.0.1:53000), [API docs](http://127.0.0.1:58123/docs) or [health](http://127.0.0.1:58123/health). Restore requires an empty catalog and does not delete existing data. For a newly generated fixture set, use `make seed` instead of restore. `make down` preserves Docker volumes. The first index run downloads the pinned 384-dimensional all-MiniLM-L6-v2 model; allow several minutes and about 4 GB of Docker memory.
 
-The first indexing run downloads the pinned `sentence-transformers/all-MiniLM-L6-v2` model (384 dimensions). Allow several minutes and roughly 4 GB of Docker memory. Startup checks service readiness rather than treating an unavailable service as a working mock. The API loads the local embedding model before accepting searches, so startup can take longer on a heavily loaded machine.
+Set `OPENROUTER_API_KEY` only in the ignored server `.env`, then restart the API. Never put provider keys in a `NEXT_PUBLIC_` variable. The graph-centered search flag and provider route are explicit configuration; see the verification record for measured rollout status. **Answer options → Use source excerpts** is an explicit no-model mode. Missing keys and provider errors remain visible while catalog results stay available.
 
-## OpenRouter, DeepSeek, and agentic search
+## Documentation
 
-Copy `.env.example` to `.env` at the repository root and set `OPENROUTER_API_KEY`. `OPENROUTER_MODEL` defaults to `deepseek/deepseek-v3.2`. OpenRouter calls use the OpenAI-compatible Chat Completions contract with strict JSON schemas and its response-healing plugin. The server still validates every result and rejects malformed output and unsupported citations. A narrow decoder handles tokenizer whitespace markers outside JSON strings without changing source text. Restart the API after changing settings. Keys remain server-side; never use a `NEXT_PUBLIC_` credential variable.
+- [System architecture](docs/architecture.md): components, stores, domain model, read flow, scale controls and deployment boundaries.
+- [Agentic architecture](docs/agentic-architecture.md): graph routing, dynamic prompts, typed tools, coverage, drafting, claim verification, durable execution and treasury example.
+- [API reference](docs/api.md): session, discovery, content/citation, run lifecycle, editing and ingestion routes; [OpenAPI contract](backend/openapi.json).
+- [MCP](docs/mcp.md): HTTP/stdio setup, fourteen tools, resources, prompts and permission model.
+- [Mock data](docs/data.md): snapshot contents, checksums, export/restore and excluded runtime data.
+- [Verification](docs/verification.md): test commands, measured evaluations, local scale/restore evidence and limitations.
+- [Research](docs/research/2026-10-08-graph-centered-agentic-search.md): primary-source reasoning behind graph-centered adaptive retrieval.
 
-Default search uses DeepSeek through OpenRouter with the official OpenAI SDK for schema-validated query planning and cited synthesis. LangGraph orchestrates authorization, planning, RDF concept resolution, keyword/vector retrieval, provenance expansion, coverage assessment, synthesis, and citation validation. PostgreSQL stores runs and checkpoints. Runs have a 90-second deadline, two retrieval passes, and 12 tool calls. The UI shows tool outcomes, not private model reasoning.
+## Use the application
 
-Without a key, open **Answer options → Use source excerpts** explicitly. This mode performs actual vector/keyword retrieval and returns source excerpts through the same LangGraph workflow; it is labeled and does not claim LLM synthesis.
+Ask a question from Home. Search presents a coherent cited answer and matching knowledge products, tables and documents. URL filters, pagination and opening content reconnect to the saved run without another paid generation. A named citation opens its exact supporting section/row and distinguishes current content from a saved versioned excerpt.
 
-## Search and catalog
+Catalog is a grid/list library. Workspace offers Domains, Sources, Ontology, Projects and Roles. Projects include sponsor, budget, status and domain/subdomain; gaps include coverage, description, tags and quality issue counts. The ontology explorer supports node/alias search, domain/type/relation filters, fit/zoom/minimap, layout direction, selected neighborhoods, evidence paths, source opening and an accessible list. Markdown/GFM source rendering disables raw HTML and executable/remote embeds.
 
-Home starts with one question field. Submit to see an AI answer and matching products, data and documents together. The selected domain governs both retrieval and synthesis. Result tabs, sorting, pagination and detail selection are URL state; they do not start another paid generation. Reload reconnects to the saved run. A request interrupted before its ID was saved requires an explicit Generate action. Provider failures leave catalog results available; use **Answer options** for source excerpts.
+All source names, persons, amounts and policies are synthetic. The persona selector simulates Administrator, Analyst, Steward and Delegate permissions. It is deliberately not production login. The RDF fixture includes a deliberate missing stewardship assertion for SHACL inspection. Internal `atlas-*` storage identifiers are retained for stable source bindings; the application name is Knowledge Product Manager.
 
-Catalog is a grid/list library with persistent domain, source, quality and advanced filters. Its question field inherits the visible domain filter. Open a product for Overview, Assets, Ontology, Quality and Projects; asset previews read actual local PostgreSQL rows or MinIO objects. Workspace contains Domains, Sources, Ontology, Projects and Roles. Demo personas scope both UI and MCP.
+## Services and operations
 
-Motion uses Framer Motion for the search layout, short result reveals and dialogs, and GSAP only for the home introduction. Reduced-motion preferences skip movement; Paper shaders pause when hidden or offscreen.
+| Service | Local port |
+|---|---:|
+| Web | 53000 |
+| API / HTTP MCP | 58123 |
+| PostgreSQL | 56432 |
+| MinIO / console | 59010 / 59011 |
+| Fuseki | 53030 |
+| OpenSearch | 59200 |
 
-## Architecture
+Run API/web separately with `make api` and `make web`. Dedicated workers:
 
-| Service | Role | Local port |
-|---|---|---|
-| PostgreSQL 17 | Catalog, metadata, business rows, jobs, search/checkpoints | 56432 |
-| MinIO | Private synthetic source documents | 59010; console 59011 |
-| Jena Fuseki 5.4 | Persistent RDF named graphs and SPARQL | 53030 |
-| OpenSearch 2.19 | Keyword and real vector index | 59200 |
-| FastAPI + FastMCP 4 | Scoped services, OpenRouter/LangGraph, HTTP/stdio MCP | 58123 |
-| Next.js | Eight application destinations | 53000 |
+```sh
+PYTHONPATH=backend uv run --project backend python -m app.agent.worker
+PYTHONPATH=backend uv run --project backend python -m app.worker
+PYTHONPATH=backend uv run --project backend python -m app.mcp.stdio
+```
 
-The PostgreSQL catalog uses indexed JSONB records, a domain foreign key, validated application DTOs, and a separate business-row table. The seed manifest maps IDs across SQL, RDF, objects, and indexed evidence. An OpenSearch index is derived and can be rebuilt with `make index`; changing embedding model/dimensions requires a new index name. Metadata, structured rows, and document chunks are distinct evidence types.
+Disable `LOCAL_SEARCH_WORKER` on API instances when running dedicated search workers. Shared PostgreSQL admission/leases coordinate ownership. Bounded tool reads, source streaming, indexed lookups and HNSW projection avoid full estate/dataset reads on interactive paths. These controls and local scale tests do not certify production throughput. Model judgments remain fallible; public deployment, enterprise connectors, production identity/OAuth and autonomous writes are outside the demo.
 
-MCP endpoint and connection instructions: [docs/mcp.md](docs/mcp.md). The API and MCP tools reuse the same permission checks.
+## Test and evaluate
 
-## Demo identity and data
-
-The persona selector simulates Administrator, Analyst, Domain steward, and Delegate access. The browser can deliberately select any demo persona; this is not a production login system. Administrator can edit projects, gap descriptions/status, roles, and product metadata. Domain stewards/delegates edit within their assigned scope. Scope changes invalidate access to previous search evidence.
-
-All names, amounts, records, quality scores, and documents are synthetic. The RDF fixture deliberately omits one asserted stewardship relationship to demonstrate a SHACL finding. Coverage percentages show a defined numerator/denominator. Every domain has working stored rows and documents; locations refer to local services.
-
-## Verification
-
-With services and the API/web running:
+Run source/index mutation tests before browser tests, sequentially:
 
 ```sh
 make test
 npm --prefix frontend run typecheck
 npm --prefix frontend run build
 make test-e2e
+npm --prefix frontend audit
+PYTHONPATH=backend uv run --project backend python scripts/evaluate_search.py \
+  --engine adaptive --split development --output /tmp/kpm-offline-report.json
+PYTHONPATH=backend uv run --project backend python scripts/benchmark_search_scale.py \
+  --execute --output /tmp/kpm-scale-report.json
+PYTHONPATH=backend uv run --project backend python scripts/verify_demo_restore.py
 ```
 
-Backend integration checks use actual services and local embeddings; provider contract tests substitute the provider HTTP boundary. Live DeepSeek generation requires configured credentials and is reported separately. Browser checks cover catalog filters, real source previews, domains, ontology, and cited extractive search.
-
-## Recovery
-
-- `docker compose ps` and `/health` reveal unavailable services.
-- `make seed` is idempotent and preserves catalog edits; it refreshes synthetic objects.
-- `make index` rebuilds derived evidence without duplicate IDs; failed assets show failed readiness and can be retried.
-- Failed provider calls show an explicit error. Completed runs are fetched rather than regenerated when a browser reconnects.
-- Data volumes survive `make down`; no routine command deletes them.
-- MinIO demo console credentials are in `.env.example`; keep the loopback demo private.
-
-Production identity, external enterprise connectors, public MCP hosting/OAuth, autonomous agent writes, arbitrary SQL/SPARQL, and ontology authoring are outside this demo.
-
-A standalone ingestion worker is available with `PYTHONPATH=backend uv run --project backend python -m app.worker`. Administrator requests to `POST /index/jobs` persist an index job; the API executor or standalone worker claims it once. `GET /index/jobs/{id}` exposes completion/failure. Retrying submits a new job against the same stable evidence IDs.
-
-`POST /search/runs/{id}/resume` reuses scoped LangGraph checkpoints. Completed runs are returned without generation. An interrupted provider request with an uncertain outcome is not automatically replayed; expired runs require a new search.
-
-UI direction: signal red, Swiss editorial typography, Nothing-inspired dot patterns, translucent liquid-glass surfaces, and real Paper Design WebGL shaders. Reduced-motion and non-WebGL fallbacks preserve readability and function.
+Evaluation defaults to offline. Live evaluation is an explicit `--provider live` action limited to twenty adaptive cases; reports refuse overwrites and preserve per-case progress. The benchmark creates a separate database/container and cleans only its own resources. See the verification document for exact completed gates, failed attempts and model-quality denominators.

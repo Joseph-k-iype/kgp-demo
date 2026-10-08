@@ -50,47 +50,68 @@ def ensure_index(timeout=10):
             )
 
 
+def content_mapping():
+    c = settings()
+    return {
+        "settings": {
+            "index.knn": True,
+            "number_of_shards": c.content_index_shards,
+            "number_of_replicas": c.content_index_replicas,
+        },
+        "mappings": {
+            "_meta": {
+                "schema_version": 3,
+                "model": c.embedding_model,
+                "revision": c.embedding_revision,
+            },
+            "properties": {
+                "id": {"type": "keyword"},
+                "asset_id": {"type": "keyword"},
+                "domain_id": {"type": "keyword"},
+                "content_kind": {"type": "keyword"},
+                "text": {"type": "text"},
+                "source_ref": {
+                    "properties": {
+                        key: {"type": "keyword"}
+                        for key in ["asset_id", "domain_id", "version", "locator"]
+                    }
+                },
+                "vector": {
+                    "type": "knn_vector",
+                    "dimension": 384,
+                    "method": {
+                        "name": "hnsw",
+                        "engine": "lucene",
+                        "space_type": "cosinesimil",
+                        "parameters": {"ef_construction": 100, "m": 16},
+                    },
+                },
+            },
+        },
+    }
+
+
 def ensure_content_index(timeout=10):
     c = settings()
     alias = c.content_index_name
     response = httpx.get(c.opensearch_url + "/_alias/" + alias, timeout=timeout)
     if response.status_code == 404:
-        physical = alias + "-v2-000001"
+        physical = alias + "-v3-000001"
         exists = httpx.head(c.opensearch_url + "/" + physical, timeout=timeout)
         if exists.status_code == 404:
-            request(
-                "PUT",
-                "/" + physical,
-                {
-                    "settings": {
-                        "number_of_shards": c.content_index_shards,
-                        "number_of_replicas": c.content_index_replicas,
-                    },
-                    "mappings": {
-                        "_meta": {
-                            "schema_version": 2,
-                            "model": c.embedding_model,
-                            "revision": c.embedding_revision,
-                        },
-                        "properties": {
-                            "id": {"type": "keyword"},
-                            "asset_id": {"type": "keyword"},
-                            "domain_id": {"type": "keyword"},
-                            "content_kind": {"type": "keyword"},
-                            "text": {"type": "text"},
-                            "source_ref": {
-                                "properties": {
-                                    "asset_id": {"type": "keyword"},
-                                    "domain_id": {"type": "keyword"},
-                                    "version": {"type": "keyword"},
-                                    "locator": {"type": "keyword"},
-                                }
-                            },
-                            "vector": {"type": "knn_vector", "dimension": 384},
-                        },
-                    },
-                },
+            created = httpx.put(
+                c.opensearch_url + "/" + physical,
+                json=content_mapping(),
+                timeout=timeout,
             )
+            # Concurrent workers may both observe absence; only an already-exists
+            # response is safe to continue, and mapping is validated below.
+            if (
+                created.status_code != 400
+                or created.json().get("error", {}).get("type")
+                != "resource_already_exists_exception"
+            ):
+                created.raise_for_status()
         else:
             exists.raise_for_status()
         request(
@@ -103,12 +124,17 @@ def ensure_content_index(timeout=10):
     mapping = httpx.get(c.opensearch_url + "/" + alias + "/_mapping", timeout=timeout)
     mapping.raise_for_status()
     indexes = mapping.json()
+    if len(indexes) != 1:
+        raise ValueError("Content alias must target exactly one physical index")
+    expected = content_mapping()["mappings"]
     for value in indexes.values():
-        meta = value["mappings"].get("_meta", {})
-        if meta != {
-            "schema_version": 2,
-            "model": c.embedding_model,
-            "revision": c.embedding_revision,
-        }:
-            raise ValueError("Content index schema/model mismatch")
+        actual = value["mappings"]
+        if (
+            actual.get("_meta") != expected["_meta"]
+            or actual.get("properties", {}).get("vector")
+            != expected["properties"]["vector"]
+        ):
+            raise ValueError(
+                "Content index schema/model mismatch; build a new alias before changing configuration"
+            )
     return alias

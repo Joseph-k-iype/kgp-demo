@@ -209,3 +209,78 @@ test("switching sources discards delayed content and retains one dialog", async 
   );
   await expect(page.getByRole("dialog")).toHaveCount(1);
 });
+
+test("ontology filters domains and highlights the selected evidence path", async ({
+  page,
+}) => {
+  await page.goto("/ontology?concept=treasury-liquidity");
+  await expect(page.getByLabel("Graph domain")).toBeVisible();
+  await page.getByLabel("Graph domain").selectOption("finance");
+  await page.getByLabel("Find graph node").fill("TL-POL-001");
+  await page.getByRole("button", { name: /Focus.*TL-POL-001/ }).click();
+  await expect(
+    page.locator(".react-flow__edge.evidence-path").first(),
+  ).toBeVisible();
+  await expect(page.getByText(/Selected source-backed path:/)).toContainText(
+    "TL-POL-001",
+  );
+});
+
+test("ontology handles cyclic, disconnected and empty neighborhoods", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const ref = {
+    asset_id: "finance-asset-1",
+    domain_id: "finance",
+    locator: "controls",
+    version: "fixture",
+  };
+  const node = (id: string) => ({
+    id,
+    name: id,
+    kind: "BusinessEntity",
+    domain_id: "finance",
+    iri: "https://example.test/" + id,
+    content_handle: { kind: "record", id },
+  });
+  await page.route("**/api/ontology/neighborhood?**", (route) =>
+    route.fulfill({
+      json: {
+        root: "a",
+        nodes: [node("a"), node("b"), node("c")],
+        edges: [
+          { source: "a", target: "b", label: "supportedBy", source_ref: ref },
+          { source: "b", target: "a", label: "partOf", source_ref: ref },
+        ],
+        truncated: false,
+      },
+    }),
+  );
+  await page.goto("/ontology");
+  await expect(page.locator(".react-flow__node")).toHaveCount(2);
+  await page
+    .getByRole("button", { name: "Governing paths", exact: true })
+    .click();
+  await expect(page.locator(".react-flow__node")).toHaveCount(3);
+  await page
+    .getByRole("button", { name: "Accessible list", exact: true })
+    .click();
+  await expect(
+    page
+      .locator(".ontology-accessible")
+      .getByRole("button", { name: "c · BusinessEntity", exact: true }),
+  ).toBeVisible();
+  await page.unroute("**/api/ontology/neighborhood?**");
+  await page.route("**/api/ontology/neighborhood?**", (route) =>
+    route.fulfill({
+      json: { root: "a", nodes: [], edges: [], truncated: false },
+    }),
+  );
+  await page.goto("/ontology");
+  await expect(page.locator(".ontology-legend")).toContainText(
+    "0 nodes / 0 relationships",
+  );
+  expect(errors).toEqual([]);
+});

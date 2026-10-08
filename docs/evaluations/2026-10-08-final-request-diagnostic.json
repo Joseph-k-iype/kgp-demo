@@ -1,0 +1,9 @@
+{
+  "purpose": "Explicit single schema diagnostic on recorded synthetic context; original failed run is not resumed. Not scored as a new held-out evaluation.",
+  "case_id": "customer-document",
+  "maximum_requests": 1,
+  "attempts": 1,
+  "error_category": "ValueError",
+  "status_code": null,
+  "elapsed_seconds": 4.55
+}

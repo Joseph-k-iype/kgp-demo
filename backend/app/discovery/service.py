@@ -136,7 +136,9 @@ def search_discovery(scope, request):
                 source_type="Knowledge product"
                 if product
                 else source.get("type", item.get("type", "Metadata")),
-                asset_id=None if product else id,
+                asset_id=(evidence["asset_id"] if evidence else None)
+                if product
+                else id,
                 product_id=id if product else None,
                 evidence_id=evidence["id"] if evidence else None,
                 steward=item.get("steward") or item.get("owner"),

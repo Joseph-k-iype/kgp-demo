@@ -35,3 +35,20 @@ The MCP server cannot execute arbitrary SQL or SPARQL, mutate catalog data, or e
 ## Client verification
 
 With the API running, `make test` includes an actual SDK initialization, tool discovery/calls, resource reads, prompt retrieval, HTTP credential checks, and a restricted stdio client. The catalog/search UI is not required for MCP clients.
+
+## Graph-centered read tools
+
+The server additionally exposes six typed tools sharing the API's server-owned `ToolContext`:
+
+| Tool | Inputs and output |
+|---|---|
+| `resolve_entities` | Query/domain → bounded business entity candidates, aliases, ambiguity |
+| `traverse_graph` | Root IDs, allowed predicates, direction/depth/domain → current scoped nodes/edges/proof paths and source handles |
+| `read_document` | Asset ID and optional section → actual source passage with version/locator |
+| `query_dataset` | Registered dataset ID, selected fields, typed filters/aggregation/cursor → actual rows or independently computed result |
+| `search_evidence` | Query, strategy, kinds and source handles → bounded current content candidates |
+| `read_content` | Flat `kind`, `id`, optional cursor → content-first page plus separate context/relationships |
+
+There are fourteen tools including the original eight. Inspect `tools/list` for the exact generated JSON schemas. Tool arguments never include persona, permissions, provider keys, arbitrary SQL or SPARQL. Every domain filter intersects the configured session scope. Hidden intermediate graph nodes and stale source bindings cannot become proof paths.
+
+A minimal Python HTTP client uses `mcp.client.streamable_http.streamable_http_client` and `mcp.ClientSession`: open the URL with bearer headers, initialize, list tools, then call a tool with its typed arguments. `backend/tests/integration/test_mcp.py` is a runnable SDK example covering actual HTTP and stdio negotiation, denied access, resources, prompts, source reads and shared search behavior. Use `make test` with the stores/API available. For external hosting, replace the demo bearer identity with authenticated OAuth and deploy the same private scoped services; public hosting is not configured here.

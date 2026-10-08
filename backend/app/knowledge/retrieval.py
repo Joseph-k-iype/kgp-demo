@@ -12,6 +12,18 @@ from app.knowledge.sources import source_info
 from app.knowledge.contracts import ToolResult, EvidenceFragment, SourceRef
 
 
+def vector_query(vector, filters):
+    return {
+        "knn": {
+            "vector": {
+                "vector": vector,
+                "k": 40,
+                "filter": {"bool": {"filter": filters}},
+            }
+        }
+    }
+
+
 def search_evidence(ctx, query_text, asset_ids=None, kinds=None, strategy="hybrid"):
     scope = guard(ctx)
     if strategy not in ["keyword", "vector", "hybrid"] or not query_text.strip():
@@ -57,25 +69,12 @@ def search_evidence(ctx, query_text, asset_ids=None, kinds=None, strategy="hybri
             "/" + c.content_index_name + "/_search",
             {
                 "size": 40,
-                "query": {
-                    "script_score": {
-                        "query": {"bool": {"filter": filters}},
-                        "script": {
-                            "source": "knn_score",
-                            "lang": "knn",
-                            "params": {
-                                "field": "vector",
-                                "query_value": embed([query_text])[0],
-                                "space_type": "cosinesimil",
-                            },
-                        },
-                    }
-                },
+                "query": vector_query(embed([query_text])[0], filters),
             },
             timeout=max(0.1, min(15, ctx.deadline - __import__("time").time())),
         )["hits"]["hits"]
         for rank, h in enumerate(hits):
-            if h["_score"] < 1.35:
+            if h["_score"] < 0.675:
                 continue
             documents[h["_id"]] = h["_source"]
             scores[h["_id"]] += 1 / (60 + rank)

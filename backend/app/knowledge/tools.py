@@ -65,19 +65,47 @@ def read_document(ctx, call):
         return ToolResult(outcome="no_match", detail="Document section not found")
     section = selected[0]
     ref = SourceRef.model_validate(section["source_ref"])
+    headers = []
+    if call.section_id and section["locator"] != "overview":
+        header_iterator = iter_document_sections(scope, call.asset_id)
+        try:
+            header = next(header_iterator, None)
+            if (
+                header
+                and header["locator"] == "overview"
+                and header["source_ref"]["version"] == ref.version
+            ):
+                headers.append(header)
+        finally:
+            header_iterator.close()
     return ToolResult(
         items=[
             {
                 "id": call.asset_id + ":" + ref.locator,
                 "asset_id": call.asset_id,
                 "title": section["title"],
+                "source_ref": ref.model_dump(mode="json"),
                 "text": section["text"],
                 "locator": ref.locator,
                 "start": section["start"],
                 "end": section["end"],
             }
+        ]
+        + [
+            {
+                "id": call.asset_id + ":" + h["locator"],
+                "asset_id": call.asset_id,
+                "title": h["title"],
+                "text": h["text"],
+                "locator": h["locator"],
+                "source_ref": h["source_ref"],
+                "start": h["start"],
+                "end": h["end"],
+            }
+            for h in headers
         ],
-        source_refs=[ref],
+        source_refs=[ref]
+        + [SourceRef.model_validate(h["source_ref"]) for h in headers],
         truncated=more,
     )
 

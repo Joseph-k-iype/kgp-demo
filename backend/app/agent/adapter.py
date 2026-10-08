@@ -1,7 +1,7 @@
 """OpenAI-compatible adapter boundaries with explicit capability selection."""
 
 import json
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 from app.agent.actions import ActionDecision, PlannedCall, EvidenceAssessment
 from app.knowledge.contracts import (
@@ -40,7 +40,13 @@ def native_messages(state, context):
         if blocks:
             blocks[-1].append(message)
     return (
-        [{"role": "system", "content": DECISION_SYSTEM}]
+        [
+            {
+                "role": "system",
+                "content": DECISION_SYSTEM
+                + "\nUse update_plan to establish intent and assess evidence. Include a useful read call in the same response when an authorized identifier is already known. For a resolved policy/entity ID use read_content with handle kind record; use graph source_ref.asset_id for document/SQL tools. Only use the predicates enumerated by the tool schema.",
+            }
+        ]
         + [message for block in blocks[-2:] for message in block]
         + [{"role": "user", "content": json.dumps(context, default=str)}]
     )
@@ -52,6 +58,14 @@ class PlanControl(BaseModel):
     assessments_json: str
     stop_action: Literal["continue", "finish", "clarify"]
     summary: str
+
+
+class TypedPlanControl(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    intent: SearchIntentV2 | None
+    assessments: list[EvidenceAssessment] = Field(max_length=40)
+    stop_action: Literal["continue", "finish", "clarify"]
+    summary: str = Field(max_length=300)
 
 
 def native_tools():
@@ -69,6 +83,10 @@ def native_tools():
             continue
         schema = models[name].model_json_schema()
         schema["properties"].pop("tool", None)
+        if name == "traverse_graph":
+            from app.knowledge.graph import PREDICATES
+
+            schema["properties"]["predicates"]["items"]["enum"] = sorted(PREDICATES)
         tools.append(
             {
                 "type": "function",
@@ -92,31 +110,7 @@ def native_tools():
             "function": {
                 "name": "update_plan",
                 "description": "Set the first question-specific intent, assess relevant evidence facets, or finish/clarify. Always establish the intent before reading.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "intent_json": {
-                            "type": "string",
-                            "description": "SearchIntentV2 JSON or null; query, facets:[{id,description,kinds}],entity_ids,ambiguous.",
-                        },
-                        "assessments_json": {
-                            "type": "string",
-                            "description": "JSON array [{evidence_id,facet_ids,relevant}]",
-                        },
-                        "stop_action": {
-                            "type": "string",
-                            "enum": ["continue", "finish", "clarify"],
-                        },
-                        "summary": {"type": "string"},
-                    },
-                    "required": [
-                        "intent_json",
-                        "assessments_json",
-                        "stop_action",
-                        "summary",
-                    ],
-                    "additionalProperties": False,
-                },
+                "parameters": TypedPlanControl.model_json_schema(),
             },
         }
     )
@@ -139,16 +133,24 @@ def parse_native_decision(message):
         if name == "update_plan":
             if controls:
                 raise ValueError("Only one plan update is permitted per decision")
-            args = PlanControl.model_validate(args).model_dump()
-            value = json.loads(args.get("intent_json", "null"))
-            if value:
-                intent = SearchIntentV2.model_validate(value)
-            assessments = [
-                EvidenceAssessment.model_validate(a)
-                for a in json.loads(args.get("assessments_json", "[]"))
-            ]
-            stop = args.get("stop_action", "continue")
-            summary = args.get("summary", "")
+            if "intent" in args:
+                typed = TypedPlanControl.model_validate(args)
+                intent, assessments = typed.intent, typed.assessments
+                stop, summary = typed.stop_action, typed.summary
+            else:
+                # Known receipts from the previous contract remain replayable.
+                args = PlanControl.model_validate(args).model_dump()
+                value = json.loads(args.get("intent_json", "null"))
+                if value:
+                    intent = SearchIntentV2.model_validate(value)
+                assessments = [
+                    EvidenceAssessment.model_validate(a)
+                    for a in json.loads(args.get("assessments_json", "[]"))
+                ]
+                stop, summary = (
+                    args.get("stop_action", "continue"),
+                    args.get("summary", ""),
+                )
             controls.append(
                 {
                     "role": "tool",

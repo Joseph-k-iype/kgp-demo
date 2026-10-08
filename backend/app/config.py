@@ -15,7 +15,9 @@ class Settings(BaseSettings):
     opensearch_url: str = "http://127.0.0.1:59200"
     llm_provider: Literal["openrouter", "openai"] = "openrouter"
     openrouter_api_key: str = ""
-    openrouter_model: str = "deepseek/deepseek-v3.2"
+    openrouter_model: str = "deepseek/deepseek-v4.1-flash"
+    openrouter_upstream: str = "Fireworks"
+    openrouter_structured_mode: Literal["json_schema", "json_object"] = "json_schema"
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openai_api_key: str = ""
     openai_model: str = "gpt-4.1-mini"
@@ -26,15 +28,17 @@ class Settings(BaseSettings):
     graph_search_v2: bool = False
     local_search_worker: bool = True
     search_deadline_seconds: int = 120
+    search_finalization_reserve_seconds: int = 60
     search_persona_limit: int = 2
     search_queue_limit: int = 100
     search_lease_seconds: int = 45
     search_worker_concurrency: int = 2
     agent_adapter: Literal["json_actions", "native_tools"] = "json_actions"
     native_tools_verified_model: str = ""
+    native_tools_verified_upstream: str = ""
     native_tools_verified: bool = False
     native_multiturn_verified: bool = False
-    content_index_name: str = "atlas-content-current"
+    content_index_name: str = "atlas-content-ann-current"
     content_index_shards: int = 1
     content_index_replicas: int = 0
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

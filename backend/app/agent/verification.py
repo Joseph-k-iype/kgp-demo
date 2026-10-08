@@ -223,9 +223,23 @@ def citation_error(claim, citation, evidence, actual):
         ):
             return "Claim field/value does not match the source"
         expected = values.get("unit") or unit_for(citation.field)
-        if citation.unit and citation.unit != expected:
+        supplied_unit = {
+            "%": "percent",
+            "people": "count",
+            "persons": "count",
+            "employees": "count",
+        }.get(citation.unit, citation.unit)
+        if supplied_unit and supplied_unit != expected:
             return "Claim unit does not match the source"
-        if citation.period and citation.period not in [
+        supplied_period = citation.period
+        if supplied_period:
+            match = re.fullmatch(
+                r"(?:as_of|period|reporting_period)[: ]+(\d{4}-\d{2}-\d{2})",
+                supplied_period,
+            )
+            if match:
+                supplied_period = match.group(1)
+        if supplied_period and supplied_period not in [
             str(v)
             for k, v in values.items()
             if k in ["as_of", "period", "reporting_period"] or k.endswith("_date")
@@ -267,7 +281,7 @@ def numeric_error(claim, lookup):
     return None
 
 
-def governance_current(ctx, claim, paths, lookup):
+def governance_current(ctx, claim, paths, lookup, require_governing=True):
     if not claim.governance_paths:
         return False
     from app.knowledge.graph import traverse_graph
@@ -277,14 +291,36 @@ def governance_current(ctx, claim, paths, lookup):
         for p in paths
         if p.get("edges")
     }
+    governing_all = []
     for nodes in claim.governance_paths:
         path = known.get(tuple(nodes))
+        if path is None:
+            # Accept the explicit alternating form only when every predicate and
+            # endpoint matches an already retrieved proof. Never drop predicates.
+            path = next(
+                (
+                    p
+                    for p in paths
+                    if p.get("edges")
+                    and nodes
+                    == [p["edges"][0]["source"]]
+                    + [
+                        item
+                        for e in p["edges"]
+                        for item in (e["predicate"], e["target"])
+                    ]
+                ),
+                None,
+            )
+            if path:
+                nodes = [path["edges"][0]["source"]] + [
+                    e["target"] for e in path["edges"]
+                ]
         if not path or not 2 <= len(nodes) <= 4:
             return False
         edges = path["edges"]
         governing = [e for e in edges if e["predicate"] == "governedBy"]
-        if not governing:
-            return False
+        governing_all.extend(governing)
         for edge in governing:
             try:
                 target = get_record(guard(ctx), edge["target"], "entity")
@@ -316,10 +352,10 @@ def governance_current(ctx, claim, paths, lookup):
             r.asset_id == edge["source_ref"]["asset_id"]
             and r.version == edge["source_ref"]["version"]
             for r in cited
-            for edge in governing
+            for edge in (governing or edges)
         ):
             return False
-    return True
+    return bool(governing_all) if require_governing else True
 
 
 def verify_claims(
@@ -364,10 +400,21 @@ def verify_claims(
             require_governance
             or claim.governance_paths
             or re.search(
-                r"\b(governs?|governing|applicable policy)\b", claim.text, re.I
+                r"\b(governs?|governing|applies? to|applicable policy)\b",
+                claim.text,
+                re.I,
             )
         ):
-            if not governance_current(ctx, claim, paths or [], lookup):
+            applicability = require_governance or bool(
+                re.search(
+                    r"\b(governs?|governing|applies? to|applicable policy)\b",
+                    claim.text,
+                    re.I,
+                )
+            )
+            if not governance_current(
+                ctx, claim, paths or [], lookup, require_governing=applicability
+            ):
                 reason = "No current source-backed governing policy path supports applicability"
         if reason:
             report.rejected.append(

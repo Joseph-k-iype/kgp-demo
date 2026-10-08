@@ -327,3 +327,126 @@ def test_source_only_dataset_values_are_verified_without_json_key_order_assumpti
     )
     assert output["statements"] and "12500000" in output["statements"][0]["text"]
     assert output["statements"][0]["support_status"] == "source_only"
+
+
+def test_unrelated_candidates_do_not_turn_missing_answer_into_partial():
+    from app.agent.actions import ResearchState
+    from app.agent.finalization import finalize_research
+    from app.agent.verification import DraftAnswer
+
+    ctx = context()
+    state = ResearchState(
+        query="What is the 2035 budget?",
+        intent={
+            "query": "What is the 2035 budget?",
+            "facets": [
+                {"id": "budget", "description": "2035 budget", "kinds": ["structured"]}
+            ],
+        },
+        evidence=[document(ctx, "finance-asset-1")],
+    )
+    result = finalize_research(
+        ctx,
+        state,
+        "llm",
+        lambda *a: None,
+        lambda *a: None,
+        draft_provider=lambda *a: DraftAnswer(
+            gaps=["No 2035 budget source was found."]
+        ),
+        judge_provider=lambda *a: [],
+    )
+    assert result["answer_outcome"] == "no_evidence"
+    assert result["statements"] == []
+
+
+def test_answer_excludes_true_but_unasked_claims(monkeypatch):
+    from app.agent.actions import ResearchState
+    from app.agent.finalization import finalize_research
+    from app.agent.verification import DraftAnswer
+
+    ctx = context()
+    e = document(ctx, "finance-asset-1")
+    state = ResearchState(
+        query="What frequency?",
+        intent={
+            "query": "What frequency?",
+            "facets": [
+                {"id": "frequency", "description": "Frequency", "kinds": ["document"]}
+            ],
+        },
+        evidence=[e],
+    )
+    draft = DraftAnswer(
+        claims=[
+            SupportedClaim(
+                text="Daily reconciliation.",
+                citations=[ClaimCitation(evidence_id=e.id, quote=e.text)],
+            ),
+            SupportedClaim(
+                text="Other true source context.",
+                citations=[ClaimCitation(evidence_id=e.id, quote=e.text)],
+            ),
+        ]
+    )
+    result = finalize_research(
+        ctx,
+        state,
+        "llm",
+        lambda *a: None,
+        lambda *a: None,
+        draft_provider=lambda *a: draft,
+        judge_provider=lambda *a: [
+            TextJudgment(claim_index=0, status="supported", facet_ids=["frequency"]),
+            TextJudgment(claim_index=1, status="supported", facet_ids=[]),
+        ],
+    )
+    assert [s["text"] for s in result["statements"]] == ["Daily reconciliation."]
+
+
+def test_draft_receives_scoped_product_association_as_context_not_evidence():
+    from app.agent.actions import ResearchState
+    from app.agent.finalization import finalize_research
+    from app.agent.verification import DraftAnswer
+
+    ctx = context()
+    result = execute_read(ctx, ReadDocumentAction(asset_id="product-asset-1"))
+    e = EvidenceFragment(
+        id="product-asset-1:overview",
+        asset_id="product-asset-1",
+        domain_id="product",
+        content_kind="document",
+        text=result.items[0]["text"],
+        source_ref=result.source_refs[0],
+    )
+    state = ResearchState(
+        query="What does Product Performance require?",
+        intent={
+            "query": "Product Performance",
+            "facets": [
+                {
+                    "id": "requirement",
+                    "description": "Requirement",
+                    "kinds": ["document"],
+                }
+            ],
+        },
+        evidence=[e],
+    )
+    observed = {}
+
+    def draft(data, deadline):
+        observed.update(data)
+        return DraftAnswer()
+
+    finalize_research(
+        ctx,
+        state,
+        "llm",
+        lambda *a: None,
+        lambda *a: None,
+        draft_provider=draft,
+        judge_provider=lambda *a: [],
+    )
+    assert "Product Performance" in observed["source_context"][0]["product_names"]
+    assert observed["source_context"][0]["asset_id"] == "product-asset-1"

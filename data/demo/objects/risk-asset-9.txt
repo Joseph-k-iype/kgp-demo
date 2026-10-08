@@ -1,0 +1,18 @@
+# Financial Crime Signals · evidence brief 3
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Domain: risk
+Steward: Priya Shah
+Concepts: Counterparty, Policy
+
+Purpose
+Financial Crime Signals · evidence brief 3 supports financial crime decisions with counterparty context and accountable provenance.
+
+Control requirements
+Every counterparty exposure must link to an approved due diligence record. Aster Capital (CP-1000) has a reported exposure of USD 1,250,000 and a High review priority. Meridian Holdings (CP-1001) has a reported exposure of USD 2,500,000. Due diligence includes legal ownership, sanctions screening and financial condition.
+All entities, measurements and amounts in this source are fictional.
+
+Evidence and governance
+The steward reviews records monthly. PostgreSQL stores structured records; MinIO retains the original source document. RDF concepts connect the business meaning, source and knowledge product. Two required supporting evidence sources remain uncovered. Unresolved data quality issues must be considered before use.
+
+Domain-specific context
+Financial Crime Signals · evidence brief 3 applies this evidence framework to Financial Crime. Supporting assets are discoverable through the catalog and ontology explorer. Policy applicability must be confirmed by the assigned steward.

@@ -120,3 +120,14 @@ def test_source_pages_are_bounded_and_cursors_advance():
                 )
             ),
         )
+
+
+def test_named_document_clause_also_returns_its_identifying_header_with_separate_locator():
+    result = execute_read(
+        context(), ReadDocumentAction(asset_id="finance-asset-5", section_id="controls")
+    )
+    assert result.items[0]["locator"] == "controls"
+    header = next(item for item in result.items if item["locator"] == "overview")
+    assert "TF-POL-002" in header["text"]
+    assert header["source_ref"]["locator"] == "overview"
+    assert result.items[0]["source_ref"]["locator"] == "controls"

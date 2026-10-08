@@ -134,6 +134,7 @@ def execute_run(id, resume=False):
     conn = settings().database_url.replace("postgresql+psycopg://", "postgresql://")
     try:
         with PostgresSaver.from_conn_string(conn) as saver:
+            saver.serde = checkpoint_serializer()
             with _setup_lock:
                 saver.setup()
             graph = build_graph(saver, event, raw_run)
@@ -267,6 +268,31 @@ def cancel_search(scope, run_id):
     return get_search(scope, run_id)
 
 
+def checkpoint_serializer():
+    from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+    allowed = [
+        ("app.agent.actions", name)
+        for name in [
+            "ResearchState",
+            "ActionDecision",
+            "PlannedCall",
+            "EvidenceAssessment",
+        ]
+    ]
+    allowed += [
+        ("app.knowledge.contracts", name)
+        for name in [
+            "SearchIntentV2",
+            "AnswerFacet",
+            "CoverageReport",
+            "EvidenceFragment",
+            "SourceRef",
+        ]
+    ]
+    return JsonPlusSerializer(allowed_msgpack_modules=allowed, pickle_fallback=False)
+
+
 def finalize_research(ctx, state, mode, before_model, after_model):
     from app.agent.finalization import finalize_research as finalize
 
@@ -306,7 +332,12 @@ def execute_graph_run(id, worker):
         if scope.scope_version != run["scope_version"]:
             raise ScopeChanged("Access scope changed; start a new search")
         ctx = ToolContext(
-            scope=scope, deadline=run["deadline"], domain_id=run.get("domain_id")
+            scope=scope,
+            deadline=run["deadline"],
+            domain_id=run.get("domain_id"),
+            finalization_reserve_seconds=settings().search_finalization_reserve_seconds
+            if run["mode"] != "extractive"
+            else 8,
         )
         ctx._lifecycle_guard = lambda: assert_owned(id, worker)
         before = lambda fingerprint: begin_model(id, worker, fingerprint)
@@ -330,6 +361,7 @@ def execute_graph_run(id, worker):
 
         conn = settings().database_url.replace("postgresql+psycopg://", "postgresql://")
         with PostgresSaver.from_conn_string(conn) as saver:
+            saver.serde = checkpoint_serializer()
             with _setup_lock:
                 saver.setup()
             if run["mode"] == "extractive":
@@ -364,7 +396,7 @@ def execute_graph_run(id, worker):
         guard(ctx)
         output = finalize_research(ctx, state, run["mode"], before, after)
         guard(ctx)
-        receipts = raw_run(id).get("model_receipts", {}).values()
+        receipts = list(raw_run(id).get("model_receipts", {}).values())
         output["usage"] = {
             key: sum(int(r.get("usage", {}).get(key) or 0) for r in receipts)
             for key in ["prompt_tokens", "completion_tokens", "total_tokens"]
@@ -377,6 +409,18 @@ def execute_graph_run(id, worker):
             "prompt": PROMPT_VERSION,
             "model": settings().llm_model if run["mode"] != "extractive" else None,
             "provider": settings().llm_provider
+            if run["mode"] != "extractive"
+            else None,
+            "upstream": settings().openrouter_upstream
+            if run["mode"] != "extractive" and settings().llm_provider == "openrouter"
+            else None,
+            "adapter": next(
+                (r["adapter"] for r in receipts if r.get("adapter")),
+                settings().agent_adapter,
+            )
+            if run["mode"] != "extractive"
+            else "offline",
+            "structured_mode": settings().openrouter_structured_mode
             if run["mode"] != "extractive"
             else None,
             "langgraph": package_version("langgraph"),
@@ -418,10 +462,20 @@ def execute_graph_run(id, worker):
             )
             else "Search could not finish because a source or provider was unavailable. Generate an answer explicitly to try again."
         )
+        known_receipts = raw_run(id).get("model_receipts", {}).values()
+        known_usage = {
+            key: sum(int(r.get("usage", {}).get(key) or 0) for r in known_receipts)
+            for key in ["prompt_tokens", "completion_tokens", "total_tokens"]
+        }
         publish_owned(
             id,
             worker,
-            {"status": status, "error": message},
+            {
+                "status": status,
+                "error": message,
+                "error_category": type(exc).__name__,
+                "usage": known_usage,
+            },
             {
                 "stage": "finish",
                 "status": status,

@@ -1,4 +1,5 @@
 import time
+import pytest
 from app.agent.actions import ActionDecision, PlannedCall, EvidenceAssessment
 from app.agent.adaptive import run_research
 from app.knowledge.contracts import ToolContext, SearchIntentV2, ToolResult
@@ -276,6 +277,17 @@ def test_decision_provider_uses_the_strict_openrouter_boundary(monkeypatch):
     from app.agent.actions import ResearchState
     from app.agent.provider import make_decider
 
+    from app.config import Settings
+
+    config = Settings(
+        _env_file=None,
+        llm_provider="openrouter",
+        openrouter_model="deepseek/deepseek-v3.2",
+        openrouter_structured_mode="json_schema",
+        agent_adapter="json_actions",
+    )
+    monkeypatch.setattr(provider, "settings", lambda: config)
+
     captured = []
 
     def respond(request):
@@ -337,7 +349,8 @@ def test_decision_provider_uses_the_strict_openrouter_boundary(monkeypatch):
     assert captured[0]["reasoning"]["enabled"] is False
 
 
-def test_recoverable_tool_argument_error_drives_a_corrected_action():
+@pytest.mark.parametrize("status_code", [422, 404])
+def test_recoverable_tool_argument_error_drives_a_corrected_action(status_code):
     from fastapi import HTTPException
 
     choices = [
@@ -381,7 +394,12 @@ def test_recoverable_tool_argument_error_drives_a_corrected_action():
         if call.tool == "resolve_entities":
             return ToolResult()
         if "wrong_field" in call.query.select:
-            raise HTTPException(422, "Unknown dataset field")
+            raise HTTPException(
+                status_code,
+                "Unknown dataset field"
+                if status_code == 422
+                else "Record not found in your scope",
+            )
         return ToolResult(
             items=[
                 {
@@ -458,6 +476,8 @@ def test_native_sdk_multiturn_sends_matching_tool_receipts(monkeypatch):
 
     c = settings()
     monkeypatch.setattr(c, "agent_adapter", "native_tools")
+    monkeypatch.setattr(c, "openrouter_upstream", "SiliconFlow")
+    monkeypatch.setattr(c, "native_tools_verified_upstream", "SiliconFlow")
     monkeypatch.setattr(
         c, "native_tools_verified_model", c.llm_provider + ":" + c.llm_model
     )
@@ -576,3 +596,375 @@ def test_decision_context_preserves_graph_source_handles_and_registered_fields()
     assert packed["paths"][0]["edges"][0]["source_ref"] == ref
     assert packed["source_handles"][0]["source_ref"] == ref
     assert "liquidity_usd" in packed["source_handles"][0]["fields"]
+
+
+def test_openrouter_structured_prompt_carries_the_actual_output_contract(monkeypatch):
+    import json, httpx
+    from openai import OpenAI
+    from app.agent import provider
+    from app.agent.verification import DraftAnswer
+
+    captured = []
+
+    def respond(request):
+        body = json.loads(request.content)
+        captured.append(body)
+        return httpx.Response(
+            200,
+            json={
+                "id": "schema-test",
+                "object": "chat.completion",
+                "created": 0,
+                "model": "deepseek/deepseek-v3.2",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": '{"claims":[],"gaps":[],"uncertainty":"","sections":[]}',
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+            },
+        )
+
+    monkeypatch.setattr(
+        provider,
+        "client",
+        lambda: OpenAI(
+            api_key="test-only",
+            base_url="https://openrouter.ai/api/v1",
+            http_client=httpx.Client(transport=httpx.MockTransport(respond)),
+        ),
+    )
+    provider.parse_response(
+        DraftAnswer,
+        "Answer with supported claims.",
+        {"query": "Frequency?"},
+        deadline=time.time() + 30,
+    )
+    prompt = captured[0]["messages"][0]["content"]
+    assert '"quote"' in prompt and '"claim_indices"' in prompt
+    assert "JSON object" in prompt and "code fence" in prompt
+
+
+def test_openrouter_pinned_route_disables_fallbacks(monkeypatch):
+    from app.agent import provider
+    from app.config import Settings
+
+    monkeypatch.setattr(
+        provider,
+        "settings",
+        lambda: Settings(_env_file=None, openrouter_upstream="DeepInfra"),
+    )
+    assert provider.openrouter_options()["provider"] == {
+        "require_parameters": True,
+        "order": ["DeepInfra"],
+        "allow_fallbacks": False,
+    }
+
+
+def test_native_certification_is_specific_to_the_upstream_route():
+    from app.config import Settings
+    from app.agent.provider import native_route_certified
+
+    config = Settings(
+        _env_file=None,
+        openrouter_model="deepseek/deepseek-v3.2",
+        openrouter_upstream="SiliconFlow",
+        native_tools_verified_model="openrouter:deepseek/deepseek-v3.2",
+        native_tools_verified_upstream="DeepInfra",
+    )
+    assert not native_route_certified(config)
+    config.native_tools_verified_upstream = "SiliconFlow"
+    assert native_route_certified(config)
+    config.openrouter_upstream = ""
+    assert not native_route_certified(config)
+
+
+def test_invalid_native_plan_is_corrected_within_the_same_budget():
+    from app.agent.actions import InvalidDecision
+
+    attempts = []
+
+    def decide(state, deadline):
+        attempts.append(state.model_calls)
+        if len(attempts) == 1:
+            raise InvalidDecision(
+                "Use only document, structured, definition or metadata evidence kinds."
+            )
+        assert state.observations[-1]["outcome"] == "invalid_decision"
+        return ActionDecision(
+            intent={"query": "Find policy", "facets": []}, stop_action="finish"
+        )
+
+    result = run_research(
+        ctx(), "Find policy", decide, reader=lambda *args: ToolResult()
+    )
+    assert result.model_calls == 2
+    assert len(attempts) == 2
+    assert result.stop_reason != "invalid_intent"
+
+
+def test_native_receipt_compaction_retains_valid_json_and_source_handles():
+    import json
+    from app.agent.adaptive import compact_tool_receipt
+
+    result = ToolResult(
+        items=[
+            {
+                "id": "clause",
+                "text": "policy " * 5000,
+                "source_ref": {
+                    "asset_id": "finance-asset-1",
+                    "locator": "controls",
+                    "version": "v1",
+                    "domain_id": "finance",
+                },
+            }
+        ]
+    )
+    packed = compact_tool_receipt(result)
+    assert len(packed.encode()) <= 8000
+    value = json.loads(packed)
+    assert value["truncated"]
+    assert value["items"][0]["source_ref"]["locator"] == "controls"
+
+
+def test_plan_only_round_then_corrective_read_does_not_prematurely_stall():
+    from fastapi import HTTPException
+
+    choices = [
+        ActionDecision(
+            intent={
+                "query": "Find policy",
+                "facets": [
+                    {"id": "policy", "description": "Policy", "kinds": ["document"]}
+                ],
+            }
+        ),
+        ActionDecision(
+            read_calls=[
+                PlannedCall(
+                    tool="traverse_graph", arguments_json='{"roots":["missing"]}'
+                )
+            ]
+        ),
+        ActionDecision(
+            read_calls=[
+                PlannedCall(
+                    tool="resolve_entities", arguments_json='{"query":"Treasury"}'
+                )
+            ]
+        ),
+        ActionDecision(stop_action="finish"),
+    ]
+
+    resolutions = []
+
+    def reader(context, call):
+        if call.tool == "traverse_graph":
+            raise HTTPException(404, "Not found in scope")
+        resolutions.append(call.tool)
+        return ToolResult(
+            items=[{"id": "treasury-liquidity", "name": "Treasury"}]
+            if len(resolutions) > 1
+            else []
+        )
+
+    state = run_research(ctx(), "Find policy", lambda *args: choices.pop(0), reader)
+    assert not choices
+    assert state.model_calls == 4
+
+
+def test_bootstrap_graph_exposes_source_handles_before_the_first_model_call():
+    calls = []
+
+    def reader(context, call):
+        calls.append(call.tool)
+        if call.tool == "resolve_entities":
+            return ToolResult(
+                items=[
+                    {
+                        "id": "entity",
+                        "name": "Resolved business entity",
+                        "entity_type": "BusinessEntity",
+                        "domain_id": "finance",
+                        "score": 10,
+                    }
+                ]
+            )
+        assert call.tool == "traverse_graph"
+        return ToolResult(
+            paths=[
+                {
+                    "edges": [
+                        {
+                            "source": "entity",
+                            "target": "policy",
+                            "predicate": "governedBy",
+                            "source_ref": {
+                                "asset_id": "finance-asset-1",
+                                "domain_id": "finance",
+                                "locator": "controls",
+                                "version": "v1",
+                            },
+                        }
+                    ]
+                }
+            ]
+        )
+
+    def decide(state, deadline):
+        assert state.paths[0]["edges"][0]["source_ref"]["asset_id"] == "finance-asset-1"
+        return ActionDecision(
+            intent={"query": "Find policy", "facets": []}, stop_action="finish"
+        )
+
+    result = run_research(ctx(), "Find policy", decide, reader)
+    assert calls == ["resolve_entities", "traverse_graph"]
+    assert result.tool_calls == 2
+
+
+def test_graph_seed_reads_one_real_source_before_model_planning():
+    calls = []
+    ref = {
+        "asset_id": "finance-asset-1",
+        "domain_id": "finance",
+        "locator": "controls",
+        "version": "v1",
+    }
+
+    def reader(context, call):
+        calls.append(call.tool)
+        if call.tool == "resolve_entities":
+            return ToolResult(
+                items=[
+                    {
+                        "id": "policy",
+                        "entity_type": "Policy",
+                        "name": "Named policy",
+                        "domain_id": "finance",
+                        "score": 10,
+                    }
+                ]
+            )
+        if call.tool == "traverse_graph":
+            return ToolResult(
+                source_refs=[ref],
+                paths=[
+                    {
+                        "edges": [
+                            {
+                                "source": "policy",
+                                "target": "section",
+                                "predicate": "supportedBy",
+                                "source_ref": ref,
+                            }
+                        ]
+                    }
+                ],
+            )
+        assert (
+            call.tool == "read_content"
+            and call.kind == "asset"
+            and call.id == "finance-asset-1"
+        )
+        return ToolResult(
+            items=[
+                {
+                    "id": "source-clause",
+                    "asset_id": "finance-asset-1",
+                    "text": "An actual source clause.",
+                    "title": "Named policy",
+                    "content_kind": "document",
+                    "source_ref": ref,
+                }
+            ],
+            source_refs=[ref],
+        )
+
+    def decide(state, deadline):
+        assert state.evidence[0].text == "An actual source clause."
+        assert state.evidence[0].source_title == "Named policy"
+        return ActionDecision(
+            intent={"query": "Find policy", "facets": []}, stop_action="finish"
+        )
+
+    run_research(ctx(), "Find policy", decide, reader)
+    assert calls == ["resolve_entities", "traverse_graph", "read_content"]
+
+
+def test_json_object_provider_mode_keeps_strict_server_schema(monkeypatch):
+    from app.config import Settings
+    from app.agent import provider
+
+    monkeypatch.setattr(
+        provider,
+        "settings",
+        lambda: Settings(_env_file=None, openrouter_structured_mode="json_object"),
+    )
+    from app.agent.verification import DraftAnswer
+
+    assert provider.output_format(DraftAnswer) == {"type": "json_object"}
+    assert DraftAnswer.model_config["extra"] == "forbid"
+
+
+def test_native_plan_uses_typed_objects_instead_of_nested_json_strings():
+    from app.agent.adapter import parse_native_decision, native_tools
+    import json
+
+    message = {
+        "tool_calls": [
+            {
+                "id": "plan",
+                "function": {
+                    "name": "update_plan",
+                    "arguments": json.dumps(
+                        {
+                            "intent": {
+                                "query": "Name policy",
+                                "facets": [
+                                    {
+                                        "id": "name",
+                                        "description": "Policy name",
+                                        "kinds": ["document"],
+                                    }
+                                ],
+                                "entity_ids": [],
+                                "ambiguous": False,
+                            },
+                            "assessments": [],
+                            "stop_action": "finish",
+                            "summary": "Policy found",
+                        }
+                    ),
+                },
+            }
+        ]
+    }
+    result = parse_native_decision(message)
+    assert result.intent.facets[0].id == "name"
+    tool = next(t for t in native_tools() if t["function"]["name"] == "update_plan")
+    assert "intent" in tool["function"]["parameters"]["properties"]
+    assert "intent_json" not in tool["function"]["parameters"]["properties"]
+
+
+def test_checkpoint_serializer_explicitly_allows_only_application_state_types():
+    from app.agent.service import checkpoint_serializer
+    from app.agent.actions import ResearchState
+
+    serializer = checkpoint_serializer()
+    state = ResearchState(
+        query="Restore search",
+        intent={
+            "query": "Restore search",
+            "facets": [{"id": "name", "description": "Name", "kinds": ["document"]}],
+        },
+        last_decision=ActionDecision(stop_action="finish"),
+    )
+    restored = serializer.loads_typed(serializer.dumps_typed(state))
+    assert isinstance(restored, ResearchState)
+    assert restored.intent.facets[0].id == "name"
+    assert serializer.pickle_fallback is False

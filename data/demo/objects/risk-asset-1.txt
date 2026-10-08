@@ -1,0 +1,7 @@
+# RDD-POL-001 — Counterparty due diligence policy
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Effective: 2026-01-01. Status: Active. Applies to Counterparty Risk Intelligence.
+## Controls
+Every counterparty exposure must link to approved legal ownership, sanctions screening and financial condition evidence. Aster Capital (CP-1000) has synthetic exposure USD 1,250,000 and High risk rating as of 2026-09-30. Its evidence status is Evidence pending; do not claim that due diligence is complete. Meridian Holdings (CP-1001) has USD 2,500,000 exposure.
+## Contract linkage
+Aster Capital contract CT-2000 requires annual disclosure; inspect the Legal contract source for the authoritative clause.

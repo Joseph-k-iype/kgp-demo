@@ -1,0 +1,10 @@
+{
+  "requests": 1,
+  "provider": "DeepInfra",
+  "model": "deepseek/deepseek-v3.2",
+  "valid": false,
+  "error": "upstream_rate_limit",
+  "status_code": 429,
+  "retry_count": 0,
+  "verification": "inconclusive; no model response"
+}

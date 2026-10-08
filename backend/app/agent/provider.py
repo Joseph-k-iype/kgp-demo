@@ -70,6 +70,40 @@ def strict_schema(schema):
     return result
 
 
+def native_route_certified(config):
+    return (
+        config.native_tools_verified_model
+        == config.llm_provider + ":" + config.llm_model
+        and (
+            config.llm_provider != "openrouter"
+            or bool(config.openrouter_upstream)
+            and config.native_tools_verified_upstream.lower()
+            == config.openrouter_upstream.lower()
+        )
+    )
+
+
+def openrouter_options():
+    upstream = settings().openrouter_upstream
+    routing = {"require_parameters": True}
+    if upstream:
+        routing.update(order=[upstream], allow_fallbacks=False)
+    return {"provider": routing, "reasoning": {"enabled": False}}
+
+
+def output_format(schema):
+    if settings().openrouter_structured_mode == "json_object":
+        return {"type": "json_object"}
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": schema.__name__,
+            "strict": True,
+            "schema": strict_schema(schema),
+        },
+    }
+
+
 def parse_response(schema, instructions, data, deadline=None, usage_callback=None):
     try:
         return _parse_response(schema, instructions, data, deadline, usage_callback)
@@ -81,26 +115,22 @@ def parse_response(schema, instructions, data, deadline=None, usage_callback=Non
 
 def _parse_response(schema, instructions, data, deadline=None, usage_callback=None):
     c = settings()
+    instructions += (
+        "\nReturn only one JSON object conforming exactly to this response schema. No code fence, prose or extra fields. Use the exact field names; unknown references are forbidden.\nResponse schema:\n"
+        + json.dumps(strict_schema(schema))
+    )
     sdk = client().with_options(timeout=remaining_timeout(deadline, 25), max_retries=0)
     if c.llm_provider == "openrouter":
         response = sdk.chat.completions.create(
             model=c.llm_model,
             max_tokens=2200,
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": schema.__name__,
-                    "strict": True,
-                    "schema": strict_schema(schema),
-                },
-            },
+            response_format=output_format(schema),
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": json.dumps(data)},
             ],
             extra_body={
-                "provider": {"require_parameters": True},
-                "reasoning": {"enabled": False},
+                **openrouter_options(),
                 "plugins": [{"id": "response-healing"}],
             },
         )
@@ -115,6 +145,7 @@ def _parse_response(schema, instructions, data, deadline=None, usage_callback=No
             usage_callback(
                 {
                     "model": response.model,
+                    "upstream": response.model_dump().get("provider"),
                     "usage": response.usage.model_dump() if response.usage else {},
                 }
             )
@@ -175,7 +206,7 @@ def validate_answer(answer, evidence):
 
 def make_decider(ctx, before_model=None, after_model=None):
     """Runtime context is injected; both adapters execute the same scoped read actions."""
-    from app.agent.actions import ActionDecision
+    from app.agent.actions import ActionDecision, InvalidDecision
     from app.agent.prompts import DECISION_SYSTEM, decision_context
     from app.agent.adapter import (
         native_messages,
@@ -190,7 +221,7 @@ def make_decider(ctx, before_model=None, after_model=None):
         guard(ctx)
         data = decision_context(state, ctx)
         c = settings()
-        certified = c.native_tools_verified_model == c.llm_provider + ":" + c.llm_model
+        certified = native_route_certified(c)
         adapter = choose_adapter(
             ProviderCapabilities(
                 native_tools_verified=certified
@@ -203,19 +234,17 @@ def make_decider(ctx, before_model=None, after_model=None):
         cached = before_model(fingerprint) if before_model else None
         if cached:
             if cached.get("native_message"):
-                return parse_native_decision(cached["native_message"])
+                try:
+                    return parse_native_decision(cached["native_message"])
+                except (ValidationError, ValueError) as exc:
+                    raise InvalidDecision("Native tool plan failed validation") from exc
             return ActionDecision.model_validate(cached["decision"])
         if adapter == "native_tools":
             sdk = client().with_options(
                 timeout=remaining_timeout(deadline, 25), max_retries=0
             )
             extra = (
-                {
-                    "provider": {"require_parameters": True},
-                    "reasoning": {"enabled": False},
-                }
-                if settings().llm_provider == "openrouter"
-                else {}
+                openrouter_options() if settings().llm_provider == "openrouter" else {}
             )
             response = sdk.chat.completions.create(
                 model=settings().llm_model,
@@ -230,12 +259,20 @@ def make_decider(ctx, before_model=None, after_model=None):
             message = response.choices[0].message.model_dump(exclude_none=True)
             if message.get("refusal"):
                 raise ModelRefusal("The model declined this query")
-            decision = parse_native_decision(message)
             receipt = {
                 "native_message": message,
                 "model": response.model,
+                "upstream": response.model_dump().get("provider"),
                 "usage": response.usage.model_dump() if response.usage else {},
+                "adapter": adapter,
             }
+            guard(ctx)
+            if after_model:
+                after_model(fingerprint, receipt)
+            try:
+                return parse_native_decision(message)
+            except (ValidationError, ValueError) as exc:
+                raise InvalidDecision("Native tool plan failed validation") from exc
         else:
             usage = {}
             decision = parse_response(

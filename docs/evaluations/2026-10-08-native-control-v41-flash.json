@@ -1,0 +1,11 @@
+{
+  "model": "deepseek/deepseek-v4.1-flash",
+  "upstream": "DeepSeek",
+  "maximum_requests": 3,
+  "requests": [],
+  "native_plan_verified": false,
+  "native_tools_verified": false,
+  "native_multiturn_verified": false,
+  "sdk_retries": 0,
+  "error": "NotFoundError"
+}

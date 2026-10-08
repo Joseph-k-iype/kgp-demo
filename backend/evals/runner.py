@@ -21,7 +21,9 @@ class EvaluationReport(BaseModel):
     limitations: list[str] = Field(default_factory=list)
 
 
-def evaluate_engine(engine, cases, provider_mode="offline", max_runs=None):
+def evaluate_engine(
+    engine, cases, provider_mode="offline", max_runs=None, on_case=None
+):
     if engine not in ["legacy", "graph_fixed", "adaptive"] or provider_mode not in [
         "offline",
         "live",
@@ -125,6 +127,9 @@ def evaluate_engine(engine, cases, provider_mode="offline", max_runs=None):
                 "query": case.query,
                 "elapsed_seconds": round(time.time() - started, 3),
                 "error": error,
+                "error_category": result.get("error_category"),
+                "gaps": result.get("gaps", []),
+                "uncertainty": result.get("uncertainty", ""),
                 "metrics": metrics,
                 "answer_outcome": result.get("answer_outcome"),
                 "run_id": result.get("run_id"),
@@ -144,6 +149,8 @@ def evaluate_engine(engine, cases, provider_mode="offline", max_runs=None):
                 "graph_paths": result.get("graph_paths", []),
             }
         )
+        if on_case:
+            on_case(report)
     count = len(report.cases)
     latencies = sorted(c["elapsed_seconds"] for c in report.cases)
     report.summary = {
@@ -170,5 +177,20 @@ def evaluate_engine(engine, cases, provider_mode="offline", max_runs=None):
         else None,
         "p50_seconds": latencies[int((count - 1) * 0.5)] if count else None,
         "p95_seconds": latencies[int((count - 1) * 0.95)] if count else None,
+    }
+    answerable_ids = {c.id for c in selected if c.facts}
+    answerable = [c for c in report.cases if c["case_id"] in answerable_ids]
+    report.summary["answerable_case_count"] = len(answerable)
+    report.summary["answerable_metrics"] = {
+        key: sum(c["metrics"][key] for c in answerable) / len(answerable)
+        if answerable
+        else None
+        for key in [
+            "retrieval_recall",
+            "facet_coverage",
+            "support_precision",
+            "path_coverage",
+            "outcome_valid",
+        ]
     }
     return report

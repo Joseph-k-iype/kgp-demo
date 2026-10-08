@@ -35,6 +35,7 @@ class ToolContext(BaseModel):
     scope: ScopeContext
     deadline: float
     domain_id: str | None = None
+    finalization_reserve_seconds: int = 20
     max_tool_calls: int = 16
     tool_calls: int = 0
     max_response_bytes: int = 256000

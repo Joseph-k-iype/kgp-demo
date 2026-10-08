@@ -206,3 +206,94 @@ def test_a_cross_source_claim_can_cite_amount_and_obligation_separately(monkeypa
         ],
     )
     assert len(report.supported) == 1 and not report.rejected
+
+
+def test_explicit_predicate_path_matches_only_the_exact_current_proof(monkeypatch):
+    import app.agent.verification as module
+    import app.knowledge.graph as graph
+    from app.knowledge.contracts import ToolResult
+
+    e = evidence()
+    paths = [
+        {
+            "edges": [
+                {
+                    "source": "treasury-liquidity",
+                    "predicate": "governedBy",
+                    "target": "TL-POL-001",
+                    "source_ref": e.source_ref.model_dump(),
+                }
+            ]
+        }
+    ]
+    monkeypatch.setattr(module, "get_record", lambda *a: {"entity_type": "Policy"})
+    monkeypatch.setattr(
+        graph, "traverse_graph", lambda *a, **kw: ToolResult(outcome="ok", paths=paths)
+    )
+    claim = SupportedClaim(
+        text="TL-POL-001 governs liquidity.",
+        citations=[ClaimCitation(evidence_id=e.id, quote=e.text)],
+        governance_paths=[["treasury-liquidity", "governedBy", "TL-POL-001"]],
+    )
+    assert module.governance_current(context(), claim, paths, {e.id: e})
+    claim.governance_paths = [["treasury-liquidity", "relatedTo", "TL-POL-001"]]
+    assert not module.governance_current(context(), claim, paths, {e.id: e})
+
+
+def test_structured_period_and_percent_representation_are_normalized_without_changing_facts():
+    import json
+    from app.agent.verification import citation_error
+
+    e = evidence().model_copy(
+        update={
+            "content_kind": "structured",
+            "values": {"sla_percent": 96.0, "as_of": "2026-09-30"},
+        }
+    )
+    claim = SupportedClaim(
+        text="SLA is 96% on 2026-09-30.",
+        citations=[
+            ClaimCitation(
+                evidence_id=e.id,
+                field="sla_percent",
+                value="96.0",
+                unit="%",
+                period="as_of 2026-09-30",
+            )
+        ],
+    )
+    assert citation_error(claim, claim.citations[0], e, json.dumps(e.values)) is None
+    claim.citations[0].period = "as_of 2025-09-30"
+    assert (
+        citation_error(claim, claim.citations[0], e, json.dumps(e.values)) is not None
+    )
+
+
+def test_governance_claim_can_include_its_separate_current_supporting_path(monkeypatch):
+    import app.agent.verification as module
+    import app.knowledge.graph as graph
+    from app.knowledge.contracts import ToolResult
+
+    e = evidence()
+    edge = lambda s, p, t: {
+        "source": s,
+        "predicate": p,
+        "target": t,
+        "source_ref": e.source_ref.model_dump(),
+    }
+    paths = [
+        {"edges": [edge("liquidity", "governedBy", "policy")]},
+        {"edges": [edge("policy", "supportedBy", "section")]},
+    ]
+    monkeypatch.setattr(module, "get_record", lambda *a: {"entity_type": "Policy"})
+    monkeypatch.setattr(
+        graph, "traverse_graph", lambda *a, **kw: ToolResult(paths=paths)
+    )
+    claim = SupportedClaim(
+        text="Policy governs liquidity.",
+        citations=[ClaimCitation(evidence_id=e.id, quote=e.text)],
+        governance_paths=[["liquidity", "policy"], ["policy", "section"]],
+    )
+    assert module.governance_current(context(), claim, paths, {e.id: e})
+    claim.governance_paths = [["policy", "section"]]
+    assert not module.governance_current(context(), claim, paths, {e.id: e})
