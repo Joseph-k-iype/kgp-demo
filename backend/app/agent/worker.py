@@ -169,12 +169,13 @@ def assert_owned(run_id, worker_id):
 def publish_owned(run_id, worker_id, patch, final_event=None):
     return bool(
         query(
-            "UPDATE search_runs SET payload=jsonb_set(payload || CAST(:patch AS jsonb),'{events}',(payload->'events') || CAST(:events AS jsonb)) WHERE id=:id AND lease_owner=:owner AND lease_until>:now AND payload->>'status'='running' AND (payload->>'deadline')::double precision>:now RETURNING id",
+            "UPDATE search_runs SET payload=jsonb_set(payload || CAST(:patch AS jsonb),'{events}',(payload->'events') || CAST(:events AS jsonb)) WHERE id=:id AND lease_owner=:owner AND lease_until>:now AND payload->>'status'='running' AND (payload->>'deadline')::double precision>:now AND (:failure OR (payload->>'scope_version')::integer=COALESCE((SELECT (r.payload->>'scope_version')::integer FROM records r WHERE r.id='role-' || search_runs.person_id AND r.kind='role'),1)) RETURNING id",
             {
                 "id": run_id,
                 "owner": worker_id,
                 "now": time.time(),
                 "patch": json.dumps(patch),
+                "failure": patch.get("status") in ["failed", "configuration_required"],
                 "events": json.dumps([final_event] if final_event else []),
             },
         )

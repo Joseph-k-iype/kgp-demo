@@ -259,3 +259,77 @@ def test_cancellation_during_decision_cannot_publish_a_completed_answer(monkeypa
         assert len([e for e in result["events"] if e["stage"] == "finish"]) == 1
     finally:
         query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})
+
+
+def test_explicit_extractive_mode_never_calls_an_llm_provider(monkeypatch):
+    from app.agent import provider
+
+    monkeypatch.setattr(settings(), "graph_search_v2", True)
+    monkeypatch.setattr(settings(), "local_search_worker", False)
+    monkeypatch.setattr(
+        provider,
+        "make_decider",
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("Extractive demo cannot dispatch a model")
+        ),
+    )
+    scope = resolve_scope("admin")
+    run = service.start_search(
+        scope,
+        SearchRequest(
+            query="Which policies govern treasury liquidity?",
+            mode="extractive",
+            intent_id=uuid.uuid4().hex,
+        ),
+    )
+    id = run["run_id"]
+    try:
+        claim_next("owner", run_id=id)
+        service.execute_graph_run(id, "owner")
+        result = service.get_search(scope, id)
+        assert result["status"] == "completed", result
+        assert result["semantic_verification"] == "source_only"
+        assert not result.get("paid_calls")
+        assert result["evidence"] and result["answer_outcome"] == "partial"
+    finally:
+        query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})
+
+
+def test_scope_revocation_between_guard_and_publication_is_atomic(monkeypatch):
+    import json
+    from app.agent.worker import publish_owned
+
+    monkeypatch.setattr(settings(), "graph_search_v2", True)
+    monkeypatch.setattr(settings(), "local_search_worker", False)
+    scope = resolve_scope("admin")
+    run = service.start_search(
+        scope, SearchRequest(query="Find treasury controls", intent_id=uuid.uuid4().hex)
+    )
+    id = run["run_id"]
+    original = query("SELECT payload FROM records WHERE id='role-admin'")[0]["payload"]
+    try:
+        claim_next("owner", run_id=id)
+        changed = {
+            **original,
+            "scope_version": scope.scope_version + 1,
+            "domain_ids": ["legal"],
+        }
+        query(
+            "UPDATE records SET payload=CAST(:p AS jsonb) WHERE id='role-admin' RETURNING id",
+            {"p": json.dumps(changed)},
+        )
+        assert not publish_owned(
+            id,
+            "owner",
+            {
+                "status": "completed",
+                "statements": [{"text": "Private amount", "evidence_ids": []}],
+            },
+        )
+        assert service.raw_run(id)["status"] != "completed"
+    finally:
+        query(
+            "UPDATE records SET payload=CAST(:p AS jsonb) WHERE id='role-admin' RETURNING id",
+            {"p": json.dumps(original)},
+        )
+        query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})

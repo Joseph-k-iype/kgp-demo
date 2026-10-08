@@ -43,7 +43,17 @@ def build_research_graph(
     def initialize(s):
         result = read(ResolveEntitiesAction(query=s.query))
         notice("resolve", "Resolving authorized business entities")
-        return {"entities": result.items, "tool_calls": ctx.tool_calls}
+        return {
+            "entities": result.items,
+            "tool_calls": ctx.tool_calls,
+            "observations": [
+                {
+                    "tool": "resolve_entities",
+                    "outcome": result.outcome,
+                    "items": result.items,
+                }
+            ],
+        }
 
     def decision(s):
         restore(s)

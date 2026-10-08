@@ -544,3 +544,35 @@ def test_native_sdk_multiturn_sends_matching_tool_receipts(monkeypatch):
     }
     assert second[-1]["role"] == "user" and '"coverage"' in second[-1]["content"]
     assert captured[0]["provider"]["require_parameters"]
+
+
+def test_decision_context_preserves_graph_source_handles_and_registered_fields():
+    from app.agent.actions import ResearchState
+    from app.agent.prompts import decision_context
+
+    context = ctx()
+    ref = {
+        "asset_id": "finance-asset-0",
+        "domain_id": "finance",
+        "locator": "finance-asset-0-row-0",
+        "version": "row-version",
+    }
+    state = ResearchState(
+        query="What is FIN-100 liquidity?",
+        paths=[
+            {
+                "edges": [
+                    {
+                        "source": "FIN-100",
+                        "target": "finance-asset-0",
+                        "predicate": "recordedIn",
+                        "source_ref": ref,
+                    }
+                ]
+            }
+        ],
+    )
+    packed = decision_context(state, context)
+    assert packed["paths"][0]["edges"][0]["source_ref"] == ref
+    assert packed["source_handles"][0]["source_ref"] == ref
+    assert "liquidity_usd" in packed["source_handles"][0]["fields"]

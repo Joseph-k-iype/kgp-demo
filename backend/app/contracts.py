@@ -48,6 +48,12 @@ class Statement(BaseModel):
     evidence_ids: list[str]
 
 
+class VerifiedStatement(Statement):
+    support_status: Literal["supported", "source_only"] | None = None
+    facet_ids: list[str] = Field(default_factory=list)
+    supporting_locators: list[dict] = Field(default_factory=list)
+
+
 class AnswerOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     statements: list[Statement]
@@ -97,7 +103,7 @@ class SearchResult(BaseModel):
     status: str
     query: str
     mode: str
-    statements: list[Statement]
+    statements: list[VerifiedStatement]
     evidence: list[dict]
     gaps: list[str]
     events: list[SearchEvent]

@@ -268,57 +268,9 @@ def cancel_search(scope, run_id):
 
 
 def finalize_research(ctx, state, mode, before_model, after_model):
-    """Finalization boundary; factual/span verification is extended in Task5."""
-    from app.agent.provider import synthesize, validate_answer
-    from app.knowledge.runtime import version, guard
+    from app.agent.finalization import finalize_research as finalize
 
-    evidence = [
-        e.model_dump(mode="json") for e in state.evidence if e.matched_facet_ids
-    ]
-    gaps = (
-        [
-            f.description
-            for f in state.intent.facets
-            if f.id in state.coverage.uncovered_facet_ids
-        ]
-        if state.intent
-        else ["The question could not be resolved"]
-    )
-    statements = []
-    if evidence:
-        if mode == "extractive":
-            statements = [
-                {"text": e["text"], "evidence_ids": [e["id"]]} for e in evidence[:8]
-            ]
-        else:
-            fingerprint = version(
-                {"phase": "synthesis", "query": state.query, "evidence": evidence}
-            )
-            receipt = before_model(fingerprint)
-            from app.contracts import AnswerOutput
-
-            if receipt:
-                answer = AnswerOutput.model_validate(receipt["answer"])
-            else:
-                answer = validate_answer(
-                    synthesize(state.query, evidence, deadline=ctx.deadline), evidence
-                )
-                after_model(fingerprint, {"answer": answer.model_dump(mode="json")})
-            guard(ctx)
-            statements = [s.model_dump() for s in answer.statements]
-            gaps.extend(answer.gaps)
-    return {
-        "statements": statements,
-        "evidence": evidence,
-        "gaps": gaps,
-        "answer_outcome": state.answer_outcome,
-        "clarification": state.clarification,
-        "stop_reason": state.stop_reason,
-        "coverage": state.coverage.model_dump(),
-        "tool_calls": ctx.tool_calls,
-        "paths": state.paths,
-        "graph": {"nodes": [], "edges": []},
-    }
+    return finalize(ctx, state, mode, before_model, after_model)
 
 
 def execute_graph_run(id, worker):
@@ -380,9 +332,15 @@ def execute_graph_run(id, worker):
         with PostgresSaver.from_conn_string(conn) as saver:
             with _setup_lock:
                 saver.setup()
+            if run["mode"] == "extractive":
+                from app.agent.offline import make_offline_decider
+
+                decider = make_offline_decider(ctx)
+            else:
+                decider = make_decider(ctx, before_model=before, after_model=after)
             graph = build_research_graph(
                 ctx,
-                make_decider(ctx, before_model=before, after_model=after),
+                decider,
                 checkpointer=saver,
                 on_event=notice,
             )
@@ -406,6 +364,25 @@ def execute_graph_run(id, worker):
         guard(ctx)
         output = finalize_research(ctx, state, run["mode"], before, after)
         guard(ctx)
+        receipts = raw_run(id).get("model_receipts", {}).values()
+        output["usage"] = {
+            key: sum(int(r.get("usage", {}).get(key) or 0) for r in receipts)
+            for key in ["prompt_tokens", "completion_tokens", "total_tokens"]
+        }
+        from importlib.metadata import version as package_version
+        from app.knowledge.runtime import version as content_version
+
+        output["versions"] = {
+            "engine": "graph_v2",
+            "prompt": PROMPT_VERSION,
+            "model": settings().llm_model if run["mode"] != "extractive" else None,
+            "provider": settings().llm_provider
+            if run["mode"] != "extractive"
+            else None,
+            "langgraph": package_version("langgraph"),
+            "retrieved_graph_digest": content_version(state.paths),
+            "source_versions": {e.id: e.source_ref.version for e in state.evidence},
+        }
         publish_owned(
             id,
             worker,

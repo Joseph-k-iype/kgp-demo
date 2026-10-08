@@ -177,7 +177,10 @@ def query_dataset(ctx, call):
         with engine.begin() as conn:
             result = dict(conn.execute(statement).mappings().one())
         value = result["value"]
-        value = float(value) if value is not None else None
+        if isinstance(value, Decimal):
+            value = (
+                int(value) if value == value.to_integral_value() else format(value, "f")
+            )
         values = {a.operation: value, "unit": unit, "row_count": result["row_count"]}
         ref = SourceRef(
             asset_id=q.asset_id,
