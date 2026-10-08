@@ -18,13 +18,13 @@ test("source-only search shows real trace and cited evidence", async ({
     }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Open evidence 1", exact: true })
+    .getByRole("button", { name: /^Open source:/ })
     .first()
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.locator(".evidence-excerpt")).toContainText(
-    "counterparty",
-    { ignoreCase: true },
-  );
-  await expect(page.getByRole("dialog")).toContainText("Original source");
+  await expect(page.getByRole("dialog")).toContainText("counterparty", {
+    ignoreCase: true,
+  });
+  await page.getByRole("tab", { name: "Context", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Source provenance");
 });

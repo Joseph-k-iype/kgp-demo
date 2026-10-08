@@ -11,6 +11,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Run } from "@/api/client";
+import SourceMarkdown from "./SourceMarkdown";
 import { DomainName } from "@/components/Common";
 type Props = {
   run: Run | null;
@@ -20,7 +21,7 @@ type Props = {
   onGenerate: (mode?: "llm" | "extractive") => void;
   onCancel: () => void;
   onReconnect: () => void;
-  onEvidence: (id: string) => void;
+  onEvidence: (id: string, quote?: string) => void;
 };
 export default function AnswerPanel({
   run,
@@ -39,6 +40,52 @@ export default function AnswerPanel({
       run &&
       !["pending", "running", "completed", "cancelled"].includes(run.status);
   const failure = error || run?.error || "";
+  const displayed = new Set<number>();
+  const sections = (run?.answer_sections || [])
+    .map((section) => ({
+      title: section.title,
+      indices: section.statement_indices.filter((index) => {
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index >= (run?.statements.length || 0) ||
+          displayed.has(index)
+        )
+          return false;
+        displayed.add(index);
+        return true;
+      }),
+    }))
+    .filter((section) => section.indices.length > 0);
+  const remaining = (run?.statements || [])
+    .map((_, index) => index)
+    .filter((index) => !displayed.has(index));
+  if (remaining.length)
+    sections.push({
+      title: sections.length ? "Additional findings" : "Answer",
+      indices: remaining,
+    });
+  function citationLabel(index: number, id: string) {
+    const statement = run!.statements[index];
+    const support = statement.supporting_locators?.find(
+      (item) => item.evidence_id === id,
+    );
+    const evidence = run!.evidence.find((item) => item.id === id);
+    const title =
+      typeof support?.source_title === "string"
+        ? support.source_title
+        : evidence?.source_title || evidence?.name || "Supporting source";
+    const ref = support?.source_ref;
+    const locator =
+      ref &&
+      typeof ref === "object" &&
+      "locator" in ref &&
+      typeof ref.locator === "string"
+        ? ref.locator
+        : evidence?.source_ref?.locator || evidence?.provenance?.row_id;
+    return title + (locator ? " · " + locator : "");
+  }
+
   return (
     <section className="knowledge-answer" aria-label="Knowledge answer">
       <div className="answer-heading">
@@ -103,25 +150,52 @@ export default function AnswerPanel({
           {run.statements.length === 0 ? (
             <p>No supported answer was found within this search scope.</p>
           ) : (
-            run.statements.map((statement, i) => (
-              <div key={i} className="answer-statement">
-                <p>{statement.text}</p>
-                <span className="answer-citations">
-                  {statement.evidence_ids.map((id) => {
-                    const n = run.evidence.findIndex((e) => e.id === id) + 1;
-                    return (
-                      <button
-                        key={id}
-                        aria-label={"Open evidence " + n}
-                        onClick={() => onEvidence(id)}
-                      >
-                        <ArrowUpRight size={11} />
-                        Source {n}
-                      </button>
-                    );
-                  })}
-                </span>
-              </div>
+            sections.map((section, sectionIndex) => (
+              <section
+                className="answer-section"
+                key={sectionIndex}
+                aria-label={section.title}
+              >
+                <h3>{section.title}</h3>
+                {section.indices.map((i) => {
+                  const statement = run.statements[i];
+                  return (
+                    <div key={i} className="answer-statement">
+                      <SourceMarkdown text={statement.text} />
+                      <span className="answer-citations">
+                        {statement.evidence_ids
+                          .filter((id) =>
+                            run.evidence.some((item) => item.id === id),
+                          )
+                          .map((id) => {
+                            const label = citationLabel(i, id);
+                            return (
+                              <button
+                                key={id}
+                                aria-label={"Open source: " + label}
+                                onClick={() => {
+                                  const citation =
+                                    statement.supporting_locators?.find(
+                                      (item) => item.evidence_id === id,
+                                    );
+                                  onEvidence(
+                                    id,
+                                    typeof citation?.quote === "string"
+                                      ? citation.quote
+                                      : undefined,
+                                  );
+                                }}
+                              >
+                                <ArrowUpRight size={11} />
+                                {label}
+                              </button>
+                            );
+                          })}
+                      </span>
+                    </div>
+                  );
+                })}
+              </section>
             ))
           )}
           {(run.gaps.length > 0 || run.uncertainty) && (
@@ -142,7 +216,24 @@ export default function AnswerPanel({
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(
-                    run.statements.map((s) => s.text).join("\n\n"),
+                    sections
+                      .map(
+                        (section) =>
+                          "## " +
+                          section.title +
+                          "\n\n" +
+                          section.indices
+                            .map(
+                              (index) =>
+                                run.statements[index].text +
+                                "\n\n" +
+                                run.statements[index].evidence_ids
+                                  .map((id) => citationLabel(index, id))
+                                  .join("; "),
+                            )
+                            .join("\n\n"),
+                      )
+                      .join("\n\n"),
                   );
                   setCopied(true);
                 } catch {

@@ -94,6 +94,8 @@ def search_discovery(scope, request):
         for id in asset.get("product_ids", []):
             if id in products and id not in evidence_rank:
                 evidence_rank.append(id)
+            if id in products:
+                excerpts.setdefault(id, hit)
 
     def kind(item):
         return (
@@ -120,7 +122,7 @@ def search_discovery(scope, request):
         evidence = excerpts.get(id)
         source = sources.get(item.get("source_id"), {})
         title = item["name"]
-        if evidence and evidence["content_kind"] == "document":
+        if evidence and not product and evidence["content_kind"] == "document":
             title = evidence["text"].splitlines()[0].lstrip("# ")
         results.append(
             DiscoveryItem(

@@ -49,6 +49,8 @@ export type Evidence = {
   asset_id: string;
   domain_id: string;
   name: string;
+  source_title?: string;
+  source_ref?: components["schemas"]["SourceRef"] | null;
   text: string;
   provenance: {
     type: string;
@@ -71,7 +73,8 @@ export type Run = {
   query: string;
   status: string;
   mode: string;
-  statements: { text: string; evidence_ids: string[] }[];
+  statements: components["schemas"]["VerifiedStatement"][];
+  answer_sections?: components["schemas"]["AnswerSection"][];
   evidence: Evidence[];
   gaps: string[];
   events: {
@@ -113,6 +116,7 @@ export function useData<T>(path: string | null, token: string) {
     [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setResult(null);
     setError("");
     if (!path) {
@@ -120,7 +124,7 @@ export function useData<T>(path: string | null, token: string) {
       return;
     }
     setLoading(true);
-    api<T>(path, token)
+    api<T>(path, token, { signal: controller.signal })
       .then((d) => {
         if (active) setResult({ path, token, data: d });
       })
@@ -132,6 +136,7 @@ export function useData<T>(path: string | null, token: string) {
       });
     return () => {
       active = false;
+      controller.abort();
     };
   }, [path, token, revision]);
   const data =

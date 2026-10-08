@@ -175,6 +175,8 @@ def content(
 @app.get("/products/{id}/content", response_model=ContentPage)
 def product_content(
     id: str,
+    locator: str | None = Query(None, max_length=200),
+    version: str | None = Query(None, max_length=200),
     preferred_asset_id: str | None = Query(None, max_length=181),
     cursor: str | None = Query(None, max_length=2000),
     limit: int = Query(20, ge=1, le=100),
@@ -182,7 +184,7 @@ def product_content(
 ):
     return open_content(
         ToolContext(scope=scope, deadline=time.time() + 30),
-        ContentHandle(kind="product", id=id),
+        ContentHandle(kind="product", id=id, locator=locator, version=version),
         cursor,
         limit,
         preferred_asset_id,

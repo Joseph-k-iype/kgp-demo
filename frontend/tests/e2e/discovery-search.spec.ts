@@ -179,8 +179,20 @@ async function boundaries(page: Page, options: Options = {}) {
                 ? "Fresh treasury answer"
                 : "Fresh counterparty answer",
               evidence_ids: [evidence.id],
+              support_status: "supported",
+              supporting_locators: [
+                {
+                  evidence_id: evidence.id,
+                  source_title: "Counterparty exposure",
+                  source_ref: { locator: "row:CP-1000" },
+                  field: "exposure",
+                  value: 1250000,
+                  unit: "USD",
+                },
+              ],
             },
           ],
+          answer_sections: [{ title: "Answer", statement_indices: [0] }],
           evidence: [evidence],
           events: [
             ...run.events,
@@ -246,10 +258,19 @@ test("results arrive while one cited answer builds and browsing does not regener
     expect(boundary.posts).toHaveLength(1);
     boundary.release();
     await expect(
+      page.getByRole("heading", { name: "Answer", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".answer-citations")).not.toContainText(
+      "Source 1",
+    );
+    await expect(
       page.getByText("Fresh counterparty answer", { exact: true }),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "Open evidence 1", exact: true })
+      .getByRole("button", {
+        name: "Open source: Counterparty exposure · row:CP-1000",
+        exact: true,
+      })
       .click();
     await expect(page.getByRole("dialog")).toContainText("USD 1,250,000");
     await page.keyboard.press("Escape");

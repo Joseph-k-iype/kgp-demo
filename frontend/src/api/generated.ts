@@ -694,6 +694,8 @@ export interface components {
         };
         /** GraphNode */
         GraphNode: {
+            /** Aliases */
+            aliases?: string[];
             /** Id */
             id: string;
             /** Iri */
@@ -1241,6 +1243,8 @@ export interface operations {
     product_content_products__id__content_get: {
         parameters: {
             query?: {
+                locator?: string | null;
+                version?: string | null;
                 preferred_asset_id?: string | null;
                 cursor?: string | null;
                 limit?: number;

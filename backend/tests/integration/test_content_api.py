@@ -379,3 +379,18 @@ def test_run_evidence_endpoint_supports_nonindex_citations_with_authorization():
         assert denied.status_code == 404
     finally:
         query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})
+
+
+def test_product_query_match_preserves_the_selected_source_passage():
+    from app.knowledge.content import open_content
+    from app.knowledge.contracts import ToolContext, ContentHandle
+
+    page = open_content(
+        ToolContext(scope=resolve_scope("admin"), deadline=time.time() + 30),
+        ContentHandle(kind="product", id="finance-product-0", locator="controls"),
+        preferred_asset_id="finance-asset-1",
+    )
+    assert page.manifest.primary.id == "finance-asset-1"
+    assert page.source_refs and page.source_refs[0].locator == "controls"
+    assert page.sections[0]["locator"] == "controls"
+    assert "reconcile liquidity positions daily" in page.text

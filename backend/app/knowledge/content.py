@@ -373,7 +373,13 @@ def open_content(ctx, handle, cursor=None, limit=20, preferred_asset_id=None):
     if handle.kind == "product":
         product, manifest = product_manifest(ctx, handle.id, preferred_asset_id)
         if manifest.primary:
-            page = open_content(ctx, manifest.primary, cursor, limit)
+            primary = manifest.primary.model_copy(
+                update={
+                    key: getattr(handle, key)
+                    for key in ["locator", "version", "run_id", "evidence_id"]
+                }
+            )
+            page = open_content(ctx, primary, cursor, limit)
             page.manifest = manifest
             page.context = {**page.context, "product": product}
             page.handle = handle

@@ -47,6 +47,7 @@ function SearchResults() {
     selectedKind =
       params.get("detail_kind") === "product" ? "product" : "asset";
   const [evidence, setEvidence] = useState("");
+  const [citedQuote, setCitedQuote] = useState<string | undefined>();
   const results = useDiscovery({ query, domainId, type, sort, page }, token),
     answer = useKnowledgeRun({ query, domainId, persona }, token);
   function update(change: Record<string, string | null>) {
@@ -61,6 +62,9 @@ function SearchResults() {
     const next = new URLSearchParams(window.location.search);
     next.delete("selected");
     next.delete("detail_kind");
+    next.delete("selected_locator");
+    next.delete("selected_version");
+    next.delete("selected_source");
     window.history.replaceState(null, "", "/search?" + next);
   }, []);
   const closeEvidence = useCallback(() => setEvidence(""), []);
@@ -68,6 +72,10 @@ function SearchResults() {
     update({
       selected: item.id,
       detail_kind: item.kind === "product" ? "product" : "asset",
+      selected_locator: item.content_handle?.locator || null,
+      selected_version: item.content_handle?.version || null,
+      selected_source:
+        item.kind === "product" ? item.source_ref?.asset_id || null : null,
     });
   }
   if (query.length < 3)
@@ -136,7 +144,10 @@ function SearchResults() {
             onGenerate={answer.submit}
             onCancel={answer.cancel}
             onReconnect={answer.reconnect}
-            onEvidence={setEvidence}
+            onEvidence={(id, quote) => {
+              setEvidence(id);
+              setCitedQuote(quote);
+            }}
           />
           <div className="results-heading">
             <h2>Top matches</h2>
@@ -250,9 +261,19 @@ function SearchResults() {
       </div>
       {selected && (
         <DiscoveryDetail
-          key={selected + selectedKind + token}
+          key={
+            selected +
+            selectedKind +
+            token +
+            params.get("selected_locator") +
+            params.get("selected_version") +
+            params.get("selected_source")
+          }
           id={selected}
           kind={selectedKind}
+          locator={params.get("selected_locator") || undefined}
+          version={params.get("selected_version") || undefined}
+          preferredAsset={params.get("selected_source") || undefined}
           onClose={closeDetail}
         />
       )}
@@ -261,6 +282,8 @@ function SearchResults() {
           <EvidenceDetail
             key={evidence + token}
             id={evidence}
+            runId={answer.run?.run_id}
+            quote={citedQuote}
             onClose={closeEvidence}
           />
         )}

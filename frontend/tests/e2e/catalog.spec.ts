@@ -26,28 +26,13 @@ test("library filters and view persist and real structured sources preview", asy
       exact: true,
     })
     .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("tab", { name: "Assets", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "counterparty_exposure", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .last()
-    .getByRole("button", { name: "Preview source", exact: true })
-    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(1);
   await expect(
     page
       .getByRole("dialog")
-      .last()
       .getByText("Aster Capital", { exact: true })
       .first(),
   ).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(1);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
@@ -69,28 +54,23 @@ test("product details reveal real documents governance and projects on demand", 
     })
     .click();
   const product = page.getByRole("dialog").first();
+  await product.getByRole("tab", { name: "Context", exact: true }).click();
   await expect(product).toContainText("Priya Shah");
-  await product.getByRole("tab", { name: "Ontology", exact: true }).click();
-  await expect(
-    product.getByRole("link", { name: /Counterparty/ }).first(),
-  ).toBeVisible();
-  await product.getByRole("tab", { name: "Projects", exact: true }).click();
   await expect(product).toContainText(
     "Counterparty Risk Intelligence delivery",
   );
-  await product.getByRole("tab", { name: "Assets", exact: true }).click();
   await product
-    .getByRole("button", { name: /Counterparty due diligence policy/i })
+    .getByRole("tab", { name: "Relationships", exact: true })
     .click();
-  const source = page.getByRole("dialog").last();
-  await source
-    .getByRole("button", { name: "Preview source", exact: true })
-    .click();
-  await expect(source).toContainText("Original source preview");
-  await expect(source.locator(".source-code")).toContainText(
-    "Synthetic enterprise evidence",
-  );
-  await expect(source).toContainText("MinIO");
+  await expect(
+    product.getByRole("link", { name: /Counterparty/ }).first(),
+  ).toBeVisible();
+  await product.getByLabel("Product source").selectOption("risk-asset-1");
+  await expect(product).toContainText("RDD-POL-001");
+  await expect(product).toContainText("Aster Capital");
+  await product.getByRole("tab", { name: "Context", exact: true }).click();
+  await expect(product).toContainText("MinIO");
+  await expect(page.getByRole("dialog")).toHaveCount(1);
 });
 
 test("catalog search opens combined discovery and browser back restores library filters", async ({
@@ -143,8 +123,10 @@ test("all domains and ontology graph remain navigable", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Ontology explorer", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "List view", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Accessible list", exact: true })
+    .click();
   await expect(
-    page.getByText("Counterparty", { exact: true }).first(),
+    page.getByRole("button", { name: "Counterparty · Concept", exact: true }),
   ).toBeVisible();
 });

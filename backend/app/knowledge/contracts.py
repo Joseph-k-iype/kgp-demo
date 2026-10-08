@@ -229,6 +229,7 @@ class ContentPage(StrictModel):
 
 
 class GraphNode(StrictModel):
+    aliases: list[str] = Field(default_factory=list, max_length=30)
     id: str
     iri: str
     name: str

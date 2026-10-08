@@ -138,7 +138,9 @@ export function Modal({
   title,
   children,
   onClose,
+  className = "",
 }: {
+  className?: string;
   title: string;
   children: React.ReactNode;
   onClose: () => void;
@@ -206,7 +208,7 @@ export function Modal({
     >
       <div
         ref={ref}
-        className="modal"
+        className={"modal " + className}
         role="dialog"
         aria-modal="true"
         aria-label={title}

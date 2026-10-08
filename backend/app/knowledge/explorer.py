@@ -56,6 +56,7 @@ def neighborhood(scope, root="Counterparty", depth=1, limit=50):
         record = stored.get(id)
         return {
             "id": id,
+            "aliases": record["payload"].get("aliases", [])[:30] if record else [],
             "iri": uri,
             "name": record["payload"].get("name", id) if record else id,
             "kind": record["payload"].get("entity_type", record["kind"].title())
