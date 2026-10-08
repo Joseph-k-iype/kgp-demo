@@ -1,0 +1,5 @@
+# CT-2000 — Aster Capital Master Agreement
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Effective: 2026-01-01. Status: Approved. Counterparty: Aster Capital, CP-1000.
+## Controls
+Contract CT-2000 requires annual disclosure from Aster Capital. Renewal date: 2027-03-31. Treasury funding evidence may use this disclosure after Legal approval. No liquidity waiver is granted by this agreement.

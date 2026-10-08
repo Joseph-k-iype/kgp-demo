@@ -1,0 +1,91 @@
+{
+  "baseline": "legacy retrieval on enriched corpus",
+  "provider": "none",
+  "index": {
+    "indexed_assets": 150,
+    "evidence_chunks": 1109,
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "dimensions": 384
+  },
+  "query": "Which policies govern treasury liquidity?",
+  "retrieved": [
+    {
+      "id": "finance-asset-0:metadata",
+      "asset_id": "finance-asset-0",
+      "name": "Treasury Liquidity \u00b7 records",
+      "domain_id": "finance",
+      "score": 0.01667
+    },
+    {
+      "id": "finance-asset-1:chunk-0",
+      "asset_id": "finance-asset-1",
+      "name": "Financial Reporting \u00b7 evidence brief",
+      "domain_id": "finance",
+      "score": 0.01562
+    },
+    {
+      "id": "finance-asset-0:rows-0",
+      "asset_id": "finance-asset-0",
+      "name": "Treasury Liquidity \u00b7 records",
+      "domain_id": "finance",
+      "score": 0.01538
+    },
+    {
+      "id": "finance-asset-4:metadata",
+      "asset_id": "finance-asset-4",
+      "name": "Treasury Liquidity \u00b7 records 2",
+      "domain_id": "finance",
+      "score": 0.01639
+    },
+    {
+      "id": "finance-asset-8:metadata",
+      "asset_id": "finance-asset-8",
+      "name": "Treasury Liquidity \u00b7 records 3",
+      "domain_id": "finance",
+      "score": 0.01613
+    },
+    {
+      "id": "finance-asset-12:metadata",
+      "asset_id": "finance-asset-12",
+      "name": "Treasury Liquidity \u00b7 records 4",
+      "domain_id": "finance",
+      "score": 0.01587
+    },
+    {
+      "id": "finance-asset-4:rows-0",
+      "asset_id": "finance-asset-4",
+      "name": "Treasury Liquidity \u00b7 records 2",
+      "domain_id": "finance",
+      "score": 0.0137
+    },
+    {
+      "id": "finance-asset-8:rows-0",
+      "asset_id": "finance-asset-8",
+      "name": "Treasury Liquidity \u00b7 records 3",
+      "domain_id": "finance",
+      "score": 0.01235
+    },
+    {
+      "id": "finance-asset-12:rows-0",
+      "asset_id": "finance-asset-12",
+      "name": "Treasury Liquidity \u00b7 records 4",
+      "domain_id": "finance",
+      "score": 0.01124
+    },
+    {
+      "id": "finance-asset-5:chunk-0",
+      "asset_id": "finance-asset-5",
+      "name": "Financial Reporting \u00b7 evidence brief 2",
+      "domain_id": "finance",
+      "score": 0.01031
+    }
+  ],
+  "metrics": {
+    "retrieval_recall": 1.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "path_coverage": 0.0,
+    "outcome_valid": false
+  },
+  "note": "Retrieval-only baseline, not an LLM answer quality measurement; graph path/factual coverage not assessed by original retrieval."
+}

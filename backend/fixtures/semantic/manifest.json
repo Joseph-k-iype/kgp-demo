@@ -1,0 +1,1313 @@
+{
+  "schema_version": 2,
+  "nodes": [
+    {
+      "id": "risk-entity-main",
+      "name": "Counterparty Risk Intelligence",
+      "domain_id": "risk",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Counterparty Risk Intelligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Priya Shah"
+    },
+    {
+      "id": "risk-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "risk",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "risk-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "risk-asset-1",
+        "version": "c831c494a500b681135cc3e51f582d66ff7dbef1e5162635d0e94de75a50d5f4",
+        "locator": "controls",
+        "domain_id": "risk"
+      }
+    },
+    {
+      "id": "legal-entity-main",
+      "name": "Contract Obligations",
+      "domain_id": "legal",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Contract Obligations",
+        "Contract"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Contract"
+      ],
+      "steward": "Marcus Chen"
+    },
+    {
+      "id": "legal-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "legal",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "legal-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      }
+    },
+    {
+      "id": "technology-entity-main",
+      "name": "Technology Service Health",
+      "domain_id": "technology",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Technology Service Health",
+        "Service"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Service"
+      ],
+      "steward": "Sofia Andersson"
+    },
+    {
+      "id": "technology-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "technology",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "technology-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "technology-asset-1",
+        "version": "dfbb95ff7c08097703f83cba2c73cd5b3c469f5cf22e46aae1a66bdf8274acc1",
+        "locator": "controls",
+        "domain_id": "technology"
+      }
+    },
+    {
+      "id": "product-entity-main",
+      "name": "Product Performance",
+      "domain_id": "product",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Product Performance",
+        "Product"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Product"
+      ],
+      "steward": "Daniel Brooks"
+    },
+    {
+      "id": "product-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "product",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "product-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "product-asset-1",
+        "version": "b66bf1d3a70eecadad661f6dc7ce984bd2a851c99dd1cf0085700de5dd00aac9",
+        "locator": "controls",
+        "domain_id": "product"
+      }
+    },
+    {
+      "id": "operations-entity-main",
+      "name": "Operational Resilience",
+      "domain_id": "operations",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Operational Resilience",
+        "Service"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Service"
+      ],
+      "steward": "Amara Okafor"
+    },
+    {
+      "id": "operations-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "operations",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "operations-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "operations-asset-1",
+        "version": "c759cfcb26a15509e3f3cfa3ed3e8bbca9952a4d79ef176f5b4477711c239e7b",
+        "locator": "controls",
+        "domain_id": "operations"
+      }
+    },
+    {
+      "id": "data-entity-main",
+      "name": "Enterprise Data Dictionary",
+      "domain_id": "data",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Enterprise Data Dictionary",
+        "DataElement"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "DataElement"
+      ],
+      "steward": "Wei Lin"
+    },
+    {
+      "id": "data-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "data",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "data-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "data-asset-1",
+        "version": "dc58f9caedc6ac6e49954690fe18538c3ba578f27a292c7d14f4f4539ecfb4ea",
+        "locator": "controls",
+        "domain_id": "data"
+      }
+    },
+    {
+      "id": "treasury-liquidity",
+      "name": "Treasury Liquidity",
+      "domain_id": "finance",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Treasury Liquidity",
+        "treasury",
+        "liquidity",
+        "funding",
+        "FIN positions"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Exposure"
+      ],
+      "steward": "Oliver Reed"
+    },
+    {
+      "id": "finance-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "finance",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "people-entity-main",
+      "name": "Workforce Planning",
+      "domain_id": "people",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Workforce Planning",
+        "Person"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Person"
+      ],
+      "steward": "Isabella Rossi"
+    },
+    {
+      "id": "people-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "people",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "people-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "people-asset-1",
+        "version": "283e8b57d0c1213e503dc2d12a563d68e90231ce5ae66cf2fe00e39f6a6b8ade",
+        "locator": "controls",
+        "domain_id": "people"
+      }
+    },
+    {
+      "id": "third-party-entity-main",
+      "name": "Third Party Due Diligence",
+      "domain_id": "third-party",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Third Party Due Diligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Aisha Rahman"
+    },
+    {
+      "id": "third-party-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "third-party",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "third-party-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "third-party-asset-1",
+        "version": "4acec106dab86f6e6fba22920ff5073cfbcfdc143a7886c46d261b1555362657",
+        "locator": "controls",
+        "domain_id": "third-party"
+      }
+    },
+    {
+      "id": "strategy-entity-main",
+      "name": "Change Portfolio",
+      "domain_id": "strategy",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Change Portfolio",
+        "Project"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Project"
+      ],
+      "steward": "Gabriel Santos"
+    },
+    {
+      "id": "strategy-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "strategy",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "strategy-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "strategy-asset-1",
+        "version": "620b5667881d3c651392675edbb81be621ceb533e8156a8eb440fb58f51b406f",
+        "locator": "controls",
+        "domain_id": "strategy"
+      }
+    },
+    {
+      "id": "customer-entity-main",
+      "name": "Customer Relationship Intelligence",
+      "domain_id": "customer",
+      "kind": "entity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Customer Relationship Intelligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Emma Wilson"
+    },
+    {
+      "id": "customer-asset-1-section-controls",
+      "name": "Controls",
+      "domain_id": "customer",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "customer-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "customer-asset-1",
+        "version": "cb6b49890c7e67707d56a633efe7c152ff88c658b5f8702b493b33a575ad938a",
+        "locator": "controls",
+        "domain_id": "customer"
+      }
+    },
+    {
+      "id": "TL-POL-001",
+      "name": "Treasury Liquidity Monitoring Policy",
+      "domain_id": "finance",
+      "kind": "entity",
+      "entity_type": "Policy",
+      "aliases": [
+        "TL-POL-001",
+        "Treasury Liquidity Monitoring Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Active",
+      "valid_from": "2026-01-01",
+      "valid_to": null
+    },
+    {
+      "id": "TF-POL-002",
+      "name": "Treasury Funding Evidence Policy",
+      "domain_id": "finance",
+      "kind": "entity",
+      "entity_type": "Policy",
+      "aliases": [
+        "TF-POL-002",
+        "Treasury Funding Evidence Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Active",
+      "valid_from": "2026-04-01",
+      "valid_to": null
+    },
+    {
+      "id": "finance-asset-5-section-controls",
+      "name": "Controls",
+      "domain_id": "finance",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-5",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "TL-POL-000",
+      "name": "Legacy Liquidity Policy",
+      "domain_id": "finance",
+      "kind": "entity",
+      "entity_type": "Policy",
+      "aliases": [
+        "TL-POL-000",
+        "Legacy Liquidity Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Superseded",
+      "valid_from": "2024-01-01",
+      "valid_to": "2025-12-31"
+    },
+    {
+      "id": "finance-asset-9-section-controls",
+      "name": "Controls",
+      "domain_id": "finance",
+      "kind": "section",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-9",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-9",
+        "version": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "CP-1000",
+      "name": "Aster Capital",
+      "domain_id": "risk",
+      "kind": "entity",
+      "entity_type": "Counterparty",
+      "aliases": [
+        "Aster Capital",
+        "CP-1000"
+      ],
+      "semantic_managed": true
+    },
+    {
+      "id": "CT-2000",
+      "name": "Aster Capital Master Agreement",
+      "domain_id": "legal",
+      "kind": "entity",
+      "entity_type": "Contract",
+      "aliases": [
+        "CT-2000",
+        "Aster Capital contract"
+      ],
+      "semantic_managed": true
+    },
+    {
+      "id": "FIN-100",
+      "name": "Treasury Position FIN-100",
+      "domain_id": "finance",
+      "kind": "entity",
+      "entity_type": "LiquidityPosition",
+      "aliases": [
+        "FIN-100"
+      ],
+      "semantic_managed": true
+    }
+  ],
+  "assertions": [
+    {
+      "subject": "risk-product-0",
+      "predicate": "representsEntity",
+      "object": "risk-entity-main",
+      "source_ref": {
+        "asset_id": "risk-asset-0",
+        "version": "6a7b5a6cac09d86a5638842aa4cf0e104f53ab0069f419bb6082dc03541e0b88",
+        "locator": "risk-asset-0-row-0",
+        "domain_id": "risk"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "risk-entity-main",
+      "predicate": "recordedIn",
+      "object": "risk-asset-0",
+      "source_ref": {
+        "asset_id": "risk-asset-0",
+        "version": "6a7b5a6cac09d86a5638842aa4cf0e104f53ab0069f419bb6082dc03541e0b88",
+        "locator": "risk-asset-0-row-0",
+        "domain_id": "risk"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "risk-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "risk-asset-1",
+      "source_ref": {
+        "asset_id": "risk-asset-1",
+        "version": "c831c494a500b681135cc3e51f582d66ff7dbef1e5162635d0e94de75a50d5f4",
+        "locator": "controls",
+        "domain_id": "risk"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "risk-entity-main",
+      "predicate": "supportedBy",
+      "object": "risk-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "risk-asset-1",
+        "version": "c831c494a500b681135cc3e51f582d66ff7dbef1e5162635d0e94de75a50d5f4",
+        "locator": "controls",
+        "domain_id": "risk"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "legal-product-0",
+      "predicate": "representsEntity",
+      "object": "legal-entity-main",
+      "source_ref": {
+        "asset_id": "legal-asset-0",
+        "version": "7a0a9a73c6b95c579b6c82db52af0f28c4d43b7bf198e34dce2c8341b46be6b3",
+        "locator": "legal-asset-0-row-0",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "legal-entity-main",
+      "predicate": "recordedIn",
+      "object": "legal-asset-0",
+      "source_ref": {
+        "asset_id": "legal-asset-0",
+        "version": "7a0a9a73c6b95c579b6c82db52af0f28c4d43b7bf198e34dce2c8341b46be6b3",
+        "locator": "legal-asset-0-row-0",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "legal-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "legal-asset-1",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "legal-entity-main",
+      "predicate": "supportedBy",
+      "object": "legal-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "technology-product-0",
+      "predicate": "representsEntity",
+      "object": "technology-entity-main",
+      "source_ref": {
+        "asset_id": "technology-asset-0",
+        "version": "f3a52a414ef7f266b8878f138639e79bcfab0803de1e2df890f1a1b2ed6b104b",
+        "locator": "technology-asset-0-row-0",
+        "domain_id": "technology"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "technology-entity-main",
+      "predicate": "recordedIn",
+      "object": "technology-asset-0",
+      "source_ref": {
+        "asset_id": "technology-asset-0",
+        "version": "f3a52a414ef7f266b8878f138639e79bcfab0803de1e2df890f1a1b2ed6b104b",
+        "locator": "technology-asset-0-row-0",
+        "domain_id": "technology"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "technology-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "technology-asset-1",
+      "source_ref": {
+        "asset_id": "technology-asset-1",
+        "version": "dfbb95ff7c08097703f83cba2c73cd5b3c469f5cf22e46aae1a66bdf8274acc1",
+        "locator": "controls",
+        "domain_id": "technology"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "technology-entity-main",
+      "predicate": "supportedBy",
+      "object": "technology-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "technology-asset-1",
+        "version": "dfbb95ff7c08097703f83cba2c73cd5b3c469f5cf22e46aae1a66bdf8274acc1",
+        "locator": "controls",
+        "domain_id": "technology"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "product-product-0",
+      "predicate": "representsEntity",
+      "object": "product-entity-main",
+      "source_ref": {
+        "asset_id": "product-asset-0",
+        "version": "cf876e96adb9a73d065300e7cf1cde2eaf7ddaf2015e6837d3361c41d7a8efab",
+        "locator": "product-asset-0-row-0",
+        "domain_id": "product"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "product-entity-main",
+      "predicate": "recordedIn",
+      "object": "product-asset-0",
+      "source_ref": {
+        "asset_id": "product-asset-0",
+        "version": "cf876e96adb9a73d065300e7cf1cde2eaf7ddaf2015e6837d3361c41d7a8efab",
+        "locator": "product-asset-0-row-0",
+        "domain_id": "product"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "product-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "product-asset-1",
+      "source_ref": {
+        "asset_id": "product-asset-1",
+        "version": "b66bf1d3a70eecadad661f6dc7ce984bd2a851c99dd1cf0085700de5dd00aac9",
+        "locator": "controls",
+        "domain_id": "product"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "product-entity-main",
+      "predicate": "supportedBy",
+      "object": "product-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "product-asset-1",
+        "version": "b66bf1d3a70eecadad661f6dc7ce984bd2a851c99dd1cf0085700de5dd00aac9",
+        "locator": "controls",
+        "domain_id": "product"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "operations-product-0",
+      "predicate": "representsEntity",
+      "object": "operations-entity-main",
+      "source_ref": {
+        "asset_id": "operations-asset-0",
+        "version": "6e3fd4f261f8ba504ae614dae6fbc69e4d1775093f933879c4b2dae2204c5c84",
+        "locator": "operations-asset-0-row-0",
+        "domain_id": "operations"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "operations-entity-main",
+      "predicate": "recordedIn",
+      "object": "operations-asset-0",
+      "source_ref": {
+        "asset_id": "operations-asset-0",
+        "version": "6e3fd4f261f8ba504ae614dae6fbc69e4d1775093f933879c4b2dae2204c5c84",
+        "locator": "operations-asset-0-row-0",
+        "domain_id": "operations"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "operations-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "operations-asset-1",
+      "source_ref": {
+        "asset_id": "operations-asset-1",
+        "version": "c759cfcb26a15509e3f3cfa3ed3e8bbca9952a4d79ef176f5b4477711c239e7b",
+        "locator": "controls",
+        "domain_id": "operations"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "operations-entity-main",
+      "predicate": "supportedBy",
+      "object": "operations-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "operations-asset-1",
+        "version": "c759cfcb26a15509e3f3cfa3ed3e8bbca9952a4d79ef176f5b4477711c239e7b",
+        "locator": "controls",
+        "domain_id": "operations"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "data-product-0",
+      "predicate": "representsEntity",
+      "object": "data-entity-main",
+      "source_ref": {
+        "asset_id": "data-asset-0",
+        "version": "cb6f05bbffafd307af0efb382a844ca6613d95f6519e61dfb179b7ced2015731",
+        "locator": "data-asset-0-row-0",
+        "domain_id": "data"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "data-entity-main",
+      "predicate": "recordedIn",
+      "object": "data-asset-0",
+      "source_ref": {
+        "asset_id": "data-asset-0",
+        "version": "cb6f05bbffafd307af0efb382a844ca6613d95f6519e61dfb179b7ced2015731",
+        "locator": "data-asset-0-row-0",
+        "domain_id": "data"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "data-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "data-asset-1",
+      "source_ref": {
+        "asset_id": "data-asset-1",
+        "version": "dc58f9caedc6ac6e49954690fe18538c3ba578f27a292c7d14f4f4539ecfb4ea",
+        "locator": "controls",
+        "domain_id": "data"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "data-entity-main",
+      "predicate": "supportedBy",
+      "object": "data-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "data-asset-1",
+        "version": "dc58f9caedc6ac6e49954690fe18538c3ba578f27a292c7d14f4f4539ecfb4ea",
+        "locator": "controls",
+        "domain_id": "data"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "finance-product-0",
+      "predicate": "representsEntity",
+      "object": "treasury-liquidity",
+      "source_ref": {
+        "asset_id": "finance-asset-0",
+        "version": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b",
+        "locator": "finance-asset-0-row-0",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "recordedIn",
+      "object": "finance-asset-0",
+      "source_ref": {
+        "asset_id": "finance-asset-0",
+        "version": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b",
+        "locator": "finance-asset-0-row-0",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "finance-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "finance-asset-1",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "supportedBy",
+      "object": "finance-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "people-product-0",
+      "predicate": "representsEntity",
+      "object": "people-entity-main",
+      "source_ref": {
+        "asset_id": "people-asset-0",
+        "version": "234c07e16ac80af25b8947c9b6ab0ea673bcbfdcf7a381ff3caa7b0003152ec4",
+        "locator": "people-asset-0-row-0",
+        "domain_id": "people"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "people-entity-main",
+      "predicate": "recordedIn",
+      "object": "people-asset-0",
+      "source_ref": {
+        "asset_id": "people-asset-0",
+        "version": "234c07e16ac80af25b8947c9b6ab0ea673bcbfdcf7a381ff3caa7b0003152ec4",
+        "locator": "people-asset-0-row-0",
+        "domain_id": "people"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "people-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "people-asset-1",
+      "source_ref": {
+        "asset_id": "people-asset-1",
+        "version": "283e8b57d0c1213e503dc2d12a563d68e90231ce5ae66cf2fe00e39f6a6b8ade",
+        "locator": "controls",
+        "domain_id": "people"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "people-entity-main",
+      "predicate": "supportedBy",
+      "object": "people-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "people-asset-1",
+        "version": "283e8b57d0c1213e503dc2d12a563d68e90231ce5ae66cf2fe00e39f6a6b8ade",
+        "locator": "controls",
+        "domain_id": "people"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "third-party-product-0",
+      "predicate": "representsEntity",
+      "object": "third-party-entity-main",
+      "source_ref": {
+        "asset_id": "third-party-asset-0",
+        "version": "a86c0dccf88c694345b4260e90ab020aa610248ce4999f0491d0390f74dbe30d",
+        "locator": "third-party-asset-0-row-0",
+        "domain_id": "third-party"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "third-party-entity-main",
+      "predicate": "recordedIn",
+      "object": "third-party-asset-0",
+      "source_ref": {
+        "asset_id": "third-party-asset-0",
+        "version": "a86c0dccf88c694345b4260e90ab020aa610248ce4999f0491d0390f74dbe30d",
+        "locator": "third-party-asset-0-row-0",
+        "domain_id": "third-party"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "third-party-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "third-party-asset-1",
+      "source_ref": {
+        "asset_id": "third-party-asset-1",
+        "version": "4acec106dab86f6e6fba22920ff5073cfbcfdc143a7886c46d261b1555362657",
+        "locator": "controls",
+        "domain_id": "third-party"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "third-party-entity-main",
+      "predicate": "supportedBy",
+      "object": "third-party-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "third-party-asset-1",
+        "version": "4acec106dab86f6e6fba22920ff5073cfbcfdc143a7886c46d261b1555362657",
+        "locator": "controls",
+        "domain_id": "third-party"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "strategy-product-0",
+      "predicate": "representsEntity",
+      "object": "strategy-entity-main",
+      "source_ref": {
+        "asset_id": "strategy-asset-0",
+        "version": "a11d98351a8a1c46e709dd5ebda53e45875bfacfbb9b730f9dd5849508f01240",
+        "locator": "strategy-asset-0-row-0",
+        "domain_id": "strategy"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "strategy-entity-main",
+      "predicate": "recordedIn",
+      "object": "strategy-asset-0",
+      "source_ref": {
+        "asset_id": "strategy-asset-0",
+        "version": "a11d98351a8a1c46e709dd5ebda53e45875bfacfbb9b730f9dd5849508f01240",
+        "locator": "strategy-asset-0-row-0",
+        "domain_id": "strategy"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "strategy-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "strategy-asset-1",
+      "source_ref": {
+        "asset_id": "strategy-asset-1",
+        "version": "620b5667881d3c651392675edbb81be621ceb533e8156a8eb440fb58f51b406f",
+        "locator": "controls",
+        "domain_id": "strategy"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "strategy-entity-main",
+      "predicate": "supportedBy",
+      "object": "strategy-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "strategy-asset-1",
+        "version": "620b5667881d3c651392675edbb81be621ceb533e8156a8eb440fb58f51b406f",
+        "locator": "controls",
+        "domain_id": "strategy"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "customer-product-0",
+      "predicate": "representsEntity",
+      "object": "customer-entity-main",
+      "source_ref": {
+        "asset_id": "customer-asset-0",
+        "version": "c3427f2f541d999ecff59bdd78e9dfe94554bdf8ed5c717641b8444aa934f2e7",
+        "locator": "customer-asset-0-row-0",
+        "domain_id": "customer"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "customer-entity-main",
+      "predicate": "recordedIn",
+      "object": "customer-asset-0",
+      "source_ref": {
+        "asset_id": "customer-asset-0",
+        "version": "c3427f2f541d999ecff59bdd78e9dfe94554bdf8ed5c717641b8444aa934f2e7",
+        "locator": "customer-asset-0-row-0",
+        "domain_id": "customer"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "customer-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "customer-asset-1",
+      "source_ref": {
+        "asset_id": "customer-asset-1",
+        "version": "cb6b49890c7e67707d56a633efe7c152ff88c658b5f8702b493b33a575ad938a",
+        "locator": "controls",
+        "domain_id": "customer"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "customer-entity-main",
+      "predicate": "supportedBy",
+      "object": "customer-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "customer-asset-1",
+        "version": "cb6b49890c7e67707d56a633efe7c152ff88c658b5f8702b493b33a575ad938a",
+        "locator": "controls",
+        "domain_id": "customer"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "governedBy",
+      "object": "TL-POL-001",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2026-01-01",
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "TL-POL-001",
+      "predicate": "supportedBy",
+      "object": "finance-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2026-01-01",
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "finance-asset-1-section-controls",
+      "predicate": "partOf",
+      "object": "finance-asset-1",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "governedBy",
+      "object": "TF-POL-002",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "TF-POL-002",
+      "predicate": "supportedBy",
+      "object": "finance-asset-5-section-controls",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "finance-asset-5-section-controls",
+      "predicate": "partOf",
+      "object": "finance-asset-5",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "governedBy",
+      "object": "TL-POL-000",
+      "source_ref": {
+        "asset_id": "finance-asset-9",
+        "version": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "2025-12-31",
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "TL-POL-000",
+      "predicate": "supportedBy",
+      "object": "finance-asset-9-section-controls",
+      "source_ref": {
+        "asset_id": "finance-asset-9",
+        "version": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "2025-12-31",
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "finance-asset-9-section-controls",
+      "predicate": "partOf",
+      "object": "finance-asset-9",
+      "source_ref": {
+        "asset_id": "finance-asset-9",
+        "version": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "CP-1000",
+      "predicate": "recordedIn",
+      "object": "risk-asset-0",
+      "source_ref": {
+        "asset_id": "risk-asset-0",
+        "version": "6a7b5a6cac09d86a5638842aa4cf0e104f53ab0069f419bb6082dc03541e0b88",
+        "locator": "risk-asset-0-row-0",
+        "domain_id": "risk"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "CP-1000",
+      "predicate": "partyTo",
+      "object": "CT-2000",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "CT-2000",
+      "predicate": "supportedBy",
+      "object": "legal-asset-1-section-controls",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "FIN-100",
+      "predicate": "recordedIn",
+      "object": "finance-asset-0",
+      "source_ref": {
+        "asset_id": "finance-asset-0",
+        "version": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b",
+        "locator": "finance-asset-0-row-0",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "treasury-liquidity",
+      "predicate": "measures",
+      "object": "FIN-100",
+      "source_ref": {
+        "asset_id": "finance-asset-0",
+        "version": "1b916113a763dde3fa1f62ac7f86832d89a953044f76d3867d9e2ed26c6d848b",
+        "locator": "finance-asset-0-row-0",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    },
+    {
+      "subject": "TF-POL-002",
+      "predicate": "requiresContract",
+      "object": "CT-2000",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "origin": "managed_fixture"
+    }
+  ]
+}

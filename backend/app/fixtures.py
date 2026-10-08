@@ -348,6 +348,21 @@ def make_fixtures():
                 for a in records
                 if a["kind"] == "asset"
             )
+    from app.knowledge.corpus import semantic_records
+
+    records.extend(semantic_records())
+    for r in records:
+        if r["kind"] == "asset" and r["id"] in [
+            "finance-asset-1",
+            "finance-asset-5",
+            "finance-asset-9",
+            "finance-asset-13",
+        ]:
+            r["payload"]["product_ids"] = sorted(
+                set(r["payload"]["product_ids"] + ["finance-product-0"])
+            )
+        if r["kind"] == "product":
+            r["payload"]["primary_content_asset_id"] = r["domain_id"] + "-asset-0"
     return records
 
 
@@ -502,6 +517,11 @@ DOMAIN_CONTROLS = {
 
 
 def document_text(asset):
+    from app.knowledge.corpus import managed_document
+
+    managed = managed_document(asset["id"])
+    if managed is not None:
+        return managed
     p = asset["payload"]
     return f"""# {p["name"]}
 Synthetic enterprise evidence — Knowledge Product Manager demonstration data

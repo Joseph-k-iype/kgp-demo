@@ -2,17 +2,14 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-atlas:Contract a owl:Class ;
-    rdfs:label "Contract" .
-
-atlas:Counterparty a owl:Class ;
-    rdfs:label "Counterparty" .
-
 atlas:Document a owl:Class ;
     rdfs:label "Document" .
 
 atlas:Exposure a owl:Class ;
     rdfs:label "Exposure" .
+
+atlas:GraphAssertion a owl:Class ;
+    rdfs:label "GraphAssertion" .
 
 atlas:Obligation a owl:Class ;
     rdfs:label "Obligation" .
@@ -51,13 +48,38 @@ atlas:deliversProduct a owl:ObjectProperty ;
 
 atlas:governedBy a owl:ObjectProperty ;
     rdfs:label "governedBy" ;
-    rdfs:domain atlas:Asset ;
+    rdfs:domain atlas:BusinessEntity ;
     rdfs:range atlas:Policy .
 
 atlas:hasGap a owl:ObjectProperty ;
     rdfs:label "hasGap" ;
     rdfs:domain atlas:KnowledgeProduct ;
     rdfs:range atlas:Gap .
+
+atlas:hasPolicyClassification a owl:ObjectProperty ;
+    rdfs:label "hasPolicyClassification" ;
+    rdfs:domain atlas:Asset ;
+    rdfs:range atlas:Policy .
+
+atlas:measures a owl:ObjectProperty ;
+    rdfs:label "measures" ;
+    rdfs:domain atlas:BusinessEntity ;
+    rdfs:range atlas:LiquidityPosition .
+
+atlas:partOf a owl:ObjectProperty ;
+    rdfs:label "partOf" ;
+    rdfs:domain atlas:EvidenceSection ;
+    rdfs:range atlas:Asset .
+
+atlas:partyTo a owl:ObjectProperty ;
+    rdfs:label "partyTo" ;
+    rdfs:domain atlas:Counterparty ;
+    rdfs:range atlas:Contract .
+
+atlas:recordedIn a owl:ObjectProperty ;
+    rdfs:label "recordedIn" ;
+    rdfs:domain atlas:BusinessEntity ;
+    rdfs:range atlas:Asset .
 
 atlas:relatedTo a owl:ObjectProperty ;
     rdfs:label "relatedTo" ;
@@ -68,6 +90,16 @@ atlas:representsConcept a owl:ObjectProperty ;
     rdfs:label "representsConcept" ;
     rdfs:domain atlas:Asset ;
     rdfs:range atlas:DataElement .
+
+atlas:representsEntity a owl:ObjectProperty ;
+    rdfs:label "representsEntity" ;
+    rdfs:domain atlas:KnowledgeProduct ;
+    rdfs:range atlas:BusinessEntity .
+
+atlas:requiresContract a owl:ObjectProperty ;
+    rdfs:label "requiresContract" ;
+    rdfs:domain atlas:Policy ;
+    rdfs:range atlas:Contract .
 
 atlas:sourcedFrom a owl:ObjectProperty ;
     rdfs:label "sourcedFrom" ;
@@ -84,16 +116,24 @@ atlas:storedIn a owl:ObjectProperty ;
     rdfs:domain atlas:Asset ;
     rdfs:range atlas:Source .
 
+atlas:supportedBy a owl:ObjectProperty ;
+    rdfs:label "supportedBy" ;
+    rdfs:domain atlas:BusinessEntity ;
+    rdfs:range atlas:EvidenceSection .
+
 atlas:usesAsset a owl:ObjectProperty ;
     rdfs:label "usesAsset" ;
     rdfs:domain atlas:KnowledgeProduct ;
     rdfs:range atlas:Asset .
 
+atlas:Counterparty a owl:Class ;
+    rdfs:label "Counterparty" .
+
 atlas:Gap a owl:Class ;
     rdfs:label "Gap" .
 
-atlas:Policy a owl:Class ;
-    rdfs:label "Policy" .
+atlas:LiquidityPosition a owl:Class ;
+    rdfs:label "LiquidityPosition" .
 
 atlas:Project a owl:Class ;
     rdfs:label "Project" .
@@ -101,8 +141,14 @@ atlas:Project a owl:Class ;
 atlas:Subdomain a owl:Class ;
     rdfs:label "Subdomain" .
 
+atlas:Contract a owl:Class ;
+    rdfs:label "Contract" .
+
 atlas:Domain a owl:Class ;
     rdfs:label "Domain" .
+
+atlas:EvidenceSection a owl:Class ;
+    rdfs:label "EvidenceSection" .
 
 atlas:Person a owl:Class ;
     rdfs:label "Person" .
@@ -112,6 +158,12 @@ atlas:Source a owl:Class ;
 
 atlas:DataElement a owl:Class ;
     rdfs:label "DataElement" .
+
+atlas:Policy a owl:Class ;
+    rdfs:label "Policy" .
+
+atlas:BusinessEntity a owl:Class ;
+    rdfs:label "BusinessEntity" .
 
 atlas:KnowledgeProduct a owl:Class ;
     rdfs:label "KnowledgeProduct" .

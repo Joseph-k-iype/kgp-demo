@@ -1,0 +1,7 @@
+# TL-POL-001 — Treasury Liquidity Monitoring Policy
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Effective: 2026-01-01. Status: Active. Applies to Treasury Liquidity and FIN positions.
+## Controls
+Treasury must reconcile liquidity positions daily. Each position requires an as-of date, currency and reconciled funding source. Liquidity for FIN-100 is USD 12,500,000 as of 2026-09-30; this illustrative value must be checked against the position dataset.
+## Escalation
+A liquidity buffer below USD 10,000,000 requires same-day escalation to the Treasury sponsor.

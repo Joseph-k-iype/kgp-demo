@@ -72,7 +72,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "risk-asset-0"
     }
   },
   {
@@ -103,7 +104,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "risk-asset-0"
     }
   },
   {
@@ -134,7 +136,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "risk-asset-0"
     }
   },
   {
@@ -165,7 +168,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "risk-asset-0"
     }
   },
   {
@@ -809,7 +813,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "legal-asset-0"
     }
   },
   {
@@ -840,7 +845,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "legal-asset-0"
     }
   },
   {
@@ -871,7 +877,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "legal-asset-0"
     }
   },
   {
@@ -902,7 +909,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "legal-asset-0"
     }
   },
   {
@@ -1558,7 +1566,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "technology-asset-0"
     }
   },
   {
@@ -1589,7 +1598,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "technology-asset-0"
     }
   },
   {
@@ -1620,7 +1630,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "technology-asset-0"
     }
   },
   {
@@ -1651,7 +1662,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "technology-asset-0"
     }
   },
   {
@@ -2319,7 +2331,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "product-asset-0"
     }
   },
   {
@@ -2350,7 +2363,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "product-asset-0"
     }
   },
   {
@@ -2381,7 +2395,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "product-asset-0"
     }
   },
   {
@@ -2412,7 +2427,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "product-asset-0"
     }
   },
   {
@@ -3056,7 +3072,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "operations-asset-0"
     }
   },
   {
@@ -3087,7 +3104,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "operations-asset-0"
     }
   },
   {
@@ -3118,7 +3136,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "operations-asset-0"
     }
   },
   {
@@ -3149,7 +3168,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "operations-asset-0"
     }
   },
   {
@@ -3805,7 +3825,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "data-asset-0"
     }
   },
   {
@@ -3836,7 +3857,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "data-asset-0"
     }
   },
   {
@@ -3867,7 +3889,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "data-asset-0"
     }
   },
   {
@@ -3898,7 +3921,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "data-asset-0"
     }
   },
   {
@@ -4566,7 +4590,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "finance-asset-0"
     }
   },
   {
@@ -4597,7 +4622,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "finance-asset-0"
     }
   },
   {
@@ -4628,7 +4654,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "finance-asset-0"
     }
   },
   {
@@ -4659,7 +4686,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "finance-asset-0"
     }
   },
   {
@@ -4878,6 +4906,7 @@
       "source_id": "finance-minio",
       "subdomain_id": "finance-sub-1",
       "product_ids": [
+        "finance-product-0",
         "finance-product-1"
       ],
       "steward": "Oliver Reed",
@@ -5010,6 +5039,7 @@
       "source_id": "finance-minio",
       "subdomain_id": "finance-sub-1",
       "product_ids": [
+        "finance-product-0",
         "finance-product-1"
       ],
       "steward": "Oliver Reed",
@@ -5142,6 +5172,7 @@
       "source_id": "finance-minio",
       "subdomain_id": "finance-sub-1",
       "product_ids": [
+        "finance-product-0",
         "finance-product-1"
       ],
       "steward": "Oliver Reed",
@@ -5303,7 +5334,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "people-asset-0"
     }
   },
   {
@@ -5334,7 +5366,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "people-asset-0"
     }
   },
   {
@@ -5365,7 +5398,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "people-asset-0"
     }
   },
   {
@@ -5396,7 +5430,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "people-asset-0"
     }
   },
   {
@@ -6019,7 +6054,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "third-party-asset-0"
     }
   },
   {
@@ -6050,7 +6086,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "third-party-asset-0"
     }
   },
   {
@@ -6081,7 +6118,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "third-party-asset-0"
     }
   },
   {
@@ -6112,7 +6150,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "third-party-asset-0"
     }
   },
   {
@@ -6747,7 +6786,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "strategy-asset-0"
     }
   },
   {
@@ -6778,7 +6818,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "strategy-asset-0"
     }
   },
   {
@@ -6809,7 +6850,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "strategy-asset-0"
     }
   },
   {
@@ -6840,7 +6882,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "strategy-asset-0"
     }
   },
   {
@@ -7451,7 +7494,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 7
+      "asset_count": 7,
+      "primary_content_asset_id": "customer-asset-0"
     }
   },
   {
@@ -7482,7 +7526,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "customer-asset-0"
     }
   },
   {
@@ -7513,7 +7558,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "customer-asset-0"
     }
   },
   {
@@ -7544,7 +7590,8 @@
         "RDF",
         "Vector"
       ],
-      "asset_count": 6
+      "asset_count": 6,
+      "primary_content_asset_id": "customer-asset-0"
     }
   },
   {
@@ -8276,6 +8323,546 @@
         "legal"
       ],
       "scope_version": 1
+    }
+  },
+  {
+    "id": "risk-entity-main",
+    "kind": "entity",
+    "domain_id": "risk",
+    "payload": {
+      "name": "Counterparty Risk Intelligence",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Counterparty Risk Intelligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Priya Shah"
+    }
+  },
+  {
+    "id": "risk-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "risk",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "risk-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "risk-asset-1",
+        "version": "c831c494a500b681135cc3e51f582d66ff7dbef1e5162635d0e94de75a50d5f4",
+        "locator": "controls",
+        "domain_id": "risk"
+      }
+    }
+  },
+  {
+    "id": "legal-entity-main",
+    "kind": "entity",
+    "domain_id": "legal",
+    "payload": {
+      "name": "Contract Obligations",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Contract Obligations",
+        "Contract"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Contract"
+      ],
+      "steward": "Marcus Chen"
+    }
+  },
+  {
+    "id": "legal-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "legal",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "legal-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "legal-asset-1",
+        "version": "185d36a6a8e7530024b6855ff78efdbff95589acca839f55bb893317e5355a45",
+        "locator": "controls",
+        "domain_id": "legal"
+      }
+    }
+  },
+  {
+    "id": "technology-entity-main",
+    "kind": "entity",
+    "domain_id": "technology",
+    "payload": {
+      "name": "Technology Service Health",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Technology Service Health",
+        "Service"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Service"
+      ],
+      "steward": "Sofia Andersson"
+    }
+  },
+  {
+    "id": "technology-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "technology",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "technology-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "technology-asset-1",
+        "version": "dfbb95ff7c08097703f83cba2c73cd5b3c469f5cf22e46aae1a66bdf8274acc1",
+        "locator": "controls",
+        "domain_id": "technology"
+      }
+    }
+  },
+  {
+    "id": "product-entity-main",
+    "kind": "entity",
+    "domain_id": "product",
+    "payload": {
+      "name": "Product Performance",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Product Performance",
+        "Product"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Product"
+      ],
+      "steward": "Daniel Brooks"
+    }
+  },
+  {
+    "id": "product-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "product",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "product-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "product-asset-1",
+        "version": "b66bf1d3a70eecadad661f6dc7ce984bd2a851c99dd1cf0085700de5dd00aac9",
+        "locator": "controls",
+        "domain_id": "product"
+      }
+    }
+  },
+  {
+    "id": "operations-entity-main",
+    "kind": "entity",
+    "domain_id": "operations",
+    "payload": {
+      "name": "Operational Resilience",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Operational Resilience",
+        "Service"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Service"
+      ],
+      "steward": "Amara Okafor"
+    }
+  },
+  {
+    "id": "operations-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "operations",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "operations-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "operations-asset-1",
+        "version": "c759cfcb26a15509e3f3cfa3ed3e8bbca9952a4d79ef176f5b4477711c239e7b",
+        "locator": "controls",
+        "domain_id": "operations"
+      }
+    }
+  },
+  {
+    "id": "data-entity-main",
+    "kind": "entity",
+    "domain_id": "data",
+    "payload": {
+      "name": "Enterprise Data Dictionary",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Enterprise Data Dictionary",
+        "DataElement"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "DataElement"
+      ],
+      "steward": "Wei Lin"
+    }
+  },
+  {
+    "id": "data-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "data",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "data-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "data-asset-1",
+        "version": "dc58f9caedc6ac6e49954690fe18538c3ba578f27a292c7d14f4f4539ecfb4ea",
+        "locator": "controls",
+        "domain_id": "data"
+      }
+    }
+  },
+  {
+    "id": "treasury-liquidity",
+    "kind": "entity",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Treasury Liquidity",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Treasury Liquidity",
+        "treasury",
+        "liquidity",
+        "funding",
+        "FIN positions"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Exposure"
+      ],
+      "steward": "Oliver Reed"
+    }
+  },
+  {
+    "id": "finance-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    }
+  },
+  {
+    "id": "people-entity-main",
+    "kind": "entity",
+    "domain_id": "people",
+    "payload": {
+      "name": "Workforce Planning",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Workforce Planning",
+        "Person"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Person"
+      ],
+      "steward": "Isabella Rossi"
+    }
+  },
+  {
+    "id": "people-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "people",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "people-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "people-asset-1",
+        "version": "283e8b57d0c1213e503dc2d12a563d68e90231ce5ae66cf2fe00e39f6a6b8ade",
+        "locator": "controls",
+        "domain_id": "people"
+      }
+    }
+  },
+  {
+    "id": "third-party-entity-main",
+    "kind": "entity",
+    "domain_id": "third-party",
+    "payload": {
+      "name": "Third Party Due Diligence",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Third Party Due Diligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Aisha Rahman"
+    }
+  },
+  {
+    "id": "third-party-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "third-party",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "third-party-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "third-party-asset-1",
+        "version": "4acec106dab86f6e6fba22920ff5073cfbcfdc143a7886c46d261b1555362657",
+        "locator": "controls",
+        "domain_id": "third-party"
+      }
+    }
+  },
+  {
+    "id": "strategy-entity-main",
+    "kind": "entity",
+    "domain_id": "strategy",
+    "payload": {
+      "name": "Change Portfolio",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Change Portfolio",
+        "Project"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Project"
+      ],
+      "steward": "Gabriel Santos"
+    }
+  },
+  {
+    "id": "strategy-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "strategy",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "strategy-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "strategy-asset-1",
+        "version": "620b5667881d3c651392675edbb81be621ceb533e8156a8eb440fb58f51b406f",
+        "locator": "controls",
+        "domain_id": "strategy"
+      }
+    }
+  },
+  {
+    "id": "customer-entity-main",
+    "kind": "entity",
+    "domain_id": "customer",
+    "payload": {
+      "name": "Customer Relationship Intelligence",
+      "entity_type": "BusinessEntity",
+      "aliases": [
+        "Customer Relationship Intelligence",
+        "Counterparty"
+      ],
+      "semantic_managed": true,
+      "concepts": [
+        "Counterparty"
+      ],
+      "steward": "Emma Wilson"
+    }
+  },
+  {
+    "id": "customer-asset-1-section-controls",
+    "kind": "section",
+    "domain_id": "customer",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "customer-asset-1",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "customer-asset-1",
+        "version": "cb6b49890c7e67707d56a633efe7c152ff88c658b5f8702b493b33a575ad938a",
+        "locator": "controls",
+        "domain_id": "customer"
+      }
+    }
+  },
+  {
+    "id": "TL-POL-001",
+    "kind": "entity",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Treasury Liquidity Monitoring Policy",
+      "entity_type": "Policy",
+      "aliases": [
+        "TL-POL-001",
+        "Treasury Liquidity Monitoring Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Active",
+      "valid_from": "2026-01-01",
+      "valid_to": null
+    }
+  },
+  {
+    "id": "TF-POL-002",
+    "kind": "entity",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Treasury Funding Evidence Policy",
+      "entity_type": "Policy",
+      "aliases": [
+        "TF-POL-002",
+        "Treasury Funding Evidence Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Active",
+      "valid_from": "2026-04-01",
+      "valid_to": null
+    }
+  },
+  {
+    "id": "finance-asset-5-section-controls",
+    "kind": "section",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-5",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    }
+  },
+  {
+    "id": "TL-POL-000",
+    "kind": "entity",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Legacy Liquidity Policy",
+      "entity_type": "Policy",
+      "aliases": [
+        "TL-POL-000",
+        "Legacy Liquidity Policy"
+      ],
+      "semantic_managed": true,
+      "status": "Superseded",
+      "valid_from": "2024-01-01",
+      "valid_to": "2025-12-31"
+    }
+  },
+  {
+    "id": "finance-asset-9-section-controls",
+    "kind": "section",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Controls",
+      "entity_type": "EvidenceSection",
+      "aliases": [],
+      "semantic_managed": true,
+      "asset_id": "finance-asset-9",
+      "section_id": "controls",
+      "source_ref": {
+        "asset_id": "finance-asset-9",
+        "version": "a7d1560d6aeb9dee5b0c6a4b8b3ac3979d843b5763dab524db3dec6d0d15d170",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    }
+  },
+  {
+    "id": "CP-1000",
+    "kind": "entity",
+    "domain_id": "risk",
+    "payload": {
+      "name": "Aster Capital",
+      "entity_type": "Counterparty",
+      "aliases": [
+        "Aster Capital",
+        "CP-1000"
+      ],
+      "semantic_managed": true
+    }
+  },
+  {
+    "id": "CT-2000",
+    "kind": "entity",
+    "domain_id": "legal",
+    "payload": {
+      "name": "Aster Capital Master Agreement",
+      "entity_type": "Contract",
+      "aliases": [
+        "CT-2000",
+        "Aster Capital contract"
+      ],
+      "semantic_managed": true
+    }
+  },
+  {
+    "id": "FIN-100",
+    "kind": "entity",
+    "domain_id": "finance",
+    "payload": {
+      "name": "Treasury Position FIN-100",
+      "entity_type": "LiquidityPosition",
+      "aliases": [
+        "FIN-100"
+      ],
+      "semantic_managed": true
     }
   }
 ]

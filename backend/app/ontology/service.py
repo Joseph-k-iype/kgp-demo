@@ -31,6 +31,10 @@ CLASSES = [
     "Source",
     "Gap",
     "Role",
+    "BusinessEntity",
+    "EvidenceSection",
+    "LiquidityPosition",
+    "GraphAssertion",
 ] + CONCEPTS
 RELATIONS = {
     "belongsToDomain": ("Asset", "Domain"),
@@ -42,7 +46,15 @@ RELATIONS = {
     "deliversProduct": ("Project", "KnowledgeProduct"),
     "hasGap": ("KnowledgeProduct", "Gap"),
     "relatedTo": ("DataElement", "DataElement"),
-    "governedBy": ("Asset", "Policy"),
+    "governedBy": ("BusinessEntity", "Policy"),
+    "hasPolicyClassification": ("Asset", "Policy"),
+    "supportedBy": ("BusinessEntity", "EvidenceSection"),
+    "recordedIn": ("BusinessEntity", "Asset"),
+    "partOf": ("EvidenceSection", "Asset"),
+    "representsEntity": ("KnowledgeProduct", "BusinessEntity"),
+    "measures": ("BusinessEntity", "LiquidityPosition"),
+    "partyTo": ("Counterparty", "Contract"),
+    "requiresContract": ("Policy", "Contract"),
     "storedIn": ("Asset", "Source"),
     "delegatedTo": ("Domain", "Person"),
 }
@@ -98,7 +110,7 @@ def sync_ontology():
             )
             instances.add((node, K.sourcedFrom, I[p["source_id"]]))
             instances.add((node, K.storedIn, I[p["source_id"]]))
-            instances.add((node, K.governedBy, K.Policy))
+            instances.add((node, K.hasPolicyClassification, K.Policy))
             for product in p["product_ids"]:
                 instances.add((I[product], K.usesAsset, node))
             for c in p["concepts"]:
@@ -115,6 +127,38 @@ def sync_ontology():
         ("Service", "Policy"),
     ]:
         instances.add((K[a], K.relatedTo, K[b]))
+    from app.knowledge.corpus import semantic_manifest, load_semantic_manifest
+    from rdflib.namespace import XSD
+
+    for n in semantic_manifest()["nodes"]:
+        node = I[n["id"]]
+        instances.add((node, RDF.type, K[n["entity_type"]]))
+        for alias in n.get("aliases", []):
+            instances.add((node, K.alias, Literal(alias)))
+        for key in ["asset_id", "section_id", "valid_from", "valid_to", "status"]:
+            if n.get(key):
+                instances.add((node, K[key], Literal(n[key])))
+    for index, assertion in enumerate(load_semantic_manifest()):
+        subject, predicate, target = (
+            I[assertion.subject],
+            K[assertion.predicate],
+            I[assertion.object],
+        )
+        instances.add((subject, predicate, target))
+        a = I["assertion-" + str(index)]
+        instances.add((a, RDF.type, K.GraphAssertion))
+        instances.add((a, RDF.subject, subject))
+        instances.add((a, RDF.predicate, predicate))
+        instances.add((a, RDF.object, target))
+        instances.add((a, K.sourceAsset, I[assertion.source_ref.asset_id]))
+        instances.add((a, K.sourceVersion, Literal(assertion.source_ref.version)))
+        instances.add((a, K.sourceLocator, Literal(assertion.source_ref.locator)))
+        instances.add((a, K.origin, Literal(assertion.origin)))
+        instances.add((a, K.belongsToDomain, I[assertion.source_ref.domain_id]))
+        for key in ["valid_from", "valid_to"]:
+            value = getattr(assertion, key)
+            if value:
+                instances.add((a, K[key], Literal(value, datatype=XSD.date)))
     for name, graph in [("vocabulary", vocab), ("instances", instances)]:
         httpx.put(
             settings().fuseki_url + "/data",
@@ -150,6 +194,16 @@ def rdf_graph(scope):
             or str(term)[len(str(I)) :] in allowed
         )
 
+    # Reified assertions are visible only when every participating business/source node is visible.
+    for assertion in full.subjects(RDF.type, K.GraphAssertion):
+        participants = [
+            full.value(assertion, RDF.subject),
+            full.value(assertion, RDF.object),
+            full.value(assertion, K.sourceAsset),
+            full.value(assertion, K.belongsToDomain),
+        ]
+        if all(term is not None and permitted(term) for term in participants):
+            allowed.add(str(assertion)[len(str(I)) :])
     for s, p, o in full:
         if permitted(s) and permitted(o):
             g.add((s, p, o))
@@ -194,7 +248,9 @@ def explore_ontology(scope, concept_id="Counterparty", depth=1, limit=50):
             ),
             key=lambda t: (
                 t[1] != K.relatedTo,
-                int(str(t[0]).rsplit("-", 1)[-1]) if "-asset-" in str(t[0]) else 100,
+                int(str(t[0]).rsplit("-", 1)[-1])
+                if "-asset-" in str(t[0]) and str(t[0]).rsplit("-", 1)[-1].isdigit()
+                else 100,
                 tuple(map(str, t)),
             ),
         )

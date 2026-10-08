@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import literal
+from sqlalchemy.dialects.postgresql import insert, JSONB
 from app.catalog.models import records, rows
 from app.db import engine, query
 from app.fixtures import make_fixtures, business_data, document_text
@@ -14,7 +15,33 @@ def seed_demo():
             conn.execute(
                 insert(records)
                 .values(**r)
-                .on_conflict_do_nothing(index_elements=["id"])
+                .on_conflict_do_update(
+                    index_elements=["id"],
+                    set_={
+                        "payload": records.c.payload.op("||")(
+                            literal(
+                                {
+                                    k: v
+                                    for k, v in r["payload"].items()
+                                    if k
+                                    in [
+                                        "product_ids",
+                                        "primary_content_asset_id",
+                                        "semantic_managed",
+                                        "entity_type",
+                                        "aliases",
+                                        "asset_id",
+                                        "section_id",
+                                        "source_ref",
+                                        "valid_from",
+                                        "valid_to",
+                                    ]
+                                },
+                                type_=JSONB,
+                            )
+                        )
+                    },
+                )
             )
         for a in fixtures:
             if a["kind"] == "asset" and a["payload"]["type"] != "Document":

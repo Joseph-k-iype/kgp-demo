@@ -1,0 +1,5 @@
+# EX-FIN-001 — Approved Funding Evidence Exception
+Synthetic enterprise evidence — Knowledge Product Manager demonstration data
+Effective: 2026-06-01 to 2026-12-31. Status: Active. Applies to FIN-100 only.
+## Controls
+Oliver Reed approved temporary use of alternate funding evidence for FIN-100. This exception does not waive daily reconciliation or the Treasury Funding Evidence Policy TF-POL-002.

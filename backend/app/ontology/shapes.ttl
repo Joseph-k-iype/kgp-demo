@@ -3,3 +3,9 @@
 atlas:AssetStewardShape a sh:NodeShape ;
   sh:targetClass atlas:Asset ;
   sh:property [ sh:path atlas:stewardedBy ; sh:minCount 1 ; sh:message "Every asset needs asserted stewardship in the RDF graph." ] .
+atlas:AssertionSourceShape a sh:NodeShape ;
+  sh:targetClass atlas:GraphAssertion ;
+  sh:property [ sh:path atlas:sourceAsset ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ;
+  sh:property [ sh:path atlas:sourceVersion ; sh:minCount 1 ; sh:minLength 1 ] ;
+  sh:property [ sh:path atlas:sourceLocator ; sh:minCount 1 ; sh:minLength 1 ] ;
+  sh:property [ sh:path atlas:belongsToDomain ; sh:minCount 1 ; sh:nodeKind sh:IRI ] .
