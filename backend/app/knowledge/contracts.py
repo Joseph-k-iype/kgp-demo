@@ -24,3 +24,119 @@ class GraphAssertion(BaseModel):
         return (self.valid_from is None or at >= self.valid_from) and (
             self.valid_to is None or at <= self.valid_to
         )
+
+
+from typing import Literal, Annotated, Any
+from app.contracts import ScopeContext
+
+
+class ToolContext(BaseModel):
+    scope: ScopeContext
+    deadline: float
+    domain_id: str | None = None
+    max_tool_calls: int = 16
+    tool_calls: int = 0
+    max_response_bytes: int = 256000
+    graph_nodes: set[str] = Field(default_factory=set)
+    graph_edges: set[str] = Field(default_factory=set)
+    as_of: date = Field(default_factory=date.today)
+
+
+class EntityCandidate(BaseModel):
+    id: str
+    name: str
+    domain_id: str
+    entity_type: str
+    score: float
+    aliases: list[str] = Field(default_factory=list)
+
+
+class EntityResolution(BaseModel):
+    outcome: Literal["ok", "no_match", "ambiguous"]
+    candidates: list[EntityCandidate]
+    truncated: bool = False
+
+
+class ToolResult(BaseModel):
+    outcome: Literal["ok", "no_match", "ambiguous", "stale", "unavailable"] = "ok"
+    items: list[dict] = Field(default_factory=list)
+    source_refs: list[SourceRef] = Field(default_factory=list)
+    paths: list[dict] = Field(default_factory=list)
+    cursor: str | None = None
+    has_more: bool = False
+    truncated: bool = False
+    detail: str | None = None
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class DatasetFilter(StrictModel):
+    field: str
+    op: Literal["eq", "ne", "gt", "gte", "lt", "lte", "in"] = "eq"
+    value: Any
+
+
+class DatasetAggregate(StrictModel):
+    operation: Literal["sum", "avg", "min", "max", "count"]
+    field: str | None = None
+
+
+class DatasetQuery(StrictModel):
+    asset_id: str
+    select: list[str] = Field(default_factory=list, max_length=20)
+    filters: list[DatasetFilter] = Field(default_factory=list, max_length=10)
+    aggregate: DatasetAggregate | None = None
+    cursor: str | None = None
+    limit: int = Field(default=50, ge=1, le=100)
+
+
+class ResolveEntitiesAction(StrictModel):
+    tool: Literal["resolve_entities"] = "resolve_entities"
+    query: str = Field(min_length=1, max_length=2000)
+
+
+class TraverseGraphAction(StrictModel):
+    tool: Literal["traverse_graph"] = "traverse_graph"
+    roots: list[str] = Field(min_length=1, max_length=3)
+    predicates: list[str] = Field(default_factory=list, max_length=10)
+    target_kinds: list[str] = Field(default_factory=list, max_length=10)
+    depth: int = Field(default=3, ge=1, le=3)
+
+
+class ReadDocumentAction(StrictModel):
+    tool: Literal["read_document"] = "read_document"
+    asset_id: str
+    section_id: str | None = None
+
+
+class QueryDatasetAction(StrictModel):
+    tool: Literal["query_dataset"] = "query_dataset"
+    query: DatasetQuery
+
+
+class SearchEvidenceAction(StrictModel):
+    tool: Literal["search_evidence"] = "search_evidence"
+    query: str
+    asset_ids: list[str] | None = None
+    kinds: list[str] = Field(default_factory=list)
+    strategy: Literal["keyword", "vector", "hybrid"] = "hybrid"
+
+
+class ReadContentAction(StrictModel):
+    tool: Literal["read_content"] = "read_content"
+    kind: Literal["asset", "record", "document-section", "definition", "product"]
+    id: str
+    cursor: str | None = None
+
+
+ReadAction = Annotated[
+    ResolveEntitiesAction
+    | TraverseGraphAction
+    | ReadDocumentAction
+    | QueryDatasetAction
+    | SearchEvidenceAction
+    | ReadContentAction,
+    Field(discriminator="tool"),
+]
