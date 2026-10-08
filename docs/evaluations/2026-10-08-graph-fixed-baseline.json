@@ -1,0 +1,91 @@
+{
+  "baseline": "graph-assisted fixed retrieval on same enriched corpus",
+  "provider": "none",
+  "index": {
+    "indexed_assets": 150,
+    "evidence_chunks": 849,
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "dimensions": 384
+  },
+  "query": "Which policies govern treasury liquidity?",
+  "asset_handles": [
+    "finance-asset-1",
+    "finance-asset-5"
+  ],
+  "evidence": [
+    {
+      "id": "finance-asset-1:chunk-0",
+      "asset_id": "finance-asset-1",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "overview",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "finance-asset-1:chunk-2",
+      "asset_id": "finance-asset-1",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "escalation",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "finance-asset-1:chunk-1",
+      "asset_id": "finance-asset-1",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-1",
+        "version": "fcf865516bea79809434b38c4db90843f0bd9c5a6b676bc18a511bd275e62dad",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "finance-asset-5:chunk-0",
+      "asset_id": "finance-asset-5",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "overview",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "finance-asset-5:chunk-1",
+      "asset_id": "finance-asset-5",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "controls",
+        "domain_id": "finance"
+      }
+    },
+    {
+      "id": "finance-asset-5:chunk-2",
+      "asset_id": "finance-asset-5",
+      "domain_id": "finance",
+      "source_ref": {
+        "asset_id": "finance-asset-5",
+        "version": "adb89205afd9a2a5fc0c8b3112f58b630b995bc0b37377e206524be775c4c93f",
+        "locator": "contract-linkage",
+        "domain_id": "finance"
+      }
+    }
+  ],
+  "metrics": {
+    "retrieval_recall": 1.0,
+    "facet_coverage": 0.0,
+    "support_precision": 0.0,
+    "path_coverage": 1.0,
+    "outcome_valid": false
+  },
+  "note": "Retrieval/path baseline only; no LLM-generated answer/support precision claimed."
+}

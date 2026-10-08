@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_revision: str = "c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
     index_name: str = "atlas-evidence-v1"
+    content_index_name: str = "atlas-content-current"
+    content_index_shards: int = 1
+    content_index_replicas: int = 0
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property

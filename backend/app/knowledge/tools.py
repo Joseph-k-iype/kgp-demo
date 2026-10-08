@@ -19,12 +19,19 @@ from app.knowledge.contracts import (
     ReadDocumentAction,
     TraverseGraphAction,
     ResolveEntitiesAction,
+    SearchEvidenceAction,
 )
 from app.knowledge.graph import resolve_entities, traverse_graph
 
 
 def available_tools():
-    return ["resolve_entities", "traverse_graph", "read_document", "query_dataset"]
+    return [
+        "resolve_entities",
+        "traverse_graph",
+        "read_document",
+        "query_dataset",
+        "search_evidence",
+    ]
 
 
 def read_document(ctx, call):
@@ -32,41 +39,44 @@ def read_document(ctx, call):
     asset = get_record(scope, call.asset_id, "asset")
     if asset["type"] != "Document":
         raise HTTPException(422, "This asset is not a document")
-    preview = preview_object(scope, call.asset_id)
-    text = preview["text"]
-    body = text
-    if call.section_id:
-        sections = re.split(r"(?m)^##\s+", text)
-        selected = next(
-            (
-                s
-                for s in sections[1:]
-                if re.sub(r"[^a-z0-9]+", "-", s.splitlines()[0].lower()).strip("-")
-                == call.section_id
-            ),
-            None,
-        )
-        if selected is None:
-            return ToolResult(outcome="no_match", detail="Document section not found")
-        body = selected
-    ref = SourceRef(
-        asset_id=call.asset_id,
-        version=version(text),
-        domain_id=asset["domain_id"],
-        locator=call.section_id or "document",
-    )
+    from app.knowledge.sources import iter_document_sections
+
+    iterator = iter_document_sections(scope, call.asset_id)
+    selected = []
+    more = False
+    try:
+        for section in iterator:
+            guard(ctx)
+            if (
+                call.section_id
+                and section["locator"] != call.section_id
+                and section["section_id"] != call.section_id
+            ):
+                continue
+            if selected:
+                more = True
+                break
+            selected.append(section)
+    finally:
+        iterator.close()
+    if not selected:
+        return ToolResult(outcome="no_match", detail="Document section not found")
+    section = selected[0]
+    ref = SourceRef.model_validate(section["source_ref"])
     return ToolResult(
         items=[
             {
                 "id": call.asset_id + ":" + ref.locator,
                 "asset_id": call.asset_id,
-                "title": text.splitlines()[0].lstrip("# "),
-                "text": body,
+                "title": section["title"],
+                "text": section["text"],
                 "locator": ref.locator,
+                "start": section["start"],
+                "end": section["end"],
             }
         ],
         source_refs=[ref],
-        truncated=len(text.encode()) >= 256000,
+        truncated=more,
     )
 
 
@@ -245,6 +255,12 @@ def execute_read(ctx: ToolContext, call) -> ToolResult:
         result = read_document(ctx, call)
     elif isinstance(call, QueryDatasetAction):
         result = query_dataset(ctx, call)
+    elif isinstance(call, SearchEvidenceAction):
+        from app.knowledge.retrieval import search_evidence
+
+        result = search_evidence(
+            ctx, call.query, call.asset_ids, call.kinds, call.strategy
+        )
     else:
         raise HTTPException(422, "Tool is not available")
     guard(ctx)

@@ -140,3 +140,41 @@ ReadAction = Annotated[
     | ReadContentAction,
     Field(discriminator="tool"),
 ]
+
+
+class AnswerFacet(BaseModel):
+    id: str
+    description: str
+    kinds: list[Literal["document", "structured", "definition", "metadata"]] = Field(
+        default_factory=list
+    )
+
+
+class SearchIntentV2(BaseModel):
+    query: str
+    facets: list[AnswerFacet]
+    entity_ids: list[str] = Field(default_factory=list)
+    ambiguous: bool = False
+
+
+class EvidenceFragment(BaseModel):
+    id: str
+    asset_id: str
+    domain_id: str
+    content_kind: Literal["document", "structured", "definition", "metadata"]
+    text: str
+    source_ref: SourceRef
+    values: dict | None = None
+    units: str | None = None
+    period: str | None = None
+    paths: list[dict] = Field(default_factory=list)
+    matched_facet_ids: list[str] = Field(default_factory=list)
+    provenance: dict = Field(default_factory=dict)
+
+
+class CoverageReport(BaseModel):
+    supported_facet_ids: list[str] = Field(default_factory=list)
+    uncovered_facet_ids: list[str] = Field(default_factory=list)
+    irrelevant_ids: list[str] = Field(default_factory=list)
+    conflicts: list[str] = Field(default_factory=list)
+    suggested_source_needs: list[str] = Field(default_factory=list)

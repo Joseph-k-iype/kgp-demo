@@ -1,4 +1,4 @@
-import json, hashlib
+import json, hashlib, uuid
 import httpx
 from urllib.parse import quote
 from collections import defaultdict
@@ -9,87 +9,111 @@ from app.auth import resolve_scope
 from app.catalog.service import all_records, get_record
 from app.retrieval.extract import extract_evidence
 from app.retrieval.embed import embed
-from app.retrieval.index import request, ensure_index
+from app.retrieval.index import request, ensure_index, ensure_content_index
 from app.deadline import remaining_timeout
 
 
 def index_assets(asset_ids):
     ensure_index()
+    content_alias = ensure_content_index()
+    generation_id = uuid.uuid4().hex
     c = settings()
     scope = resolve_scope("admin")
-    assets = all_records(scope, "asset")
-    docs = []
-    selected = []
-    try:
-        for a in assets:
-            if asset_ids and a["id"] not in asset_ids:
-                continue
-            selected.append(a["id"])
-            query(
-                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
-                {"id": a["id"]},
-            )
-            docs.extend(extract_evidence(scope, a))
-        vectors = embed([d["text"] for d in docs])
-        import httpx
+    indexed_count = 0
+    chunks = 0
 
+    def flush(batch):
+        if not batch:
+            return
+        vectors = embed([d["text"] for d in batch])
         body = ""
-        for d, v in zip(docs, vectors):
+        for d, v in zip(batch, vectors):
+            d["index_generation"] = generation_id
             d["vector"] = v
             d["content_hash"] = hashlib.sha256(d["text"].encode()).hexdigest()
             d["model"] = c.embedding_model
-            body += (
-                json.dumps({"index": {"_index": c.index_name, "_id": d["id"]}})
-                + "\n"
-                + json.dumps(d)
-                + "\n"
-            )
-        for a in selected:
-            request(
-                "POST",
-                "/" + c.index_name + "/_delete_by_query",
-                {"query": {"term": {"asset_id": a}}},
-            )
-        r = httpx.post(
+            for target in [c.index_name, content_alias]:
+                body += (
+                    json.dumps({"index": {"_index": target, "_id": d["id"]}})
+                    + "\n"
+                    + json.dumps(d)
+                    + "\n"
+                )
+        response = httpx.post(
             c.opensearch_url + "/_bulk",
             content=body,
             headers={"Content-Type": "application/x-ndjson"},
             timeout=90,
         )
-        r.raise_for_status()
-        if r.json().get("errors"):
+        response.raise_for_status()
+        if response.json().get("errors"):
             raise RuntimeError("Bulk indexing failed")
-        request("POST", "/" + c.index_name + "/_refresh")
-        for a in selected:
-            query(
-                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",
-                {"id": a},
-            )
-        # Removed assets cannot remain searchable.
-        request(
-            "POST",
-            "/" + c.index_name + "/_delete_by_query",
-            {
-                "query": {
-                    "bool": {
-                        "must_not": {"terms": {"asset_id": [a["id"] for a in assets]}}
-                    }
-                }
-            },
+
+    cursor = ""
+    while True:
+        page = query(
+            "SELECT * FROM records WHERE kind='asset' AND id>:cursor AND (:all OR id=ANY(:ids)) ORDER BY id LIMIT 100",
+            {"cursor": cursor, "all": not bool(asset_ids), "ids": asset_ids or []},
         )
-        return {
-            "indexed_assets": len(selected),
-            "evidence_chunks": len(docs),
-            "model": c.embedding_model,
-            "dimensions": 384,
-        }
-    except Exception:
-        for a in selected:
+        if not page:
+            break
+        for row in page:
+            asset = {**row["payload"], "id": row["id"], "domain_id": row["domain_id"]}
+            indexed_count += 1
             query(
-                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",
-                {"id": a},
+                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
+                {"id": asset["id"]},
             )
-        raise
+            try:
+                batch = []
+                generation = hashlib.sha256()
+                for item in extract_evidence(scope, asset):
+                    generation.update(
+                        json.dumps(item.get("source_ref", {}), sort_keys=True).encode()
+                    )
+                    batch.append(item)
+                    chunks += 1
+                    if len(batch) == 64:
+                        flush(batch)
+                        batch = []
+                flush(batch)
+                from app.knowledge.projection import project_source
+
+                project_source(scope, asset, generation.hexdigest())
+                for target in [c.index_name, content_alias]:
+                    request("POST", "/" + target + "/_refresh")
+                    request(
+                        "POST",
+                        "/" + target + "/_delete_by_query?conflicts=proceed",
+                        {
+                            "query": {
+                                "bool": {
+                                    "filter": [{"term": {"asset_id": asset["id"]}}],
+                                    "must_not": [
+                                        {"term": {"index_generation": generation_id}}
+                                    ],
+                                }
+                            }
+                        },
+                    )
+                    request("POST", "/" + target + "/_refresh")
+                query(
+                    "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",
+                    {"id": asset["id"]},
+                )
+            except Exception:
+                query(
+                    "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",
+                    {"id": asset["id"]},
+                )
+                raise
+        cursor = page[-1]["id"]
+    return {
+        "indexed_assets": indexed_count,
+        "evidence_chunks": chunks,
+        "model": c.embedding_model,
+        "dimensions": 384,
+    }
 
 
 def retrieve(scope, query_text, concept_ids, limit=10, deadline=None):
@@ -221,7 +245,9 @@ def expand_evidence(scope, evidence, deadline=None):
         if asset.get("indexing_state") != "ready":
             raise HTTPException(409, "Evidence index is not current")
     response = request(
-        "POST", "/" + settings().index_name + "/_mget", {"ids": ids},
+        "POST",
+        "/" + settings().index_name + "/_mget",
+        {"ids": ids},
         timeout=remaining_timeout(deadline),
     )
     docs = {d["_id"]: d for d in response["docs"]}
@@ -229,9 +255,12 @@ def expand_evidence(scope, evidence, deadline=None):
     for id in ids:
         item = docs.get(id, {})
         doc = item.get("_source", {})
-        if (not item.get("found") or doc.get("id") != id
+        if (
+            not item.get("found")
+            or doc.get("id") != id
             or doc.get("asset_id") != id.split(":")[0]
-            or doc.get("domain_id") not in scope.domain_ids):
+            or doc.get("domain_id") not in scope.domain_ids
+        ):
             raise HTTPException(404, "Evidence not found")
         doc.pop("vector", None)
         result.append(doc)

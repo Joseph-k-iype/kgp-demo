@@ -191,6 +191,8 @@ def traverse_graph(
     paths = []
     refs = []
     truncated = False
+    stale = False
+    freshness = {}
     selected = predicates or sorted(PREDICATES)
     while queue:
         root, path = queue.popleft()
@@ -242,6 +244,14 @@ def traverse_graph(
                 locator=r["locator"]["value"],
                 domain_id=source_domains[asset],
             )
+            from app.knowledge.sources import source_ref_is_current
+
+            key = (ref.asset_id, ref.version, ref.locator)
+            if key not in freshness:
+                freshness[key] = source_ref_is_current(guard(ctx), ref)
+            if not freshness[key]:
+                stale = True
+                continue
             edge = {
                 "source": root,
                 "predicate": predicate,
@@ -268,9 +278,10 @@ def traverse_graph(
                 queue.append((target, nextpath))
     guard(ctx)
     return ToolResult(
-        outcome="ok" if items else "no_match",
+        outcome="ok" if items else "stale" if stale else "no_match",
         items=list(items.values()),
         source_refs=refs,
         paths=paths,
         truncated=truncated,
+        detail="Some graph assertions are stale" if stale else None,
     )

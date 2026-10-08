@@ -1,3 +1,5 @@
+import hashlib
+import codecs
 from io import BytesIO
 from datetime import timedelta
 from minio import Minio
@@ -23,7 +25,12 @@ def put_object(key, text):
         c.make_bucket(bucket)
     data = text.encode()
     c.put_object(
-        bucket, key, BytesIO(data), len(data), content_type="text/plain; charset=utf-8"
+        bucket,
+        key,
+        BytesIO(data),
+        len(data),
+        content_type="text/plain; charset=utf-8",
+        metadata={"sha256": hashlib.sha256(data).hexdigest()},
     )
 
 
@@ -34,9 +41,13 @@ def preview_object(scope, asset_id):
     key = a["object_key"]
     if ".." in key or not key.startswith(a["domain_id"] + "/"):
         raise HTTPException(422, "Invalid object reference")
+    info = client().stat_object(settings().bucket, key)
     response = client().get_object(settings().bucket, key)
     try:
-        text = response.read(256000).decode("utf-8")
+        raw = response.read(256000)
+        text = codecs.getincrementaldecoder("utf-8")().decode(
+            raw, final=info.size <= 256000
+        )
     finally:
         response.close()
         response.release_conn()
@@ -45,4 +56,6 @@ def preview_object(scope, asset_id):
         "location": a["storage_location"],
         "asset_id": asset_id,
         "content_type": "text/plain",
+        "truncated": info.size > 256000,
+        "version": info.metadata.get("x-amz-meta-sha256") or "etag:" + info.etag,
     }
