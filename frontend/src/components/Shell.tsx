@@ -142,14 +142,41 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     </Link>
                   ))}
                   <div className="workspace-connection">
-                    <CheckCircle2 size={14} />
-                    {health.data &&
-                    Object.values(health.data.services).every(
-                      (s) => s.status === "ready",
-                    )
-                      ? "All services connected"
-                      : "Service readiness"}
-                    <small>PostgreSQL · MinIO · RDF · OpenSearch</small>
+                    {health.error ? (
+                      <span role="status">
+                        Unable to check service readiness
+                      </span>
+                    ) : health.loading ? (
+                      <span>Checking service readiness…</span>
+                    ) : (
+                      <>
+                        {Object.values(health.data?.services || {}).every(
+                          (s) => s.status === "ready",
+                        ) ? (
+                          <>
+                            <CheckCircle2 size={14} />
+                            <span>All services connected</span>
+                          </>
+                        ) : (
+                          <span>Some services are unavailable</span>
+                        )}
+                        {Object.entries(health.data?.services || {}).map(
+                          ([name, service]) => (
+                            <small key={name}>
+                              {(
+                                {
+                                  postgres: "PostgreSQL",
+                                  minio: "MinIO",
+                                  fuseki: "RDF",
+                                  opensearch: "OpenSearch",
+                                } as Record<string, string>
+                              )[name] || name}{" "}
+                              · {service.status}
+                            </small>
+                          ),
+                        )}
+                      </>
+                    )}
                   </div>
                   <a
                     href="http://127.0.0.1:58123/docs"

@@ -1543,3 +1543,67 @@ body {
     padding: 22px;
   }
 }
+/* Safe reference alignment; preserve search controls and live content. */
+@media (min-width: 901px) {
+  .home-introduction h1 {
+    font-size: 54px;
+    font-weight: 700;
+    letter-spacing: -2px;
+  }
+}
+.discovery-nav .workspace-trigger {
+  font-size: 13px;
+  color: #53616c;
+}
+.discovery-main > .stats {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 8px 0 18px;
+  border-bottom: 1px solid #eee4df;
+}
+.discovery-main > .stats .stat {
+  background: transparent;
+  box-shadow: none;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.discovery-main > .stats .stat-value {
+  font-size: 18px;
+}
+@media (max-width: 700px) {
+  .discovery-results-aside {
+    display: block;
+    margin-top: 24px;
+  }
+  .discovery-results-aside .search-context,
+  .discovery-results-aside .related-products {
+    display: none;
+  }
+  .search-ontology {
+    width: 100%;
+  }
+}
+.discovery-tabs > button {
+  position: relative;
+}
+.discovery-tabs > button.selected {
+  border-bottom-color: transparent;
+}
+.result-tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--discovery-red);
+  pointer-events: none;
+}
+.related-products h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.product-tabs [aria-selected="true"] {
+  font-weight: 500;
+}

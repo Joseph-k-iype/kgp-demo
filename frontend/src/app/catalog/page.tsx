@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 import { Suspense, useCallback, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Grid2X2, List, ArrowUpRight } from "lucide-react";
@@ -137,7 +138,12 @@ function Library() {
         </button>
       </div>
       {advanced && (
-        <div className="library-filters advanced-filters">
+        <motion.div
+          className="library-filters advanced-filters"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.16 }}
+        >
           <label className="library-filter">
             Name or tag
             <input
@@ -183,7 +189,7 @@ function Library() {
                 name: id,
               })),
             )}
-        </div>
+        </motion.div>
       )}
       <div className="library-toolbar">
         <div className="segmented">

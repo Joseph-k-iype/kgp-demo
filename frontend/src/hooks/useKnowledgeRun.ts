@@ -4,6 +4,7 @@ import { api, Run, streamRun } from "@/api/client";
 import { prepareSearch, searchKey } from "@/api/discovery";
 import {
   activateContext,
+  restoreRun,
   claimIntent,
   intentFor,
   savedRun,
@@ -45,7 +46,20 @@ export function useKnowledgeRun(
           setState({ key, run: null, busy: true, error: "" });
           run = await claimIntent(intent, token);
         } else if (saved) {
-          run = await api<Run>("/search/runs/" + saved.id, token);
+          run = await restoreRun(
+            {
+              id: saved.intentId,
+              key,
+              query,
+              domainId,
+              persona,
+              mode: "llm",
+              submittedAt: 0,
+              claimed: true,
+            },
+            saved.id,
+            token,
+          );
         } else if (intent) {
           setState({ key, run: null, busy: true, error: "" });
           run = await claimIntent(intent, token);

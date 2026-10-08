@@ -18,20 +18,6 @@ export default function ShaderSurface() {
     setMotion(!media.matches);
     const change = () => setMotion(!media.matches);
     media.addEventListener("change", change);
-    useEffect(() => {
-      let inView = true;
-      const update = () => setVisible(inView && !document.hidden);
-      const observer = new IntersectionObserver((entries) => {
-        inView = entries[0].isIntersecting;
-        update();
-      });
-      if (ref.current) observer.observe(ref.current);
-      document.addEventListener("visibilitychange", update);
-      return () => {
-        observer.disconnect();
-        document.removeEventListener("visibilitychange", update);
-      };
-    }, []);
     return () => media.removeEventListener("change", change);
   }, []);
   useEffect(() => {

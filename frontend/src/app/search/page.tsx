@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Suspense, useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -100,6 +101,13 @@ function SearchResults() {
               })
             }
           >
+            {type === value && (
+              <motion.span
+                layoutId="result-tab-indicator"
+                className="result-tab-indicator"
+                aria-hidden="true"
+              />
+            )}
             <Icon size={17} />
             {label}
           </button>

@@ -20,6 +20,7 @@ type Entry = {
 };
 const entries = new Map<string, Entry>();
 let active: Entry | undefined;
+let activeKey = "";
 const running = (run: Run) => ["pending", "running"].includes(run.status);
 export function readIntent(): SearchIntent | null {
   try {
@@ -77,9 +78,41 @@ export function cancelEntry(key: string): Promise<Run | null> {
   return entry.promise.then((run) => (running(run) ? cancelEntry(key) : run));
 }
 export function activateContext(key: string) {
+  activeKey = key;
   if (active && active.intent.key !== key)
     void cancelEntry(active.intent.key).catch(() => {});
   active = entries.get(key);
+}
+export function restoreRun(
+  intent: SearchIntent,
+  id: string,
+  token: string,
+): Promise<Run> {
+  const previous = entries.get(intent.key);
+  if (previous?.run?.run_id === id) return Promise.resolve(previous.run);
+  if (previous?.intent.id === intent.id) return previous.promise;
+  const entry: Entry = {
+    intent,
+    token,
+    cancelled: false,
+    promise: Promise.resolve(null as unknown as Run),
+  };
+  entries.set(intent.key, entry);
+  if (activeKey === intent.key) active = entry;
+  entry.promise = api<Run>("/search/runs/" + id, token).then(async (run) => {
+    entry.run = run;
+    if (entry.cancelled && running(run)) {
+      entry.cancelPromise ??= api<Run>(
+        "/search/runs/" + id + "/cancel",
+        token,
+        { method: "POST" },
+      );
+      entry.run = await entry.cancelPromise;
+    }
+    remember(entry);
+    return entry.run;
+  });
+  return entry.promise;
 }
 export function claimIntent(intent: SearchIntent, token: string): Promise<Run> {
   const previous = entries.get(intent.key);
@@ -87,7 +120,7 @@ export function claimIntent(intent: SearchIntent, token: string): Promise<Run> {
   const saved = savedRun(intent.key);
   if (intent.claimed) {
     if (saved?.intentId === intent.id)
-      return api<Run>("/search/runs/" + saved.id, token);
+      return restoreRun(intent, saved.id, token);
     return Promise.reject(
       new Error(
         "The previous request was interrupted before its run ID was saved. Generate an answer to start a new request.",

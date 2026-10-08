@@ -61,3 +61,36 @@ test("project edits persist and analyst sees read-only metadata", async ({
     }),
   ).toHaveCount(0);
 });
+
+test("workspace readiness identifies unavailable services and request errors", async ({
+  page,
+}) => {
+  let failed = false;
+  await page.route("**/api/health", (route) =>
+    route.fulfill(
+      failed
+        ? { status: 503, json: { detail: "Health endpoint unavailable" } }
+        : {
+            json: {
+              services: {
+                postgres: { status: "ready" },
+                minio: { status: "unavailable" },
+                fuseki: { status: "ready" },
+                opensearch: { status: "ready" },
+              },
+            },
+          },
+    ),
+  );
+  await page.goto("/catalog");
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
+  await expect(
+    page.getByText("MinIO · unavailable", { exact: true }),
+  ).toBeVisible();
+  failed = true;
+  await page.reload();
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
+  await expect(
+    page.getByText("Unable to check service readiness", { exact: true }),
+  ).toBeVisible();
+});

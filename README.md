@@ -24,7 +24,15 @@ Copy `.env.example` to `.env` at the repository root and set `OPENROUTER_API_KEY
 
 Default search uses DeepSeek through OpenRouter with the official OpenAI SDK for schema-validated query planning and cited synthesis. LangGraph orchestrates authorization, planning, RDF concept resolution, keyword/vector retrieval, provenance expansion, coverage assessment, synthesis, and citation validation. PostgreSQL stores runs and checkpoints. Runs have a 90-second deadline, two retrieval passes, and 12 tool calls. The UI shows tool outcomes, not private model reasoning.
 
-Without a key, select **Extractive demo** explicitly. This mode performs actual vector/keyword retrieval and returns source excerpts through the same LangGraph workflow; it is labeled and does not claim LLM synthesis.
+Without a key, open **Answer options → Use source excerpts** explicitly. This mode performs actual vector/keyword retrieval and returns source excerpts through the same LangGraph workflow; it is labeled and does not claim LLM synthesis.
+
+## Search and catalog
+
+Home starts with one question field. Submit to see an AI answer and matching products, data and documents together. The selected domain governs both retrieval and synthesis. Result tabs, sorting, pagination and detail selection are URL state; they do not start another paid generation. Reload reconnects to the saved run. A request interrupted before its ID was saved requires an explicit Generate action. Provider failures leave catalog results available; use **Answer options** for source excerpts.
+
+Catalog is a grid/list library with persistent domain, source, quality and advanced filters. Its question field inherits the visible domain filter. Open a product for Overview, Assets, Ontology, Quality and Projects; asset previews read actual local PostgreSQL rows or MinIO objects. Workspace contains Domains, Sources, Ontology, Projects and Roles. Demo personas scope both UI and MCP.
+
+Motion uses Framer Motion for the search layout, short result reveals and dialogs, and GSAP only for the home introduction. Reduced-motion preferences skip movement; Paper shaders pause when hidden or offscreen.
 
 ## Architecture
 
@@ -34,7 +42,7 @@ Without a key, select **Extractive demo** explicitly. This mode performs actual 
 | MinIO | Private synthetic source documents | 59010; console 59011 |
 | Jena Fuseki 5.4 | Persistent RDF named graphs and SPARQL | 53030 |
 | OpenSearch 2.19 | Keyword and real vector index | 59200 |
-| FastAPI | Scoped services, OpenRouter/LangGraph, MCP | 58123 |
+| FastAPI + FastMCP 4 | Scoped services, OpenRouter/LangGraph, HTTP/stdio MCP | 58123 |
 | Next.js | Eight application destinations | 53000 |
 
 The PostgreSQL catalog uses indexed JSONB records, a domain foreign key, validated application DTOs, and a separate business-row table. The seed manifest maps IDs across SQL, RDF, objects, and indexed evidence. An OpenSearch index is derived and can be rebuilt with `make index`; changing embedding model/dimensions requires a new index name. Metadata, structured rows, and document chunks are distinct evidence types.

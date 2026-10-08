@@ -28,7 +28,7 @@ export default function ResultList({
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.2,
-              delay: reduced ? 0 : Math.min(index, 5) * 0.024,
+              delay: reduced || index >= 6 ? 0 : index * 0.024,
             }}
           >
             <div className="result-provenance">

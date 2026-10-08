@@ -129,7 +129,25 @@ async function boundaries(page: Page, options: Options = {}) {
           at: Date.now() / 1000,
         },
       ],
-      graph: { nodes: [], edges: [] },
+      graph: {
+        nodes: [
+          {
+            id: "Counterparty",
+            name: "Counterparty",
+            iri: "urn:Counterparty",
+            kind: "concept",
+          },
+          {
+            id: "Exposure",
+            name: "Exposure",
+            iri: "urn:Exposure",
+            kind: "concept",
+          },
+        ],
+        edges: [
+          { source: "Counterparty", target: "Exposure", label: "has exposure" },
+        ],
+      },
       created_at: Date.now() / 1000,
       error: options.failAI ? "Provider unavailable" : undefined,
     };
@@ -448,4 +466,44 @@ test("duplicate header submits start one provider request", async ({
     page.getByText("Fresh counterparty answer", { exact: true }),
   ).toBeVisible();
   expect(boundary.posts).toHaveLength(1);
+});
+
+test("a reconnected pending answer is cancelled when another query replaces it", async ({
+  page,
+}) => {
+  const boundary = await boundaries(page, { delayAI: true });
+  try {
+    await submit(page);
+    await expect.poll(() => boundary.posts.length).toBe(1);
+    await expect(
+      page.getByRole("button", { name: "Stop answer", exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: "Stop answer", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("searchbox").fill("treasury liquidity");
+    await page
+      .getByRole("button", { name: "Search knowledge", exact: true })
+      .click();
+    await expect.poll(boundary.cancelRequests).toBe(1);
+    await expect.poll(() => boundary.posts.length).toBe(2);
+  } finally {
+    boundary.release();
+  }
+});
+
+test("mobile answers retain their ontology relationships", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const boundary = await boundaries(page);
+  await submit(page);
+  await expect(
+    page.getByText("Fresh counterparty answer", { exact: true }),
+  ).toBeVisible();
+  await page.getByText("Ontology context", { exact: true }).click();
+  await expect(page.getByText("has exposure", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Explore relationships" }),
+  ).toBeVisible();
+  boundary.release();
 });
