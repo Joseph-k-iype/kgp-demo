@@ -215,6 +215,7 @@ class ContentPage(StrictModel):
     sections: list[dict] = Field(default_factory=list)
     rows: list[dict] = Field(default_factory=list)
     columns: list[dict] = Field(default_factory=list)
+    aggregate: dict | None = None
     facts: list[dict] = Field(default_factory=list)
     source_refs: list[SourceRef] = Field(default_factory=list)
     paths: list[dict] = Field(default_factory=list)

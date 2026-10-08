@@ -37,6 +37,18 @@ The published snapshot contains 359 catalog records (including 11 domains/33 sub
 
 Frontend typecheck and production build passed after the graph additions. npm audit reported zero vulnerabilities. The Python environment audit covered 143 installed dependencies and reported zero known vulnerabilities. Working-tree and all 49 pre-publication commits passed credential-pattern scanning; `.env` is ignored and has no tracked history. Final suite counts, review fixes and pushed SHA are recorded at completion below.
 
+## Final code gates after review fixes
+
+- Backend: **159 passed in 157.88 seconds** (`pytest backend/tests -q`), including actual HTTP/stdio MCP clients.
+- Browser: **35 passed in 1.9 minutes**, run after backend/source mutation checks.
+- Frontend typecheck and production build: passed; Python semantic/static checks and `git diff --check`: passed.
+- Visual/runtime QA: **27 states** across all eight application destinations plus source content, at 1440/768/390 pixels. No page overflow, JavaScript page errors, console errors or generation POSTs during read-only browsing. The separate console inspection reproduced a reduced-motion direct-link hydration mismatch; its regression failed before the modal's deterministic initial opacity fix and passed afterwards.
+- Snapshot validation: 359 records, 880 rows, 40 source objects, 3,553 RDF triples. Isolated restore equality and resource cleanup passed. The final review introduced an indexed registered-IRI lookup; migrations include revision006.
+- npm audit: zero vulnerabilities; Python audit: 143 dependencies, zero known vulnerabilities. No dependency versions changed during the review fix pass.
+- Fresh whole-branch review: one Critical and three Important findings fixed with RED→GREEN regressions; no Minor findings. See [implementation decisions](implementation-decisions.md).
+
+The user requested immediate publication before these final gates completed. Initial `d1261cc` was pushed to `kgp-demo/main`; the follow-up commit includes the review and hydration fixes plus this verification record. No keys, `.env`, raw model receipts or runtime checkpoints are published. **Live answer-quality rollout remains gated**, as described above; these code gates do not turn the failed model evaluations into a quality pass.
+
 ---
 
 # Historical fixed-engine verification record

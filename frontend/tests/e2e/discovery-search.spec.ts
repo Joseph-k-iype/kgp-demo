@@ -528,3 +528,52 @@ test("mobile answers retain their ontology relationships", async ({ page }) => {
   ).toBeVisible();
   boundary.release();
 });
+
+test("a completed ambiguity asks the clarification question without regenerating", async ({
+  page,
+}) => {
+  await boundaries(page);
+  let generations = 0;
+  await page.route("**/api/search/runs", (route) => {
+    generations++;
+    return route.fulfill({
+      json: {
+        run_id: "ambiguous-demo",
+        query: "Which policy?",
+        status: "completed",
+        mode: "llm",
+        answer_outcome: "needs_clarification",
+        clarification:
+          "Which position and domain do you mean: Finance or People?",
+        statements: [],
+        evidence: [],
+        gaps: [],
+        events: [],
+        graph: { nodes: [], edges: [] },
+      },
+    });
+  });
+  await page.goto("/");
+  await page
+    .getByRole("searchbox", { name: "Search enterprise knowledge" })
+    .fill("Which policy?");
+  await page
+    .getByRole("searchbox", { name: "Search enterprise knowledge" })
+    .press("Enter");
+  await expect(
+    page.getByRole("heading", { name: "Clarify your question", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Which position and domain do you mean: Finance or People?",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Refine search", exact: true })
+    .click();
+  await expect(
+    page.getByRole("searchbox", { name: "Search enterprise knowledge" }),
+  ).toBeFocused();
+  expect(generations).toBe(1);
+});

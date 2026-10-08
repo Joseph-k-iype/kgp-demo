@@ -576,6 +576,10 @@ export interface components {
             columns?: {
                 [key: string]: unknown;
             }[];
+            /** Aggregate */
+            aggregate?: {
+                [key: string]: unknown;
+            } | null;
             /** Facts */
             facts?: {
                 [key: string]: unknown;

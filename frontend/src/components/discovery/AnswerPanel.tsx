@@ -147,7 +147,27 @@ export default function AnswerPanel({
       )}
       {complete && (
         <div className="answer-content">
-          {run.statements.length === 0 ? (
+          {run.answer_outcome === "needs_clarification" ? (
+            <div className="answer-empty" role="status">
+              <h3>Clarify your question</h3>
+              <p>
+                {run.clarification ||
+                  "Which entity or domain should this question refer to?"}
+              </p>
+              <button
+                className="answer-action"
+                onClick={() => {
+                  const field = document.querySelector<HTMLInputElement>(
+                    'input[aria-label="Search enterprise knowledge"]',
+                  );
+                  field?.focus();
+                  field?.select();
+                }}
+              >
+                Refine search
+              </button>
+            </div>
+          ) : run.statements.length === 0 ? (
             <p>No supported answer was found within this search scope.</p>
           ) : (
             sections.map((section, sectionIndex) => (
@@ -208,9 +228,11 @@ export default function AnswerPanel({
           )}
           <div className="answer-bottom">
             <span>
-              {run.mode === "extractive"
-                ? "Retrieved source excerpts"
-                : "Answer grounded in synthetic source evidence"}
+              {run.answer_outcome === "needs_clarification"
+                ? "More information is needed"
+                : run.mode === "extractive"
+                  ? "Retrieved source excerpts"
+                  : "Answer grounded in synthetic source evidence"}
             </span>
             <button
               onClick={async () => {

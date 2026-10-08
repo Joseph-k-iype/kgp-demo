@@ -30,6 +30,7 @@ Set `OPENROUTER_API_KEY` only in the ignored server `.env`, then restart the API
 - [API reference](docs/api.md): session, discovery, content/citation, run lifecycle, editing and ingestion routes; [OpenAPI contract](backend/openapi.json).
 - [MCP](docs/mcp.md): HTTP/stdio setup, fourteen tools, resources, prompts and permission model.
 - [Mock data](docs/data.md): snapshot contents, checksums, export/restore and excluded runtime data.
+- [Implementation decisions](docs/implementation-decisions.md): scope adaptations and final review fixes.
 - [Verification](docs/verification.md): test commands, measured evaluations, local scale/restore evidence and limitations.
 - [Research](docs/research/2026-10-08-graph-centered-agentic-search.md): primary-source reasoning behind graph-centered adaptive retrieval.
 

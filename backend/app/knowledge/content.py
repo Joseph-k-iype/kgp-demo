@@ -11,6 +11,7 @@ from app.knowledge.contracts import (
     ContentSource,
     SourceRef,
     QueryDatasetAction,
+    DatasetQuery,
     ToolContext,
 )
 from app.knowledge.runtime import guard, version
@@ -123,31 +124,33 @@ def _definition(ctx, handle, record=None):
         ctx,
         f"SELECT DISTINCT ?predicate ?object WHERE {{ GRAPH <https://atlas.example/graphs/{'vocabulary' if schema else 'instances'}> {{ {subject} ?predicate ?object . }} }} ORDER BY ?predicate ?object LIMIT 51",
     )
+    from app.ontology.access import record_iris, permitted as resource_permitted
+    from rdflib import URIRef
+
+    object_uris = [
+        r["object"]["value"] for r in statements if r["object"].get("type") == "uri"
+    ]
     ids = [
-        row["object"]["value"].removeprefix(str(I))
-        for row in statements
-        if row["object"].get("type") == "uri"
-        and row["object"]["value"].startswith(str(I))
+        value.removeprefix(str(I)) for value in object_uris if value.startswith(str(I))
     ]
     allowed = (
-        {
-            r["id"]
-            for r in query(
-                "SELECT id FROM records WHERE id=ANY(:ids) AND (domain_id IS NULL OR domain_id=ANY(:domains))",
-                {"ids": ids, "domains": scope.domain_ids},
+        record_iris(
+            query(
+                "SELECT id,kind,payload FROM records WHERE kind<>'role' AND (id=ANY(:ids) OR payload->>'iri'=ANY(:uris)) AND (domain_id IS NULL OR domain_id=ANY(:domains)) LIMIT 51",
+                {"ids": ids, "uris": object_uris, "domains": scope.domain_ids},
             )
-        }
-        if ids
+        )
+        if object_uris
         else set()
     )
     facts = []
-    for row in statements[:50]:
+    for row in statements:
         obj = row["object"]
-        if (
-            obj.get("type") == "uri"
-            and obj["value"].startswith(str(I))
-            and obj["value"].removeprefix(str(I)) not in allowed
+        if obj.get("type") in ["uri", "bnode"] and not resource_permitted(
+            URIRef(obj["value"]), allowed
         ):
+            continue
+        if not resource_permitted(URIRef(row["predicate"]["value"]), allowed):
             continue
         predicate = row["predicate"]["value"]
         facts.append(
@@ -159,6 +162,8 @@ def _definition(ctx, handle, record=None):
                 "object_type": obj["type"],
             }
         )
+    truncated = len(facts) > 50
+    facts = facts[:50]
     title = handle.id if schema else record["name"]
     context = (
         {"definition_iri": subject[1:-1], "schema_definition": schema}
@@ -180,7 +185,7 @@ def _definition(ctx, handle, record=None):
         text="\n".join(f["label"] + ": " + f["object"] for f in facts),
         source_refs=[ref],
         context=context,
-        truncated=len(statements) > 50,
+        truncated=truncated,
         requested_version=handle.version,
         freshness="changed"
         if handle.version and handle.version != version(facts)
@@ -260,21 +265,63 @@ def _dataset(ctx, handle, asset, cursor, limit):
     position = _decode(ctx, handle, cursor) if cursor else None
     if position is not None and (not isinstance(position, str) or len(position) > 181):
         raise HTTPException(422, "Invalid dataset cursor position")
-    filters = (
-        [{"field": "record_id", "op": "eq", "value": handle.locator}]
-        if handle.locator
-        else []
-    )
+    aggregate = None
+    aggregate_refs = []
+    if handle.locator and handle.locator.startswith("aggregate:"):
+        if not handle.run_id or not handle.evidence_id:
+            raise HTTPException(
+                422, "Open this calculation through its saved search citation"
+            )
+        from app.agent.service import get_search
+
+        run = get_search(guard(ctx), handle.run_id)
+        evidence = next(
+            (e for e in run["evidence"] if e["id"] == handle.evidence_id), None
+        )
+        if (
+            not evidence
+            or evidence.get("source_ref", {}).get("asset_id") != asset["id"]
+            or evidence["source_ref"].get("locator") != handle.locator
+        ):
+            raise HTTPException(404, "Calculation was not found in this authorized run")
+        operation = DatasetQuery.model_validate(
+            evidence.get("provenance", {}).get("operation")
+        )
+        if (
+            operation.asset_id != asset["id"]
+            or not operation.aggregate
+            or "aggregate:" + version(operation.model_dump(mode="json"))
+            != handle.locator
+        ):
+            raise HTTPException(
+                422, "Calculation source operation does not match this citation"
+            )
+        current = query_dataset(ctx, QueryDatasetAction(query=operation))
+        aggregate_refs = current.source_refs
+        if cursor:
+            position = _decode(ctx, handle, cursor, current.source_refs[0].version)
+        aggregate = {
+            "operation": operation.aggregate.operation,
+            "field": operation.aggregate.field,
+            "filters": [f.model_dump(mode="json") for f in operation.filters],
+            "values": current.items[0]["values"],
+            "source_ref": current.source_refs[0].model_dump(mode="json"),
+        }
+        selection = operation.model_copy(
+            update={"aggregate": None, "cursor": position, "limit": limit}
+        )
+    else:
+        selection = DatasetQuery(
+            asset_id=asset["id"],
+            filters=[{"field": "record_id", "op": "eq", "value": handle.locator}]
+            if handle.locator
+            else [],
+            cursor=position,
+            limit=limit,
+        )
     result = query_dataset(
         ctx,
-        QueryDatasetAction(
-            query={
-                "asset_id": asset["id"],
-                "filters": filters,
-                "cursor": position,
-                "limit": limit,
-            }
-        ),
+        QueryDatasetAction(query=selection),
     )
     rows = [
         {
@@ -297,7 +344,11 @@ def _dataset(ctx, handle, asset, cursor, limit):
         }
         for name, value in sample.items()
     ]
-    fingerprint = version([ref.model_dump() for ref in result.source_refs])
+    fingerprint = (
+        aggregate_refs[0].version
+        if aggregate_refs
+        else version([ref.model_dump() for ref in result.source_refs])
+    )
     guard(ctx)
     return ContentPage(
         handle=handle,
@@ -305,7 +356,8 @@ def _dataset(ctx, handle, asset, cursor, limit):
         content_type="dataset",
         rows=rows,
         columns=columns,
-        source_refs=result.source_refs,
+        source_refs=aggregate_refs + result.source_refs,
+        aggregate=aggregate,
         context=_context(guard(ctx), asset),
         has_more=result.has_more,
         cursor=_encode(ctx, handle, fingerprint, result.cursor)
@@ -314,7 +366,9 @@ def _dataset(ctx, handle, asset, cursor, limit):
         requested_version=handle.version,
         freshness="changed"
         if handle.version
-        and not any(ref.version == handle.version for ref in result.source_refs)
+        and not any(
+            ref.version == handle.version for ref in aggregate_refs + result.source_refs
+        )
         else "current",
     )
 
@@ -362,7 +416,26 @@ def _source_paths(ctx, asset_id):
                 and path not in paths
             ):
                 paths.append(path)
-    return paths[:20]
+    selected = paths[:20]
+    ids = list(
+        {e[key] for p in selected for e in p["edges"] for key in ["source", "target"]}
+    )
+    labels = (
+        {
+            r["id"]: r["name"]
+            for r in query(
+                "SELECT id,payload->>'name' AS name FROM records WHERE id=ANY(:ids) AND domain_id=ANY(:domains)",
+                {"ids": ids, "domains": guard(ctx).domain_ids},
+            )
+        }
+        if ids
+        else {}
+    )
+    for p in selected:
+        for edge in p["edges"]:
+            edge["source_name"] = labels.get(edge["source"], edge["source"])
+            edge["target_name"] = labels.get(edge["target"], edge["target"])
+    return selected
 
 
 def open_content(ctx, handle, cursor=None, limit=20, preferred_asset_id=None):
@@ -421,10 +494,20 @@ def open_content(ctx, handle, cursor=None, limit=20, preferred_asset_id=None):
         )
     if record["kind"] == "entity":
         routed = traverse_graph(
-            ctx, [record["id"]], ["supportedBy", "recordedIn", "partOf"], [], depth=2
+            ctx,
+            [record["id"]],
+            ["governedBy", "supportedBy", "recordedIn", "partOf"],
+            [],
+            depth=2,
         )
         if routed.source_refs:
-            ref = routed.source_refs[0]
+            preferred_id = record.get("asset_id") or (
+                record.get("source_ref") or {}
+            ).get("asset_id")
+            ref = next(
+                (r for r in routed.source_refs if r.asset_id == preferred_id),
+                routed.source_refs[0],
+            )
             page = open_content(
                 ctx,
                 ContentHandle(

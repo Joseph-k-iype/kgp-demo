@@ -57,24 +57,35 @@ export default function ContentViewer({
 }) {
   const { token } = useSession();
   const [tab, setTab] = useState("Content");
+  const [related, setRelated] = useState<Handle | null>(null);
+  const activeHandle = related || handle;
   const [preferred, setPreferred] = useState(preferredAsset || "");
   const [cursor, setCursor] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const query = new URLSearchParams();
   if (cursor) query.set("cursor", cursor);
   const sameSource =
-    handle.kind !== "product" || !preferred || preferred === preferredAsset;
+    activeHandle.kind !== "product" ||
+    !preferred ||
+    preferred === preferredAsset;
   for (const key of ["locator", "version", "run_id", "evidence_id"] as const)
-    if (handle[key] && (sameSource || !["locator", "version"].includes(key)))
+    if (
+      !related &&
+      handle[key] &&
+      (sameSource || !["locator", "version"].includes(key))
+    )
       query.set(key, handle[key]!);
-  if (preferred) query.set("preferred_asset_id", preferred);
+  if (preferred && !related) query.set("preferred_asset_id", preferred);
   const path =
-    handle.kind === "product"
-      ? "/products/" + encodeURIComponent(handle.id) + "/content"
-      : "/content/" + handle.kind + "/" + encodeURIComponent(handle.id);
+    activeHandle.kind === "product"
+      ? "/products/" + encodeURIComponent(activeHandle.id) + "/content"
+      : "/content/" +
+        activeHandle.kind +
+        "/" +
+        encodeURIComponent(activeHandle.id);
   const content = useData<Content>(path + "?" + query, token);
   const productDetail = useData<Record<string, unknown>>(
-    handle.kind === "product" && tab === "Context"
+    !related && handle.kind === "product" && tab === "Context"
       ? "/products/" + encodeURIComponent(handle.id)
       : null,
     token,
@@ -89,11 +100,12 @@ export default function ContentViewer({
     if (data?.manifest)
       setManifestCache({ token, id: handle.id, manifest: data.manifest });
   }, [data, token, handle.id]);
-  const manifest =
-    data?.manifest ||
-    (manifestCache?.token === token && manifestCache.id === handle.id
-      ? manifestCache.manifest
-      : null);
+  const manifest = related
+    ? null
+    : data?.manifest ||
+      (manifestCache?.token === token && manifestCache.id === handle.id
+        ? manifestCache.manifest
+        : null);
 
   const columns = (data?.columns || []).map((column) => ({
     name: text(column.name),
@@ -173,7 +185,67 @@ export default function ContentViewer({
                     </span>
                     <h1>{data.title}</h1>
                   </div>
-                  {quote && (
+                  {related && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setRelated(null);
+                        setCursor("");
+                        setHistory([]);
+                      }}
+                    >
+                      Back to original source
+                    </button>
+                  )}
+                  {data.aggregate && (
+                    <section className="reader-aggregate">
+                      <h3>Calculated result</h3>
+                      <p>
+                        {text(data.aggregate.operation)} of{" "}
+                        {text(data.aggregate.field || "selected records")}
+                      </p>
+                      <dl>
+                        {Object.entries(object(data.aggregate.values)).map(
+                          ([key, value]) => (
+                            <div key={key}>
+                              <dt>{key.replaceAll("_", " ")}</dt>
+                              <dd>{text(value)}</dd>
+                            </div>
+                          ),
+                        )}
+                      </dl>
+                      <p>
+                        Included:{" "}
+                        {Array.isArray(data.aggregate.filters) &&
+                        data.aggregate.filters.length
+                          ? data.aggregate.filters
+                              .map((filter) => {
+                                const f = object(filter);
+                                const operators: Record<string, string> = {
+                                  eq: "is",
+                                  gt: "is greater than",
+                                  gte: "is at least",
+                                  lt: "is less than",
+                                  lte: "is at most",
+                                  in: "is one of",
+                                };
+                                return (
+                                  text(f.field).replaceAll("_", " ") +
+                                  " " +
+                                  (operators[text(f.op)] || text(f.op)) +
+                                  " " +
+                                  (Array.isArray(f.value)
+                                    ? f.value.join(", ")
+                                    : text(f.value))
+                                );
+                              })
+                              .join("; ")
+                          : "all source records"}
+                      </p>
+                      <h3>Underlying selection</h3>
+                    </section>
+                  )}
+                  {!related && sameSource && quote && (
                     <blockquote className="reader-cited-passage">
                       <strong>Cited passage</strong>
                       <p>{quote}</p>
@@ -290,24 +362,35 @@ export default function ContentViewer({
                               ),
                             )
                             .join(" → ")}
-                        <SourceMarkdown
-                          text={
-                            Array.isArray(path.edges)
-                              ? path.edges
-                                  .map((edge) => {
-                                    const e = object(edge);
-                                    return (
-                                      text(e.subject) +
-                                      " → " +
-                                      text(e.predicate) +
-                                      " → " +
-                                      text(e.object)
-                                    );
-                                  })
-                                  .join("\n\n")
-                              : ""
-                          }
-                        />
+                        {Array.isArray(path.edges) &&
+                          path.edges.map((edge, edgeIndex) => {
+                            const e = object(edge);
+                            const source = text(e.source ?? e.subject),
+                              target = text(e.target ?? e.object);
+                            function openRelated(id: string) {
+                              setRelated({ kind: "record", id });
+                              setCursor("");
+                              setHistory([]);
+                              setTab("Content");
+                            }
+                            return (
+                              <p key={edgeIndex}>
+                                <button
+                                  aria-label={"Open related node " + source}
+                                  onClick={() => openRelated(source)}
+                                >
+                                  {text(e.source_name || source)}
+                                </button>
+                                {" → " + text(e.predicate) + " → "}
+                                <button
+                                  aria-label={"Open related node " + target}
+                                  onClick={() => openRelated(target)}
+                                >
+                                  {text(e.target_name || target)}
+                                </button>
+                              </p>
+                            );
+                          })}
                       </div>
                     ))
                   ) : (

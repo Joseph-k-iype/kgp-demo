@@ -60,3 +60,7 @@ Kinds are `asset`, `product`, `record`, `definition` and `evidence`. Query param
 ## Errors and integration expectations
 
 Validation errors use 422; absent/inaccessible objects use controlled 403/404 responses; changed source/scope and intent conflicts use 409; admission limits are explicit. Search results also carry terminal failure/configuration states. Clients should show available discovery/content alongside generation errors, preserve run IDs, abort obsolete content fetches, and never regenerate an answer on paging/filter changes. Restart services after server configuration changes. Provider/network failures are observable and may occur despite passing deterministic tests.
+
+## Calculated source results
+
+A saved aggregate citation supplies its owned `run_id`, `evidence_id`, source asset, version and `aggregate:` locator. The content reader validates its stored typed operation and reexecutes it. `ContentPage.aggregate` includes the current operation, field, filters, calculated values/unit/count and source reference; `rows` contains a bounded page of the underlying selection. A bare aggregate hash without the authorized saved operation returns 422 rather than being interpreted as a row ID. Current results and saved excerpts retain separate freshness. Individual row versions and aggregate result versions do not promise a transaction snapshot of an entire externally changing dataset.

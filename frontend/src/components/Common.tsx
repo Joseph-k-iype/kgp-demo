@@ -202,9 +202,9 @@ export function Modal({
     <motion.div
       className="modal-backdrop"
       onClick={onClose}
-      initial={reduced ? false : { opacity: 0 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.16 }}
+      transition={{ duration: reduced ? 0 : 0.16 }}
     >
       <div
         ref={ref}

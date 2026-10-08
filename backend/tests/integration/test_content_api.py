@@ -394,3 +394,87 @@ def test_product_query_match_preserves_the_selected_source_passage():
     assert page.source_refs and page.source_refs[0].locator == "controls"
     assert page.sections[0]["locator"] == "controls"
     assert "reconcile liquidity positions daily" in page.text
+
+
+def test_aggregate_citation_reexecutes_result_and_opens_its_underlying_selection():
+    import json, uuid
+    from app.knowledge.tools import execute_read
+    from app.knowledge.contracts import ToolContext, QueryDatasetAction
+    from app.knowledge.content import open_content
+
+    scope = resolve_scope("admin")
+    ctx = ToolContext(scope=scope, deadline=time.time() + 30)
+    operation = {
+        "asset_id": "finance-asset-0",
+        "aggregate": {"operation": "sum", "field": "liquidity_usd"},
+        "filters": [{"field": "liquidity_usd", "op": "gt", "value": 20000000}],
+    }
+    source = execute_read(ctx, QueryDatasetAction(query=operation))
+    ref = source.source_refs[0]
+    id = "aggregate-review-" + uuid.uuid4().hex
+    evidence = {
+        "id": "sum",
+        "asset_id": ref.asset_id,
+        "domain_id": ref.domain_id,
+        "content_kind": "structured",
+        "text": json.dumps(source.items[0]["values"]),
+        "values": source.items[0]["values"],
+        "source_ref": ref.model_dump(mode="json"),
+        "provenance": {"operation": source.items[0]["operation"]},
+    }
+    payload = {
+        "run_id": id,
+        "person_id": scope.person_id,
+        "scope_version": scope.scope_version,
+        "query": "Sum current selected liquidity",
+        "mode": "extractive",
+        "status": "completed",
+        "created_at": time.time(),
+        "statements": [],
+        "evidence": [evidence],
+        "gaps": [],
+        "events": [],
+        "graph": {"nodes": [], "edges": []},
+    }
+    query(
+        "INSERT INTO search_runs(id,person_id,payload) VALUES(:id,:person,CAST(:payload AS jsonb)) RETURNING id",
+        {"id": id, "person": scope.person_id, "payload": json.dumps(payload)},
+    )
+    try:
+        page = open_content(
+            ctx,
+            {
+                "kind": "asset",
+                "id": ref.asset_id,
+                "locator": ref.locator,
+                "version": ref.version,
+                "run_id": id,
+                "evidence_id": "sum",
+            },
+        )
+        assert page.aggregate["values"]["sum"] == 69000000
+        assert page.aggregate["values"]["unit"] == "USD"
+        assert page.freshness == "current"
+        assert page.rows and all(
+            r["values"]["liquidity_usd"] > 20000000 for r in page.rows
+        )
+        assert page.aggregate["filters"] == operation["filters"]
+        assert (
+            client.get(
+                "/content/asset/finance-asset-0",
+                params={"locator": ref.locator},
+                headers=HEADERS,
+            ).status_code
+            == 422
+        )
+    finally:
+        query("DELETE FROM search_runs WHERE id=:id RETURNING id", {"id": id})
+
+
+def test_business_entity_content_retains_current_governing_paths():
+    from app.knowledge.content import open_content
+    from app.knowledge.contracts import ToolContext
+    page=open_content(ToolContext(scope=resolve_scope('admin'),deadline=time.time()+30),{'kind':'record','id':'treasury-liquidity'})
+    edges=[e for p in page.paths for e in p['edges']]
+    assert any(e['source']=='treasury-liquidity' and e['predicate']=='governedBy' and e['target']=='TL-POL-001' for e in edges)
+    assert any(e['source']=='treasury-liquidity' and e['predicate']=='governedBy' and e['target']=='TF-POL-002' for e in edges)

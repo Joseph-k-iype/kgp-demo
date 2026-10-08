@@ -68,6 +68,12 @@ export type GraphData = {
   truncated?: boolean;
 };
 export type Run = {
+  answer_outcome?:
+    | "answered"
+    | "partial"
+    | "no_evidence"
+    | "needs_clarification";
+  clarification?: string;
   domain_id?: string | null;
   run_id: string;
   query: string;

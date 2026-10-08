@@ -1999,6 +1999,18 @@
             "type": "array",
             "title": "Columns"
           },
+          "aggregate": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aggregate"
+          },
           "facts": {
             "items": {
               "additionalProperties": true,

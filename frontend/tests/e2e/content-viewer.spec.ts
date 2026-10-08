@@ -284,3 +284,99 @@ test("ontology handles cyclic, disconnected and empty neighborhoods", async ({
   );
   expect(errors).toEqual([]);
 });
+
+test("source relationships show their real endpoints and open a node in one mobile viewer", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ontology?concept=treasury-liquidity");
+  await page
+    .getByRole("button", { name: "Open source content", exact: true })
+    .click();
+  const viewer = page.getByRole("dialog");
+  await viewer.getByRole("tab", { name: "Relationships", exact: true }).click();
+  await expect(
+    viewer
+      .getByRole("button", {
+        name: "Open related node TL-POL-001",
+        exact: true,
+      })
+      .first(),
+  ).toBeVisible();
+  await expect(viewer).toContainText("treasury-liquidity");
+  await viewer
+    .getByRole("button", { name: "Open related node TL-POL-001", exact: true })
+    .first()
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(viewer).toContainText("reconcile liquidity positions daily");
+  await expect(page.getByRole("dialog")).toHaveCount(1);
+});
+
+test("aggregate content shows calculated values and the underlying selected rows", async ({
+  page,
+}) => {
+  let generations = 0;
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().endsWith("/api/search/runs"))
+      generations++;
+  });
+  await page.route("**/api/products/risk-product-0/content?**", (route) =>
+    route.fulfill({
+      json: {
+        handle: { kind: "product", id: "risk-product-0" },
+        title: "Selected exposure sum",
+        content_type: "dataset",
+        freshness: "current",
+        aggregate: {
+          operation: "sum",
+          field: "exposure_usd",
+          values: { sum: 1250000, unit: "USD", row_count: 1 },
+          filters: [{ field: "counterparty_id", op: "eq", value: "CP-1000" }],
+        },
+        columns: [
+          { name: "counterparty_name" },
+          { name: "exposure_usd", unit: "USD" },
+        ],
+        rows: [
+          {
+            locator: "row",
+            values: {
+              counterparty_name: "Aster Capital",
+              exposure_usd: 1250000,
+            },
+          },
+        ],
+        context: {},
+        has_more: false,
+        truncated: false,
+      },
+    }),
+  );
+  await page.goto("/catalog?domain_id=risk&selected=risk-product-0");
+  const viewer = page.getByRole("dialog");
+  await expect(
+    viewer.getByRole("heading", { name: "Calculated result", exact: true }),
+  ).toBeVisible();
+  await expect(viewer.locator(".reader-aggregate")).toContainText("1250000");
+  await expect(viewer).toContainText("Underlying selection");
+  await expect(viewer).toContainText("Aster Capital");
+  expect(generations).toBe(0);
+});
+
+test("direct source links hydrate without console errors under reduced motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  await page.goto("/catalog?domain_id=risk&selected=risk-product-0");
+  await page
+    .getByRole("dialog")
+    .getByText("Aster Capital", { exact: true })
+    .first()
+    .waitFor();
+  expect(errors).toEqual([]);
+});

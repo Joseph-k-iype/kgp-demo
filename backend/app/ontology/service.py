@@ -182,17 +182,16 @@ def rdf_graph(scope):
     )
     r.raise_for_status()
     full = Graph().parse(data=r.text, format="turtle")
-    allowed = {r["id"] for r in all_records(scope) if r["kind"] != "role"}
+    from app.ontology.access import record_iris, permitted as resource_permitted
+    from rdflib import BNode
+
+    allowed = record_iris(all_records(scope))
     g = Graph()
     g.bind("atlas", K)
     g.bind("id", I)
 
     def permitted(term):
-        return (
-            not isinstance(term, URIRef)
-            or not str(term).startswith(str(I))
-            or str(term)[len(str(I)) :] in allowed
-        )
+        return resource_permitted(term, allowed)
 
     # Reified assertions are visible only when every participating business/source node is visible.
     for assertion in full.subjects(RDF.type, K.GraphAssertion):
@@ -202,10 +201,13 @@ def rdf_graph(scope):
             full.value(assertion, K.sourceAsset),
             full.value(assertion, K.belongsToDomain),
         ]
-        if all(term is not None and permitted(term) for term in participants):
-            allowed.add(str(assertion)[len(str(I)) :])
+        if all(
+            isinstance(term, (URIRef, BNode)) and permitted(term)
+            for term in participants
+        ):
+            allowed.add(str(assertion))
     for s, p, o in full:
-        if permitted(s) and permitted(o):
+        if permitted(s) and permitted(p) and permitted(o):
             g.add((s, p, o))
     return g
 
