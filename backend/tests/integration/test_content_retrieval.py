@@ -1,4 +1,5 @@
 import time
+import pytest
 from app.auth import resolve_scope
 from app.knowledge.contracts import ToolContext
 from app.knowledge.retrieval import search_evidence
@@ -153,3 +154,19 @@ def test_extraction_failure_preserves_previously_indexed_content(monkeypatch):
     finally:
         monkeypatch.setattr(service, "extract_evidence", original)
         service.index_assets([asset])
+
+
+def test_asset_indexing_ownership_prevents_concurrent_generation_cleanup():
+    from app.retrieval.ownership import asset_index_ownership
+    from fastapi import HTTPException
+
+    with asset_index_ownership("finance-asset-1") as check:
+        check()
+        with pytest.raises(HTTPException) as e:
+            with asset_index_ownership("finance-asset-1"):
+                pytest.fail("A second indexer acquired the same asset")
+        assert e.value.status_code == 409
+        with asset_index_ownership("finance-asset-5") as independent:
+            independent()
+    with asset_index_ownership("finance-asset-1") as next_owner:
+        next_owner()

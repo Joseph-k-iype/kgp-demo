@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 
 class SourceRef(BaseModel):
@@ -31,6 +31,7 @@ from app.contracts import ScopeContext
 
 
 class ToolContext(BaseModel):
+    _lifecycle_guard: Any = PrivateAttr(default=None)
     scope: ScopeContext
     deadline: float
     domain_id: str | None = None

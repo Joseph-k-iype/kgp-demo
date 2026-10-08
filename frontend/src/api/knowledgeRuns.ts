@@ -147,6 +147,7 @@ export function claimIntent(intent: SearchIntent, token: string): Promise<Run> {
   entry.promise = api<Run>("/search/runs", token, {
     method: "POST",
     body: JSON.stringify({
+      intent_id: intent.id,
       query: intent.query,
       domain_id: intent.domainId,
       mode: intent.mode || "llm",

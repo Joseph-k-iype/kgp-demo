@@ -54,9 +54,8 @@ def get_search(scope, run_id):
         raise HTTPException(
             409, "Access scope changed; run evidence is no longer available"
         )
-    if (
-        run["status"] in ["pending", "running"]
-        and time.time() - run["created_at"] >= 90
+    if run["status"] in ["pending", "running"] and time.time() >= run.get(
+        "deadline", run["created_at"] + 90
     ):
         transition_run(
             run_id,
@@ -72,11 +71,25 @@ def get_search(scope, run_id):
         e["sequence"] = i + 1
     run.pop("scope_version", None)
     run.pop("person_id", None)
+    for private in [
+        "model_receipts",
+        "model_fingerprint",
+        "model_inflight",
+        "checkpoint",
+    ]:
+        run.pop(private, None)
     return run
 
 
 def start_search(scope, request):
     request = SearchRequest.model_validate(request)
+    if settings().graph_search_v2:
+        from app.agent.worker import enqueue, ensure_local_worker
+
+        id = enqueue(scope, request)
+        if settings().local_search_worker:
+            ensure_local_worker()
+        return get_search(scope, id)
     narrow_scope(scope, request.domain_id)
     id = str(uuid.uuid4())
     run = {
@@ -167,7 +180,12 @@ def execute_run(id, resume=False):
             },
             ["running"],
             deadline=run["created_at"] + 90,
-            final_event={"stage": "finish", "status": "completed", "summary": "Search completed with validated citations", "at": time.time()},
+            final_event={
+                "stage": "finish",
+                "status": "completed",
+                "summary": "Search completed with validated citations",
+                "at": time.time(),
+            },
         )
         if not completed and time.time() >= run["created_at"] + 90:
             raise TimeoutError("Search exceeded its 90 second limit")
@@ -213,6 +231,14 @@ def execute_run(id, resume=False):
 
 def resume_search(scope, run_id):
     run = get_search(scope, run_id)
+    if run.get("engine_version") == "graph_v2":
+        # Recovery is owned by leases. A failed/uncertain paid run must be started
+        # again explicitly with a new browser intent, never submitted to v1.
+        if run["status"] in ["pending", "running"] and settings().local_search_worker:
+            from app.agent.worker import ensure_local_worker
+
+            ensure_local_worker()
+        return run
     if run["status"] in ["completed", "cancelled"]:
         return run
     with _active_lock:
@@ -239,3 +265,193 @@ def cancel_search(scope, run_id):
         if transition_run(run_id, {"status": "cancelled"}, ["pending", "running"]):
             event(run_id, "finish", "cancelled", "Search cancelled")
     return get_search(scope, run_id)
+
+
+def finalize_research(ctx, state, mode, before_model, after_model):
+    """Finalization boundary; factual/span verification is extended in Task5."""
+    from app.agent.provider import synthesize, validate_answer
+    from app.knowledge.runtime import version, guard
+
+    evidence = [
+        e.model_dump(mode="json") for e in state.evidence if e.matched_facet_ids
+    ]
+    gaps = (
+        [
+            f.description
+            for f in state.intent.facets
+            if f.id in state.coverage.uncovered_facet_ids
+        ]
+        if state.intent
+        else ["The question could not be resolved"]
+    )
+    statements = []
+    if evidence:
+        if mode == "extractive":
+            statements = [
+                {"text": e["text"], "evidence_ids": [e["id"]]} for e in evidence[:8]
+            ]
+        else:
+            fingerprint = version(
+                {"phase": "synthesis", "query": state.query, "evidence": evidence}
+            )
+            receipt = before_model(fingerprint)
+            from app.contracts import AnswerOutput
+
+            if receipt:
+                answer = AnswerOutput.model_validate(receipt["answer"])
+            else:
+                answer = validate_answer(
+                    synthesize(state.query, evidence, deadline=ctx.deadline), evidence
+                )
+                after_model(fingerprint, {"answer": answer.model_dump(mode="json")})
+            guard(ctx)
+            statements = [s.model_dump() for s in answer.statements]
+            gaps.extend(answer.gaps)
+    return {
+        "statements": statements,
+        "evidence": evidence,
+        "gaps": gaps,
+        "answer_outcome": state.answer_outcome,
+        "clarification": state.clarification,
+        "stop_reason": state.stop_reason,
+        "coverage": state.coverage.model_dump(),
+        "tool_calls": ctx.tool_calls,
+        "paths": state.paths,
+        "graph": {"nodes": [], "edges": []},
+    }
+
+
+def execute_graph_run(id, worker):
+    from app.agent.worker import (
+        assert_owned,
+        heartbeat,
+        begin_model,
+        complete_model,
+        publish_owned,
+        LeaseLost,
+    )
+    from app.agent.provider import make_decider
+    from app.agent.adaptive import build_research_graph
+    from app.agent.actions import ResearchState
+    from app.agent.prompts import PROMPT_VERSION
+    from app.knowledge.contracts import ToolContext
+
+    stop = threading.Event()
+
+    def renew():
+        while not stop.wait(max(1, settings().search_lease_seconds / 3)):
+            try:
+                if not heartbeat(worker, id):
+                    return
+            except Exception:
+                return
+
+    renewer = threading.Thread(target=renew, daemon=True)
+    renewer.start()
+    try:
+        run = assert_owned(id, worker)
+        scope = resolve_scope(run["person_id"])
+        if scope.scope_version != run["scope_version"]:
+            raise ScopeChanged("Access scope changed; start a new search")
+        ctx = ToolContext(
+            scope=scope, deadline=run["deadline"], domain_id=run.get("domain_id")
+        )
+        ctx._lifecycle_guard = lambda: assert_owned(id, worker)
+        before = lambda fingerprint: begin_model(id, worker, fingerprint)
+        after = lambda fingerprint, receipt: complete_model(
+            id, worker, fingerprint, receipt
+        )
+
+        def notice(stage, summary):
+            if not publish_owned(
+                id,
+                worker,
+                {},
+                {
+                    "stage": stage,
+                    "status": "running",
+                    "summary": summary,
+                    "at": time.time(),
+                },
+            ):
+                raise LeaseLost("Search no longer belongs to this worker")
+
+        conn = settings().database_url.replace("postgresql+psycopg://", "postgresql://")
+        with PostgresSaver.from_conn_string(conn) as saver:
+            with _setup_lock:
+                saver.setup()
+            graph = build_research_graph(
+                ctx,
+                make_decider(ctx, before_model=before, after_model=after),
+                checkpointer=saver,
+                on_event=notice,
+            )
+            config = {"configurable": {"thread_id": id}, "recursion_limit": 24}
+            snapshot = graph.get_state(config)
+            if snapshot.values:
+                state = ResearchState.model_validate(snapshot.values)
+                ctx.tool_calls = state.tool_calls
+                ctx.graph_nodes = set(state.graph_nodes)
+                ctx.graph_edges = set(state.graph_edges)
+            if snapshot.values and not snapshot.next:
+                result = snapshot.values
+            else:
+                result = graph.invoke(
+                    None if snapshot.values else ResearchState(query=run["query"]),
+                    config,
+                )
+        state = ResearchState.model_validate(result)
+        from app.knowledge.runtime import guard
+
+        guard(ctx)
+        output = finalize_research(ctx, state, run["mode"], before, after)
+        guard(ctx)
+        publish_owned(
+            id,
+            worker,
+            {**output, "status": "completed", "prompt_version": PROMPT_VERSION},
+            {
+                "stage": "finish",
+                "status": "completed",
+                "summary": "Search finished",
+                "at": time.time(),
+            },
+        )
+    except LeaseLost:
+        # Cancellation or another owner's recovery must remain authoritative.
+        pass
+    except Exception as exc:
+        status = (
+            "configuration_required"
+            if isinstance(exc, ConfigurationRequired)
+            else "failed"
+        )
+        message = (
+            str(exc)
+            if isinstance(
+                exc,
+                (
+                    ConfigurationRequired,
+                    ModelRefusal,
+                    ScopeChanged,
+                    HTTPException,
+                    ValueError,
+                    TimeoutError,
+                ),
+            )
+            else "Search could not finish because a source or provider was unavailable. Generate an answer explicitly to try again."
+        )
+        publish_owned(
+            id,
+            worker,
+            {"status": status, "error": message},
+            {
+                "stage": "finish",
+                "status": status,
+                "summary": message,
+                "at": time.time(),
+            },
+        )
+    finally:
+        stop.set()
+        renewer.join(timeout=1)

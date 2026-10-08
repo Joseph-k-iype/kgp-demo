@@ -26,6 +26,9 @@ class CatalogQuery(BaseModel):
 
 
 class SearchRequest(BaseModel):
+    intent_id: str | None = Field(
+        default=None, min_length=1, max_length=80, pattern=r"^[A-Za-z0-9-]+$"
+    )
     domain_id: str | None = None
     query: str = Field(min_length=3, max_length=2000)
     mode: Literal["llm", "openai", "extractive"] = "llm"

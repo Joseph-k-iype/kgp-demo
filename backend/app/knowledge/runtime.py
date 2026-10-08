@@ -5,6 +5,8 @@ from app.knowledge.contracts import ToolContext
 
 
 def guard(ctx: ToolContext):
+    if ctx._lifecycle_guard:
+        ctx._lifecycle_guard()
     if time.time() >= ctx.deadline:
         raise TimeoutError("Search deadline exceeded")
     current = resolve_scope(ctx.scope.person_id)

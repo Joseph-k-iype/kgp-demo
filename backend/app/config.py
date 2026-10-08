@@ -23,6 +23,17 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_revision: str = "c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
     index_name: str = "atlas-evidence-v1"
+    graph_search_v2: bool = False
+    local_search_worker: bool = True
+    search_deadline_seconds: int = 120
+    search_persona_limit: int = 2
+    search_queue_limit: int = 100
+    search_lease_seconds: int = 45
+    search_worker_concurrency: int = 2
+    agent_adapter: Literal["json_actions", "native_tools"] = "json_actions"
+    native_tools_verified_model: str = ""
+    native_tools_verified: bool = False
+    native_multiturn_verified: bool = False
     content_index_name: str = "atlas-content-current"
     content_index_shards: int = 1
     content_index_replicas: int = 0

@@ -11,6 +11,7 @@ from app.retrieval.extract import extract_evidence
 from app.retrieval.embed import embed
 from app.retrieval.index import request, ensure_index, ensure_content_index
 from app.deadline import remaining_timeout
+from app.retrieval.ownership import asset_index_ownership
 
 
 def index_assets(asset_ids):
@@ -59,54 +60,65 @@ def index_assets(asset_ids):
             break
         for row in page:
             asset = {**row["payload"], "id": row["id"], "domain_id": row["domain_id"]}
-            indexed_count += 1
-            query(
-                "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
-                {"id": asset["id"]},
-            )
-            try:
-                batch = []
-                generation = hashlib.sha256()
-                for item in extract_evidence(scope, asset):
-                    generation.update(
-                        json.dumps(item.get("source_ref", {}), sort_keys=True).encode()
-                    )
-                    batch.append(item)
-                    chunks += 1
-                    if len(batch) == 64:
-                        flush(batch)
-                        batch = []
-                flush(batch)
-                from app.knowledge.projection import project_source
+            with asset_index_ownership(asset["id"]) as check_owner:
+                indexed_count += 1
+                query(
+                    "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"pending\"') WHERE id=:id RETURNING id",
+                    {"id": asset["id"]},
+                )
+                try:
+                    batch = []
+                    generation = hashlib.sha256()
+                    for item in extract_evidence(scope, asset):
+                        generation.update(
+                            json.dumps(
+                                item.get("source_ref", {}), sort_keys=True
+                            ).encode()
+                        )
+                        batch.append(item)
+                        chunks += 1
+                        if len(batch) == 64:
+                            check_owner()
+                            flush(batch)
+                            batch = []
+                    check_owner()
+                    flush(batch)
+                    from app.knowledge.projection import project_source
 
-                project_source(scope, asset, generation.hexdigest())
-                for target in [c.index_name, content_alias]:
-                    request("POST", "/" + target + "/_refresh")
-                    request(
-                        "POST",
-                        "/" + target + "/_delete_by_query?conflicts=proceed",
-                        {
-                            "query": {
-                                "bool": {
-                                    "filter": [{"term": {"asset_id": asset["id"]}}],
-                                    "must_not": [
-                                        {"term": {"index_generation": generation_id}}
-                                    ],
+                    check_owner()
+                    project_source(scope, asset, generation.hexdigest())
+                    check_owner()
+                    for target in [c.index_name, content_alias]:
+                        request("POST", "/" + target + "/_refresh")
+                        request(
+                            "POST",
+                            "/" + target + "/_delete_by_query?conflicts=proceed",
+                            {
+                                "query": {
+                                    "bool": {
+                                        "filter": [{"term": {"asset_id": asset["id"]}}],
+                                        "must_not": [
+                                            {
+                                                "term": {
+                                                    "index_generation": generation_id
+                                                }
+                                            }
+                                        ],
+                                    }
                                 }
-                            }
-                        },
+                            },
+                        )
+                        request("POST", "/" + target + "/_refresh")
+                    query(
+                        "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",
+                        {"id": asset["id"]},
                     )
-                    request("POST", "/" + target + "/_refresh")
-                query(
-                    "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"ready\"') WHERE id=:id RETURNING id",
-                    {"id": asset["id"]},
-                )
-            except Exception:
-                query(
-                    "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",
-                    {"id": asset["id"]},
-                )
-                raise
+                except Exception:
+                    query(
+                        "UPDATE records SET payload=jsonb_set(payload,'{indexing_state}','\"failed\"') WHERE id=:id RETURNING id",
+                        {"id": asset["id"]},
+                    )
+                    raise
         cursor = page[-1]["id"]
     return {
         "indexed_assets": indexed_count,
